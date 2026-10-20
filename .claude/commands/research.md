@@ -18,12 +18,12 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tà
      - topic quá rộng (ví dụ "caching", "microservices", "kafka"): đề xuất 2–4 cách thu hẹp cụ thể (mỗi cách một dòng + slug gợi ý) và hỏi tôi. DỪNG.
      - ngược lại: chạy `make new-topic SLUG=<slug>`. Đây là cách DUY NHẤT để tạo topic; không tự tạo file/thư mục bằng cách khác. Nếu `make` không có, chạy `bash scripts/new-topic.sh <slug>` (chính là thứ Makefile gọi) và báo tôi.
 3. Nếu hội thoại hiện tại đã làm một topic KHÁC: nhắc tôi chạy `/clear` rồi gọi lại lệnh. DỪNG.
-4. Đọc `topics/<slug>/README.md` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
+4. Đọc `topics/<slug>/README.html` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
 5. Xác định phase:
-   - `next` → phase đầu tiên chưa tick trong checklist. Nếu cả 7 đã xong, báo và dừng.
-   - `N` → nếu có phase < N chưa tick, cảnh báo phase nào còn thiếu và hỏi tôi trước khi làm.
+   - `next` → phase đầu tiên có `data-status` khác `done` trong `ol.phase-list`. Nếu cả 7 đã xong, báo và dừng.
+   - `N` → nếu có phase < N chưa `done`, cảnh báo phase nào còn thiếu và hỏi tôi trước khi làm.
    - `all` → chạy lần lượt từ phase `next` tới 7.
-6. Nếu mục "Chờ duyệt" trong README còn mục chưa tick thuộc phase trước, liệt kê chúng và hỏi tôi có muốn tiếp tục không (trừ chế độ `all`).
+6. Nếu `ul.approvals` trong README còn mục `data-status="open"` thuộc phase trước, liệt kê chúng và hỏi tôi có muốn tiếp tục không (trừ chế độ `all`).
 
 Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
@@ -51,7 +51,7 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
 - Domain tối giản (ánh xạ từ nghiệp vụ thật), kiến trúc before và after của từng cách (mermaid), thành phần + version pin (đã tra bản ổn định hiện tại) + giới hạn tài nguyên giống nhau.
 - Contract chung, cách mỗi implementation cắm vào (Spring profile / env).
-- Schema dữ liệu, metric cần expose cho mọi tiêu chí "có đo" ở 01 §13 (chọn tín hiệu: metric / log / trace / profile theo `shared/observability/README.md`), cách kiểm tra đúng đắn dữ liệu, những gì cố ý bỏ qua.
+- Schema dữ liệu, metric cần expose cho mọi tiêu chí "có đo" ở 01 §18 (chọn tín hiệu: metric / log / trace / profile theo `shared/observability/README.md`), cách kiểm tra đúng đắn dữ liệu, những gì cố ý bỏ qua.
 - Điền bảng "Stack" trong README của topic.
 - Kiểm tra tài liệu → **Gate**.
 
@@ -117,10 +117,10 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 1. Gọi subagent `lab-reviewer` với đường dẫn topic và phase vừa xong.
 2. Sửa mọi vấn đề **nghiêm trọng**; vấn đề **nên sửa** thì sửa hoặc ghi lý do không sửa vào nhật ký quyết định.
 3. Chế độ thường: tóm tắt cho tôi trong 5–10 dòng (đã làm gì, reviewer nêu gì, đã sửa gì) kèm danh sách quyết định cần duyệt, rồi **DỪNG chờ xác nhận**.
-4. Chế độ `all`: vẫn chạy reviewer nhưng không dừng; ghi các điểm cần duyệt vào mục "Chờ duyệt" trong README của topic (`- [ ] (phase N) ...`) rồi chạy tiếp.
+4. Chế độ `all`: vẫn chạy reviewer nhưng không dừng; ghi các điểm cần duyệt vào `ul.approvals` trong README của topic (`<li data-status="open" data-phase="N">...`) rồi chạy tiếp.
 
 ## Kết thúc mỗi phase
 
-1. Cập nhật README của topic: tick checklist, "Phase hiện tại", "Cập nhật lần cuối", thêm dòng nhật ký quyết định, câu hỏi mở.
+1. Cập nhật `topics/<slug>/README.html`: phase vừa xong `data-status="done"` + `class="done"` (phase đang làm dở: `in-progress`), `data-field="current-phase"`, `data-field="updated"`, thêm dòng vào bảng nhật ký quyết định, cập nhật câu hỏi mở; phase 1 điền `data-field="scope"` và bảng Implementations, phase 2 điền bảng Stack.
 2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/7 — System design`).
 3. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Chỉ add file trong `topics/<slug>/` và `README.md` gốc.

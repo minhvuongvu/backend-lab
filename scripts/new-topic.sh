@@ -32,7 +32,7 @@ render() {
       -e 's|"\.\./shared/|"../../shared/|g' "$1" > "$2"
 }
 
-render "$ROOT/templates/topic-README.md" "$TOPIC_DIR/README.md"
+render "$ROOT/templates/topic-README.html" "$TOPIC_DIR/README.html"
 # One HTML document per phase: 01-research.html ... 07-production.html
 for tpl in "$ROOT"/templates/0[1-7]-*.html; do
   render "$tpl" "$TOPIC_DIR/$(basename "$tpl")"
@@ -63,7 +63,7 @@ cat > "$TOPIC_DIR/results/env.md" <<EOF
 EOF
 
 # Append a row to the topic table in the root README (before the end marker).
-ROW="| $SLUG | 0 — chưa bắt đầu | [README](topics/$SLUG/README.md) |"
+ROW="| $SLUG | 0 — chưa bắt đầu | [README](topics/$SLUG/README.html) |"
 README="$ROOT/README.md"
 if ! grep -q '<!-- topics:end -->' "$README"; then
   echo "error: marker '<!-- topics:end -->' not found in README.md" >&2

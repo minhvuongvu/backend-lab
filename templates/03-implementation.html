@@ -15,6 +15,7 @@
   Phase 3 — Implementation guide (mục tiêu 9, 10, 11). Viết SAU khi code trong system/ đã build + test pass.
   Mọi đoạn code/config trích NGUYÊN VĂN từ file thật trong system/, caption ghi đường dẫn + dòng (link tương đối, ví dụ system/src/main/java/...#L10-L42).
   Không viết code chỉ tồn tại trong tài liệu.
+  Mỗi bước thực thi phải giải thích ý nghĩa (Mục đích, Cơ chế, Thay đổi hành vi, Nếu bỏ qua / làm sai, Kiểm tra) và có code-notes giải thích code theo dòng — không chấp nhận bước chỉ có code.
 -->
 <body class="draft">
 <div class="layout">
@@ -46,54 +47,203 @@ SPRING_PROFILES_ACTIVE=before ./mvnw spring-boot:run</code></pre>
 
   <section>
     <h2 id="before"><span class="num">2</span>before — hệ thống as-is</h2>
-    <div class="guide">Code cốt lõi của before và test CHỨNG MINH vấn đề ở 01 §4 xảy ra: lỗi đúng đắn (mất/trùng/sai thứ tự...) thì test tái hiện lỗi; vấn đề hiệu năng thì micro-benchmark/test đo được nút thắt. Test này được kỳ vọng thể hiện vấn đề.</div>
-    <figure class="code"><figcaption><a href="system/">system/...:L1-L1</a></figcaption>
+    <div class="guide">Code cốt lõi của before và test CHỨNG MINH vấn đề ở 01 §4 xảy ra: lỗi đúng đắn (mất / trùng / sai thứ tự...) thì test tái hiện lỗi; vấn đề hiệu năng thì micro-benchmark hoặc test đo được nút thắt. Test này được kỳ vọng thể hiện vấn đề.
+      Không chỉ dán code: giải thích luồng xử lý và chỉ ra CHÍNH XÁC dòng nào gây ra vấn đề, vì sao.</div>
+
+    <h3 id="before-flow">Luồng xử lý và điểm phát sinh vấn đề</h3>
+    <figure class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Service (before)
+    participant DB as Database
+    C->>S: request
+    S->>DB: ① write
+    Note over S,DB: ✗ / ⏱ vấn đề phát sinh ở đây — thay bằng luồng thật
+</pre>
+      <figcaption>Đánh số các bước khớp với giải thích code bên dưới.</figcaption>
+    </figure>
+
+    <ol class="steps">
+      <li class="step">
+        <h4 class="step-title">Code cốt lõi của before</h4>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <figure class="code"><figcaption><a href="system/">system/...:L?-L?</a></figcaption>
 <pre><code class="language-java">// excerpt</code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
+      </li>
+      <li class="step">
+        <h4 class="step-title">Test tái hiện vấn đề</h4>
+        <div class="guide">Test được kỳ vọng FAIL (hoặc đo ra nút thắt) trên before. Ghi rõ điều kiện kích hoạt (crash ở bước nào, tải bao nhiêu) và kết quả quan sát.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <figure class="code"><figcaption><a href="system/">system/src/test/java/...:L?-L?</a></figcaption>
+<pre><code class="language-java">// excerpt</code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
+      </li>
+    </ol>
   </section>
 
   <section>
     <h2 id="impl-a"><span class="num">3</span>A. <!-- tên --></h2>
-    <div class="guide">Lặp lại section này cho mỗi implementation. Thứ tự bước = thứ tự một dev làm thật khi thêm cách này vào hệ thống before.</div>
+    <div class="guide">Lặp lại section này cho mỗi implementation. Thứ tự bước = thứ tự một dev làm thật khi thêm cách này vào hệ thống before.
+      <strong>Không chấp nhận bước chỉ có code; mỗi bước phải trả lời được: tại sao cần, nó chạy thế nào bên trong, thay đổi gì, bỏ qua thì hỏng gì, kiểm tra bằng gì.</strong>
+      Bước nào không áp dụng cho cách này thì giữ tiêu đề, ghi "—" kèm lý do.</div>
+
+    <h3 id="impl-a-overview">Bức tranh tổng</h3>
+    <div class="guide">Sơ đồ luồng request / message SAU khi áp dụng cách này, đánh số ①②③… tại chỗ từng bước bên dưới cắm vào, để thấy các bước ghép với nhau thế nào. Kèm 2–4 câu tóm tắt ý tưởng.</div>
+    <figure class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    participant C as Client
+    participant S as Service (A)
+    participant DB as Database
+    participant X as Thành phần thêm
+    C->>S: request
+    S->>DB: ② ghi theo schema mới
+    Note over S,DB: ④ transaction boundary / code cốt lõi
+    S-->>X: ⑥ metric / trace
+    Note over S: ③ cấu hình · ⑤ chọn profile
+</pre>
+      <figcaption>Số ①–⑦ trên sơ đồ khớp với số thứ tự các bước bên dưới — thay bằng luồng thật.</figcaption>
+    </figure>
 
     <h3 id="impl-a-changes">Thay đổi so với before</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>File</th><th>Loại</th><th>Mục đích</th></tr></thead>
-      <tbody><tr><td><a href="system/"><code></code></a></td><td><!-- thêm / sửa / config / migration --></td><td></td></tr></tbody>
+      <thead><tr><th>File</th><th>Loại</th><th>Thuộc bước</th><th>Mục đích</th></tr></thead>
+      <tbody><tr><td><a href="system/"><code></code></a></td><td><!-- thêm / sửa / config / migration --></td><td><!-- ①…⑦ --></td><td></td></tr></tbody>
     </table></div>
 
     <h3 id="impl-a-steps">Từng bước thực thi</h3>
     <ol class="steps">
-      <li>
-        <strong>Thêm dependency</strong> — <!-- vì sao cần, version -->
-        <figure class="code"><figcaption><a href="system/pom.xml">system/pom.xml:L?-L?</a></figcaption>
+      <li class="step">
+        <h4 class="step-title">Thêm dependency</h4>
+        <div class="guide">Ghi version đã pin và lý do chọn version đó. Mục đích nói rõ thư viện cung cấp khả năng gì mà before không có; Cơ chế nói nó tự cấu hình gì (auto-configuration, bean nào được tạo).</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <figure class="code"><figcaption><a href="system/">system/pom.xml:L?-L?</a></figcaption>
 <pre><code class="language-xml">&lt;dependency&gt;...&lt;/dependency&gt;</code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
       </li>
-      <li>
-        <strong>Migration / schema</strong> —
+      <li class="step">
+        <h4 class="step-title">Migration / schema</h4>
+        <div class="guide">Giải thích từng cột, index và constraint: vì sao tồn tại, phục vụ truy vấn hay invariant nào, chi phí ghi thêm bao nhiêu.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Cột / index / constraint</th><th>Vì sao cần</th><th>Phục vụ truy vấn / invariant</th><th>Chi phí (ghi, lưu trữ)</th></tr></thead>
+          <tbody><tr><td><code></code></td><td></td><td></td><td></td></tr></tbody>
+        </table></div>
         <figure class="code"><figcaption><a href="system/">system/src/main/resources/db/migration/...</a></figcaption>
 <pre><code class="language-sql"></code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
       </li>
-      <li>
-        <strong>Cấu hình</strong> — giải thích TỪNG thuộc tính: giá trị, mặc định, vì sao chọn giá trị này.
+      <li class="step">
+        <h4 class="step-title">Cấu hình</h4>
+        <div class="guide">Giải thích TỪNG thuộc tính trong bảng. Cột "Mặc định" lấy từ tài liệu / source của version đang dùng. Thuộc tính quan trọng nhất là cái mà nếu để mặc định sẽ làm vỡ invariant hoặc làm sai số đo.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Thuộc tính</th><th>Giá trị</th><th>Mặc định</th><th>Ý nghĩa / cơ chế</th><th>Vì sao chọn giá trị này</th><th>Nếu sai thì sao</th></tr></thead>
+          <tbody><tr><td><code></code></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+        </table></div>
         <figure class="code"><figcaption><a href="system/">system/src/main/resources/application-a.yml</a></figcaption>
 <pre><code class="language-yaml"></code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
       </li>
-      <li>
-        <strong>Code cốt lõi</strong> — transaction boundary, thứ tự thao tác, xử lý lỗi/retry.
+      <li class="step">
+        <h4 class="step-title">Code cốt lõi</h4>
+        <div class="guide">Transaction boundary, thứ tự thao tác, xử lý lỗi / retry / idempotency. Cơ chế phải đi tới mức framework làm gì (ví dụ @Transactional: proxy → lấy connection từ pool → bind vào thread → commit/rollback khi method trả về / ném exception) và liên hệ với lập luận tính đúng đắn ở 01 §10.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
         <figure class="code"><figcaption><a href="system/">system/src/main/java/...:L?-L?</a></figcaption>
 <pre><code class="language-java"></code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
+      </li>
+      <li class="step">
+        <h4 class="step-title">Wiring / chọn implementation</h4>
+        <div class="guide">Spring profile hoặc biến môi trường chọn cách này; bean nào được đăng ký / thay thế; vì sao before và các cách khác dùng chung contract (02 §5) mà không lẫn nhau.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <figure class="code"><figcaption><a href="system/">system/src/main/java/...:L?-L?</a></figcaption>
+<pre><code class="language-java"></code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
+      </li>
+      <li class="step">
+        <h4 class="step-title">Observability hooks</h4>
+        <div class="guide">Metric / span / log riêng của cách này (theo 02 §8): đo cái gì, vì sao cần cho phase 5, tên metric cụ thể. Ghi overhead nếu đáng kể.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <figure class="code"><figcaption><a href="system/">system/src/main/java/...:L?-L?</a></figcaption>
+<pre><code class="language-java"></code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
+      </li>
+      <li class="step">
+        <h4 class="step-title">Test</h4>
+        <div class="guide">Test chứng minh cách này giải quyết vấn đề mà before gặp (cùng kịch bản với test ở §2) và giữ invariant ở 01 §9–10. Chi tiết kết quả ở bảng bên dưới.</div>
+        <dl class="step-meta">
+          <dt>Mục đích</dt><dd><!-- vì sao hệ thống cần bước này; nối với vấn đề ở 01 §4 hoặc invariant ở 01 §9–10 --></dd>
+          <dt>Cơ chế</dt><dd><!-- khi chạy, framework / DB / broker xử lý bên trong ra sao --></dd>
+          <dt>Thay đổi hành vi</dt><dd><!-- trước bước này hệ thống làm X, sau bước này làm Y; quan sát bằng test / metric nào --></dd>
+          <dt>Nếu bỏ qua / làm sai</dt><dd><!-- hậu quả cụ thể và nó lộ ra thế nào (lỗi, metric, log) --></dd>
+          <dt>Kiểm tra bước đã đúng</dt><dd><!-- lệnh / test / query xác nhận --></dd>
+        </dl>
+        <figure class="code"><figcaption><a href="system/">system/src/test/java/...:L?-L?</a></figcaption>
+<pre><code class="language-java"></code></pre></figure>
+        <div class="code-notes"><!-- Giải thích theo dòng/khối: "L?–L?: làm gì, vì sao viết như vậy". Không diễn giải lại cú pháp. --></div>
       </li>
     </ol>
 
     <h3 id="impl-a-tests">Test chứng minh tính đúng đắn</h3>
     <div class="guide">Integration test (Testcontainers) cho invariant ở 01 §9–10 và kịch bản lỗi chính, theo chiến lược kiểm chứng ở 01 §24. Ghi test nào, kiểm gì, kết quả chạy (pass/fail) và lệnh chạy.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Test</th><th>Kiểm tra invariant / failure mode</th><th>Kết quả</th></tr></thead>
-      <tbody><tr><td><code></code></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Test</th><th>Kiểm tra invariant / failure mode</th><th>Kết quả trên before</th><th>Kết quả trên A</th></tr></thead>
+      <tbody><tr><td><code></code></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
 
     <h3 id="impl-a-notes">Lưu ý gặp phải khi implement</h3>
-    <div class="guide">Những gì thực tế gặp lúc code (khác/thêm so với "lưu ý" ở 01 §17): bug, hành vi framework bất ngờ, default nguy hiểm. Đây thường là insight giá trị nhất của phase này.</div>
+    <div class="guide">Những gì thực tế gặp lúc code (khác/thêm so với "lưu ý" ở 01 §17): bug, hành vi framework bất ngờ, default nguy hiểm. Mỗi lưu ý kèm nguyên nhân (vì sao xảy ra). Đây thường là insight giá trị nhất của phase này.</div>
     <div class="callout warn"><span class="callout-title">Lưu ý</span><ul><li></li></ul></div>
     <div class="callout insight"><span class="callout-title">Insight</span>
       <p class="claim"><!-- khẳng định --></p>

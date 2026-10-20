@@ -102,6 +102,7 @@ function syncHljsTheme() {
 
 // Links between the documents of one topic; file N belongs to phase N.
 const DOCS = [
+  ["README.html", "README"],
   ["01-research.html", "1 · Research"],
   ["02-system-design.html", "2 · Design"],
   ["03-implementation.html", "3 · Implement"],
@@ -109,7 +110,6 @@ const DOCS = [
   ["05-results.html", "5 · Results"],
   ["06-conclusion.html", "6 · Conclusion"],
   ["07-production.html", "7 · Production"],
-  ["README.md", "README"],
 ];
 
 function buildDocNav() {
@@ -119,11 +119,14 @@ function buildDocNav() {
   const nav = document.createElement("nav");
   nav.className = "doc-nav";
   nav.setAttribute("aria-label", "Tài liệu của topic");
+  // In templates/ the topic README is topic-README.html; inside topics/<slug>/ it is README.html.
+  const inTemplates = /\/templates\/[^/]*$/.test(decodeURIComponent(location.pathname));
   for (const [file, label] of DOCS) {
+    const target = inTemplates && file === "README.html" ? "topic-README.html" : file;
     const a = document.createElement("a");
-    a.href = file;
+    a.href = target;
     a.textContent = label;
-    if (file === here) a.className = "current";
+    if (target === here) a.className = "current";
     nav.appendChild(a);
   }
   header.appendChild(nav);

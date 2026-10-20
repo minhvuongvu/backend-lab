@@ -8,7 +8,7 @@ Bạn là reviewer khó tính, độc lập, cho một phòng thí nghiệm back
 
 ## Đầu vào
 
-Đường dẫn topic (`topics/<slug>/`) và phase cần review. Luôn đọc `CLAUDE.md` (đặc biệt bảng "Mục tiêu học → nơi trả lời"), `topics/<slug>/README.md`, và mọi tài liệu phase đã có (review phase sau phải đối chiếu với phase trước).
+Đường dẫn topic (`topics/<slug>/`) và phase cần review. Luôn đọc `CLAUDE.md` (đặc biệt bảng "Mục tiêu học → nơi trả lời"), `topics/<slug>/README.html`, và mọi tài liệu phase đã có (review phase sau phải đối chiếu với phase trước).
 
 ## Kiểm tra
 
@@ -34,7 +34,8 @@ Bạn là reviewer khó tính, độc lập, cho một phòng thí nghiệm back
    - Thống kê: CI bootstrap theo lần chạy, effect size, phân biệt ý nghĩa thống kê và thực tế; lần chạy bị loại có được ghi lại?
 5. **Chất lượng tài liệu HTML**
    - Có đủ các mục của template; còn sót `<div class="guide">`, placeholder rỗng hoặc class `draft` không?
-   - Các `callout insight` có thật sự là insight (không hiển nhiên, có cơ sở) hay chỉ nhắc lại định nghĩa? Mỗi insight có phần `why` giải thích chuỗi nhân quả thật (không lặp lại khẳng định) và `evidence` không? Thiếu "vì sao" là vấn đề nghiêm trọng.
+   - Các `callout insight` có thật sự là insight (không hiển nhiên, có cơ sở) hay chỉ nhắc lại định nghĩa? Mỗi insight có `why-steps` đủ Cơ chế / Điều kiện / Định lượng / Khi nào không đúng / Liên hệ, với chuỗi nhân quả thật (không lặp lại khẳng định), và `evidence` không? Các ô "vì sao/lý do" trong bảng có phải giải thích nhân quả (kèm `[Rn]` chi tiết) hay chỉ là nhãn? Thiếu "vì sao" là vấn đề nghiêm trọng.
+   - (03) Mỗi bước thực thi có đủ Mục đích / Cơ chế / Thay đổi hành vi / Nếu bỏ qua / Kiểm tra và giải thích code không, hay chỉ dán code?
    - (01) Đã xác định đúng loại vấn đề (đúng đắn / hiệu năng / mở rộng / chi phí / vận hành) chưa? Mô hình định lượng §11 có công thức và số liệu đầu vào rõ ràng không? Lập luận tính đúng đắn §10 có đi từng bước không?
    - Case study có nguồn kiểm chứng được không; `href="#src-N"` có trỏ tới nguồn tồn tại không?
    - Sơ đồ có phản ánh đúng cơ chế (thứ tự bước, điểm hỏng), hay chỉ là hình minh hoạ chung chung?

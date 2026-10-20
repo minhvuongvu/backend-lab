@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — README</title>
+<link rel="stylesheet" href="../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  README của topic = NGUỒN SỰ THẬT về trạng thái. /research và /lab-status đọc file này.
+  Trạng thái máy đọc được nằm ở thuộc tính data-*; chữ hiển thị chỉ để người đọc:
+    - <dd data-field="current-phase">, <dd data-field="updated">           — phase hiện tại, ngày cập nhật (YYYY-MM-DD)
+    - <li data-phase="N" data-status="todo|in-progress|done">              — checklist 7 phase
+    - <li data-status="open|approved|rejected"> trong ul.approvals          — điểm chờ duyệt
+    - <li data-status="open|answered"> trong ul.questions                    — câu hỏi mở
+  Sau mỗi phase: đổi data-status + class của phase, cập nhật current-phase, updated, thêm dòng nhật ký quyết định.
+  Trang này luôn ở trạng thái "đang dùng", không có class draft.
+-->
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Topic · README</div>
+    <h1>{{TOPIC}}</h1>
+    <dl class="topic-meta">
+      <dt>Slug</dt><dd data-field="slug"><code>{{SLUG}}</code></dd>
+      <dt>Tạo ngày</dt><dd data-field="created">{{DATE}}</dd>
+      <dt>Cập nhật lần cuối</dt><dd data-field="updated">{{DATE}}</dd>
+      <dt>Phase hiện tại</dt><dd data-field="current-phase">0 — chưa bắt đầu</dd>
+    </dl>
+  </header>
+
+  <section>
+    <h2 id="scope">Phạm vi</h2>
+    <p data-field="scope"><!-- 2–4 câu: topic nghiên cứu chính xác điều gì, và KHÔNG nghiên cứu điều gì.
+      Ví dụ: "Transactional outbox với PostgreSQL + Kafka: so sánh polling publisher và CDC (Debezium). Không bàn về saga hay exactly-once của Kafka Streams." --><em>Chưa xác định — điền ở phase 1.</em></p>
+  </section>
+
+  <section>
+    <h2 id="progress">Tiến độ</h2>
+    <ol class="phase-list">
+      <li data-phase="1" data-status="todo" class="todo"><span class="phase-name">Research</span><span class="phase-links"><a href="01-research.html">01-research.html</a></span></li>
+      <li data-phase="2" data-status="todo" class="todo"><span class="phase-name">System design</span><span class="phase-links"><a href="02-system-design.html">02-system-design.html</a></span></li>
+      <li data-phase="3" data-status="todo" class="todo"><span class="phase-name">Implement</span><span class="phase-links"><a href="system/">system/</a> · <a href="03-implementation.html">03-implementation.html</a></span></li>
+      <li data-phase="4" data-status="todo" class="todo"><span class="phase-name">Experiment plan</span><span class="phase-links"><a href="04-experiment-plan.html">04-experiment-plan.html</a></span></li>
+      <li data-phase="5" data-status="todo" class="todo"><span class="phase-name">Execute</span><span class="phase-links"><a href="experiments/">experiments/</a> · <a href="results/">results/</a> · <a href="05-results.html">05-results.html</a></span></li>
+      <li data-phase="6" data-status="todo" class="todo"><span class="phase-name">Conclusion</span><span class="phase-links"><a href="06-conclusion.html">06-conclusion.html</a></span></li>
+      <li data-phase="7" data-status="todo" class="todo"><span class="phase-name">Production rollout</span><span class="phase-links"><a href="07-production.html">07-production.html</a> · <a href="deploy/">deploy/</a></span></li>
+    </ol>
+  </section>
+
+  <section>
+    <h2 id="implementations">Implementations</h2>
+    <p class="note">Điền ở phase 1 (01 §16). ID dùng nhất quán trong mọi tài liệu; slug dùng cho Spring profile và <code>make run IMPL=&lt;slug&gt;</code>. <code>before</code> = hệ thống as-is, luôn là mốc so sánh.</p>
+    <div class="table-wrap"><table class="implementations">
+      <thead><tr><th>ID</th><th>Slug (profile / IMPL)</th><th>Mô tả</th></tr></thead>
+      <tbody>
+        <tr data-impl="before"><td>before</td><td><code>before</code></td><td>Hệ thống as-is, chưa có solution</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="stack">Stack</h2>
+    <p class="note">Mặc định theo CLAUDE.md: Java 21, Spring Boot 3.x, PostgreSQL, Redis, Kafka, Testcontainers, k6. Ghi version đã pin; nếu đổi stack, ghi lý do.</p>
+    <div class="table-wrap"><table class="stack">
+      <thead><tr><th>Thành phần</th><th>Version</th><th>Ghi chú</th></tr></thead>
+      <tbody>
+        <tr><td colspan="3"><em>Chưa chọn — điền ở phase 2.</em></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="approvals">Chờ duyệt</h2>
+    <p class="note">Quyết định cần tôi xác nhận. Ở chế độ <code>all</code>, gate sau phase 1/2/4 ghi vào đây thay vì dừng.
+      Mỗi mục: <code>&lt;li data-status="open" data-phase="N"&gt;</code> quyết định — phương án đề xuất / phương án khác. Khi đã duyệt: đổi data-status và ghi vào nhật ký quyết định.</p>
+    <ul class="approvals">
+      <!-- <li data-status="open" data-phase="1"><strong>Quyết định</strong> — đề xuất ... / phương án khác ...</li> -->
+    </ul>
+    <p class="empty-note">Không có mục nào đang chờ duyệt.</p>
+  </section>
+
+  <section>
+    <h2 id="decisions">Nhật ký quyết định</h2>
+    <p class="note">Mỗi quyết định quan trọng một dòng: chọn gì, bỏ gì, vì sao. Không xoá dòng cũ; quyết định bị đảo thì thêm dòng mới.</p>
+    <div class="table-wrap"><table class="decisions">
+      <thead><tr><th>Ngày</th><th>Phase</th><th>Quyết định</th><th>Lý do / phương án bị loại</th></tr></thead>
+      <tbody>
+        <tr><td>{{DATE}}</td><td>0</td><td>Tạo topic</td><td>—</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="questions">Câu hỏi mở</h2>
+    <p class="note">Những điều chưa rõ phát sinh trong quá trình làm. Khi đã trả lời: <code>data-status="answered"</code> và ghi chỗ trả lời.</p>
+    <ul class="questions">
+      <!-- <li data-status="open">Câu hỏi ... (phát sinh ở phase N)</li> -->
+    </ul>
+    <p class="empty-note">Chưa có câu hỏi mở.</p>
+  </section>
+
+  <section>
+    <h2 id="files">Tệp khác</h2>
+    <ul>
+      <li><a href="results/env.md">results/env.md</a> — môi trường chạy thí nghiệm</li>
+      <li><a href="results/raw/">results/raw/</a> — dữ liệu thô (không sửa tay)</li>
+      <li><a href="results/charts/">results/charts/</a> — biểu đồ</li>
+    </ul>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

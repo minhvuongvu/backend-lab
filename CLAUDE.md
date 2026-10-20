@@ -49,14 +49,16 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 
 ## before và các implementation
 - `before` là hệ thống as-is chưa có solution. Nó luôn được implement, test và đo như mọi implementation khác, làm mốc so sánh trước/sau.
-- ID (`before`, A, B, C...) và slug khai báo một lần trong bảng "Implementations" của README topic, dùng nhất quán ở mọi tài liệu, Spring profile và `make run IMPL=<slug>`.
+- ID (`before`, A, B, C...) và slug khai báo một lần trong bảng "Implementations" của README topic (`topics/<slug>/README.html`), dùng nhất quán ở mọi tài liệu, Spring profile và `make run IMPL=<slug>`.
 
 ## Tài liệu HTML
 - Mỗi tài liệu phase theo khung trong `templates/`, dùng chung `shared/docs/lab.css` + `lab.js` (mục lục, điều hướng giữa tài liệu, mermaid, highlight, dark mode). Không nhúng CSS/JS riêng vào từng trang.
 - Thay mọi `<div class="guide">` bằng nội dung thật rồi xoá; khi xong, bỏ class `draft` khỏi `<body>`. Không để ô bảng hay comment placeholder rỗng: không áp dụng thì ghi "—" kèm lý do.
 - Nhãn: `<span class="tag measured">`, `<a class="tag doc" href="#src-N">`, `<span class="tag inferred">`.
 - Mỗi phần lớn có ít nhất một `callout insight`: điều không hiển nhiên (giả định ngầm, cái giá ẩn, bậc độ lớn, chỗ docs và hiểu biết phổ biến khác nhau).
-- Mỗi insight PHẢI giải thích vì sao: `p.claim` (khẳng định) + `div.why` (chuỗi nhân quả từ cơ chế tới hệ quả, từng bước, có số liệu/bậc độ lớn khi được) + `div.evidence` (nhãn nguồn + cách kiểm chứng). Insight không có phần "Vì sao", hoặc "Vì sao" chỉ nhắc lại khẳng định, là không đạt.
+- Mỗi insight PHẢI giải thích vì sao: `p.claim` (khẳng định) + `div.why` chứa `dl.why-steps` gồm **Cơ chế** (các bước nhân quả, mỗi bước nêu thành phần/cấu trúc dữ liệu/giao thức cụ thể), **Điều kiện**, **Định lượng**, **Khi nào không đúng**, **Liên hệ** (mục chứa cơ chế) + `div.evidence` (nhãn nguồn + cách kiểm chứng). Insight thiếu phần nào, hoặc "Vì sao" chỉ nhắc lại khẳng định, là không đạt. Chuẩn độ sâu: insight mẫu trong `templates/01-research.html`.
+- Mọi chỗ "vì sao / lý do" khác (ô bảng, ưu/nhược, chọn/bỏ, NFR, nhánh cây quyết định...) cũng phải là giải thích nhân quả, không phải nhãn kiểu "vì nhanh hơn", "do overhead". Mỗi "vì sao" trả lời được: cái gì xảy ra, theo thứ tự nào, ở thành phần nào, trong điều kiện nào, lớn cỡ nào, khi nào không còn đúng. Ô bảng hẹp: lý do ngắn + `[Rn]`, chi tiết ở `ol.reasons` dưới bảng.
+- Tài liệu 03: mỗi bước thực thi là `li.step` với `dl.step-meta` (**Mục đích**, **Cơ chế**, **Thay đổi hành vi**, **Nếu bỏ qua / làm sai**, **Kiểm tra bước đã đúng**), rồi mới tới code trích nguyên văn và `div.code-notes` giải thích từng khối code. Bước chỉ có code là không đạt; cấu hình giải thích từng thuộc tính (giá trị, mặc định, cơ chế, vì sao chọn, sai thì sao).
 - "Bài toán" không chỉ là hệ thống hỏng: có thể là đúng đắn, hiệu năng, khả năng mở rộng, chi phí hay vận hành. Xác định loại vấn đề trước rồi chọn chỉ số đo tương ứng.
 - Mermaid đặt trong `<pre class="mermaid">`; escape `<`, `>`, `&` trong code (`&lt;`...).
 - Code trong 03 và 07 trích NGUYÊN VĂN từ file thật (`<figure class="code">` với caption là đường dẫn + dòng). Không có code chỉ tồn tại trong tài liệu.
@@ -71,7 +73,8 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 ## Một chủ đề, một phiên
 - Mỗi phiên chỉ làm một topic.
 - Nếu hội thoại hiện tại đã làm topic khác, nhắc tôi chạy `/clear` trước khi tiếp tục.
-- Trạng thái nằm trong file, không nằm trong hội thoại. Khi bắt đầu, luôn đọc `README.md` của topic và các file phase trước.
+- Trạng thái nằm trong file, không nằm trong hội thoại. Khi bắt đầu, luôn đọc `topics/<slug>/README.html` và các file phase trước.
+- README của topic là HTML (khung `templates/topic-README.html`). Trạng thái máy đọc nằm ở thuộc tính `data-*`: `data-field="current-phase|updated|scope"`, phase `<li data-phase="N" data-status="todo|in-progress|done">` (class trùng với status), chờ duyệt `ul.approvals li[data-status=open|approved|rejected]`, câu hỏi `ul.questions li[data-status=open|answered]`. Khi cập nhật, sửa cả `data-*` lẫn chữ hiển thị. `README.md` gốc của repo vẫn là Markdown.
 - Trong cùng một topic, `/clear` giữa các phase vẫn an toàn.
 
 ## Stack mặc định
