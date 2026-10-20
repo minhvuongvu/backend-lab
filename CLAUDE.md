@@ -71,6 +71,11 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Gợi ý theo phase: phase 1 mỗi agent một góc nguồn; phase 3 mỗi agent một implementation; phase 5 tách chạy thí nghiệm, vẽ biểu đồ, kiểm tra toàn vẹn, viết nháp 05; tài liệu HTML dài có thể chia theo phần.
 - Không chia nhỏ việc ngắn hoặc phụ thuộc chặt vào nhau chỉ để có nhiều agent.
 
+## Lộ trình, kho insight, chế độ lite
+- `ROADMAP.html`: danh sách topic có quan hệ tiền đề (`tr[data-slug][data-prereq][data-status]`). `/research` cảnh báo khi tiền đề chưa xong (khuyến nghị, không chặn), thêm topic mới vào roadmap, cập nhật trạng thái; `/lab-status` gợi ý topic học tiếp. Tiền đề phải có lý do cơ chế (topic sau dựa vào cơ chế của topic trước), đồ thị không có chu trình.
+- `INSIGHTS.html`: kho insight và chuyên đề của mọi topic, gom theo tag để thấy nguyên lý lặp lại giữa các topic; dựng lại bằng `python3 scripts/build_insights.py` (hoặc `make insights`) sau mỗi phase, `--check` trước gate. Mỗi insight có `id` duy nhất và `data-tags` (2–5 tag kebab-case, ưu tiên dùng lại tag đã có).
+- Chế độ `lite` (`/research <topic> lite`): cho topic học nhanh; bảng nới lỏng trong `.claude/commands/research.md` § Chế độ lite. Kết luận ở lite ghi rõ "khám phá (lite)". Không nới quy tắc trung thực và test tính đúng đắn.
+
 ## Một chủ đề, một phiên
 - Mỗi phiên chỉ làm một topic.
 - Nếu hội thoại hiện tại đã làm topic khác, nhắc tôi chạy `/clear` trước khi tiếp tục.

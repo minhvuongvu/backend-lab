@@ -1,6 +1,8 @@
 /* Shared stylesheet for backend-lab HTML documents (topics/<slug>/*.html).
    Optimised for long-form technical reading in Vietnamese: ~70ch measure, generous leading for stacked diacritics. */
 @import url("https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;600&display=swap");
+@import url("lab-roadmap.css");
+@import url("lab-insights.css");
 
 :root {
   --bg: #fafaf8;
@@ -327,6 +329,10 @@ ol.phase-list > li.in-progress::before { background: var(--warn-bg); color: var(
 ol.phase-list > li.in-progress::after { content: "Đang làm"; background: var(--warn-bg); color: var(--warn); }
 ol.phase-list > li.done::before { content: "✓"; background: var(--ok); color: var(--bg); }
 ol.phase-list > li.done::after { content: "Xong"; background: var(--ok-bg); color: var(--ok); }
+ol.phase-list > li.skipped { opacity: .65; }
+ol.phase-list > li.skipped::before { content: "–"; }
+ol.phase-list > li.skipped::after { content: "Bỏ qua"; background: var(--surface-2); color: var(--muted); }
+dl.topic-meta dd[data-field="mode"] { font-family: var(--mono); font-size: 13.5px; }
 ol.phase-list .phase-name { font-weight: 600; }
 ol.phase-list .phase-links { color: var(--muted); }
 ol.phase-list a { font-family: var(--mono); font-size: 13.5px; }

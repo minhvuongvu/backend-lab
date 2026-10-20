@@ -15,7 +15,8 @@
   README của topic = NGUỒN SỰ THẬT về trạng thái. /research và /lab-status đọc file này.
   Trạng thái máy đọc được nằm ở thuộc tính data-*; chữ hiển thị chỉ để người đọc:
     - <dd data-field="current-phase">, <dd data-field="updated">           — phase hiện tại, ngày cập nhật (YYYY-MM-DD)
-    - <li data-phase="N" data-status="todo|in-progress|done">              — checklist 7 phase
+    - <dd data-field="mode">full|lite</dd>                                   — chế độ nghiên cứu (xem .claude/commands/research.md § Chế độ lite)
+    - <li data-phase="N" data-status="todo|in-progress|done|skipped">      — checklist 7 phase (skipped: bỏ qua có chủ đích, ví dụ phase 7 ở lite)
     - <li data-status="open|approved|rejected"> trong ul.approvals          — điểm chờ duyệt
     - <li data-status="open|answered"> trong ul.questions                    — câu hỏi mở
   Sau mỗi phase: đổi data-status + class của phase, cập nhật current-phase, updated, thêm dòng nhật ký quyết định.
@@ -39,6 +40,7 @@
       <dt>Tạo ngày</dt><dd data-field="created">{{DATE}}</dd>
       <dt>Cập nhật lần cuối</dt><dd data-field="updated">{{DATE}}</dd>
       <dt>Phase hiện tại</dt><dd data-field="current-phase">0 — chưa bắt đầu</dd>
+      <dt>Chế độ</dt><dd data-field="mode">full</dd>
     </dl>
   </header>
 

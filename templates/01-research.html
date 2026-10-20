@@ -40,6 +40,12 @@
   - Đạt: chỉ ra cơ chế → hệ quả, điều kiện kích hoạt, và bậc độ lớn nếu có. Ví dụ "p50 tăng vì mỗi request thêm 1 INSERT trong cùng transaction
     (~0,2 ms) nhưng KHÔNG thêm fsync vì commit vốn đã fsync WAL một lần".
   - Ô bảng quá nhỏ: ghi lý do ngắn + mã [Rn] trỏ tới danh sách ol.reasons ngay dưới bảng, nơi viết chuỗi nhân quả đầy đủ.
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+    - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
+      kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
+    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
+    - Kiểm tra trước gate: python3 scripts/build_insights.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -83,7 +89,7 @@
       Lý do dạng nhãn ("vì nhanh hơn", "do overhead") là không đạt. Ô bảng hẹp: ghi lý do ngắn + mã [Rn], chi tiết ở danh sách lý do dưới bảng.</div>
     <div class="guide">
       <strong>Mẫu insight đạt yêu cầu</strong> (chuẩn độ sâu cho mọi insight trong tài liệu):
-      <div class="callout insight"><span class="callout-title">Insight (mẫu)</span>
+      <div class="callout insight" id="ins-example-1" data-tags="dual-write,kafka,graceful-shutdown,at-least-once"><span class="callout-title">Insight (mẫu)</span>
         <p class="claim">Với dual write DB → Kafka, mất event xảy ra theo lịch deploy chứ không ngẫu nhiên — và test chức năng gần như không bao giờ thấy.</p>
         <div class="why"><strong>Vì sao:</strong>
           <dl class="why-steps">
@@ -202,7 +208,7 @@ sequenceDiagram
     <ol class="reasons">
       <li id="r4-1"><strong>R1</strong> <!-- chuỗi nhân quả đầy đủ --></li>
     </ol>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-problem-why-hard-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"></p>
       <div class="why"><strong>Vì sao:</strong>
         <dl class="why-steps">
@@ -226,7 +232,7 @@ sequenceDiagram
       <thead><tr><th>Năm</th><th>Sự kiện / cách tiếp cận</th><th>Giải quyết được gì</th><th>Vì sao chưa đủ / bị thay thế</th><th>Nguồn</th></tr></thead>
       <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-history-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"></p>
       <div class="why"><strong>Vì sao:</strong>
         <dl class="why-steps">
@@ -273,7 +279,7 @@ sequenceDiagram
 </pre>
       <figcaption>Luồng to-be.</figcaption>
     </figure>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-how-it-works-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"></p>
       <div class="why"><strong>Vì sao:</strong>
         <dl class="why-steps">
@@ -345,7 +351,7 @@ sequenceDiagram
       <thead><tr><th>Đại lượng</th><th>Công thức / mô hình</th><th>Giả định + vì sao hợp lý</th><th>Giá trị với quy mô §1</th><th>Dùng cho câu hỏi</th></tr></thead>
       <tbody><tr><td></td><td></td><td></td><td><span class="tag inferred">suy luận</span></td><td>Q?</td></tr></tbody>
     </table></div>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-quant-model-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"></p>
       <div class="why"><strong>Vì sao:</strong>
         <dl class="why-steps">
@@ -437,7 +443,7 @@ sequenceDiagram
     </table></div>
 
     <h3 id="cd-1" class="deep-dive-title"><span class="dd-code">CĐ1</span><!-- tên chuyên đề --></h3>
-      <div class="deep-dive">
+      <div class="deep-dive" data-tags="">
         <dl class="dd-meta">
           <dt>Thuộc</dt><dd>Solution (mọi cách implement)</dd>
           <dt>Vì sao đặc thù</dt><dd><!-- vì sao hiện tượng này KHÔNG tồn tại ở before / ở cách khác: thành phần hay cơ chế nào chỉ có ở đây sinh ra nó --></dd>
@@ -466,7 +472,7 @@ flowchart LR
         </table></div>
         <h4>Kiểm chứng trong lab</h4>
         <p><!-- câu hỏi Q-id ở §25 + kịch bản ở 04 sẽ tái hiện hiện tượng; nếu không tái hiện được trên máy local thì ghi lý do --></p>
-        <div class="callout insight"><span class="callout-title">Insight</span>
+        <div class="callout insight" id="ins-cd-1-1" data-tags=""><span class="callout-title">Insight</span>
           <p class="claim"></p>
           <div class="why"><strong>Vì sao:</strong>
             <dl class="why-steps">
@@ -581,13 +587,13 @@ sequenceDiagram
         <li id="ra-6"><strong>R6</strong> <!-- vì sao điều kiện "chọn" làm lợi ích vượt chi phí --></li>
         <li id="ra-7"><strong>R7</strong> <!-- vì sao điều kiện "bỏ" làm chi phí vượt lợi ích --></li>
       </ol>
-      <div class="guide">Khi lặp khối cho cách B, C…: đổi tiền tố id (rb-1, rc-1…) để link không trùng.</div>
+      <div class="guide">Khi lặp khối cho cách B, C…: đổi tiền tố id (rb-1, rc-1…) để link không trùng; tương tự id insight (ins-impl-b-1…) và chuyên đề (cd-b1…).</div>
 
       <h4>Chuyên đề riêng của cách này</h4>
       <div class="guide">Hiện tượng chỉ có ở cách này (tiêu chí ở mục "Chuyên đề đặc thù"). Mã CĐ-A1, CĐ-A2… (cách B: CĐ-B1…), ghi vào danh mục chuyên đề. Không có thì ghi "Không có" kèm lý do.</div>
       <div class="deep-dive-nested">
       <h4 id="cd-a1" class="deep-dive-title"><span class="dd-code">CĐ-A1</span><!-- tên chuyên đề --></h4>
-      <div class="deep-dive">
+      <div class="deep-dive" data-tags="">
         <dl class="dd-meta">
           <dt>Thuộc</dt><dd>Cách A</dd>
           <dt>Vì sao đặc thù</dt><dd><!-- vì sao hiện tượng này KHÔNG tồn tại ở before / ở cách khác: thành phần hay cơ chế nào chỉ có ở đây sinh ra nó --></dd>
@@ -616,7 +622,7 @@ flowchart LR
         </table></div>
         <h4>Kiểm chứng trong lab</h4>
         <p><!-- câu hỏi Q-id ở §25 + kịch bản ở 04 sẽ tái hiện hiện tượng; nếu không tái hiện được trên máy local thì ghi lý do --></p>
-        <div class="callout insight"><span class="callout-title">Insight</span>
+        <div class="callout insight" id="ins-cd-a1-1" data-tags=""><span class="callout-title">Insight</span>
           <p class="claim"></p>
           <div class="why"><strong>Vì sao:</strong>
             <dl class="why-steps">
@@ -633,7 +639,7 @@ flowchart LR
       </div>
 
 
-      <div class="callout insight"><span class="callout-title">Insight</span>
+      <div class="callout insight" id="ins-impl-a-1" data-tags=""><span class="callout-title">Insight</span>
         <p class="claim"></p>
         <div class="why"><strong>Vì sao:</strong>
           <dl class="why-steps">
@@ -713,7 +719,7 @@ flowchart TD
     <h2 id="case-studies"><span class="num">21</span>Case study từ hệ thống thật</h2>
     <div class="guide">2–4 câu chuyện từ engineering blog / postmortem / talk. Mỗi case: bối cảnh (quy mô) → chọn gì → vì sao (ràng buộc nào của họ dẫn tới lựa chọn đó) → sự cố / số liệu → bài học, và vì sao bài học áp dụng (hoặc không) cho hệ thống §1–§2. Chỉ nguồn kiểm chứng được.</div>
     <div class="callout"><span class="callout-title"><!-- Công ty — tiêu đề --></span><p></p></div>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-case-studies-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"></p>
       <div class="why"><strong>Vì sao:</strong>
         <dl class="why-steps">

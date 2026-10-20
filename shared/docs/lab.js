@@ -117,9 +117,30 @@ const DOCS = [
   ["07-production.html", "7 · Production"],
 ];
 
+// Repo-level hub pages (<body data-page="hub">) link to each other instead of to phase documents.
+const HUB = [
+  ["ROADMAP.html", "Lộ trình"],
+  ["INSIGHTS.html", "Kho insight"],
+];
+
 function buildDocNav() {
   const header = document.querySelector("header.doc-header");
   if (!header) return;
+  if (document.body.dataset.page === "hub") {
+    const here = decodeURIComponent(location.pathname.split("/").pop());
+    const nav = document.createElement("nav");
+    nav.className = "doc-nav";
+    nav.setAttribute("aria-label", "Trang tổng");
+    for (const [file, label] of HUB) {
+      const a = document.createElement("a");
+      a.href = file;
+      a.textContent = label;
+      if (file === here) a.className = "current";
+      nav.appendChild(a);
+    }
+    header.appendChild(nav);
+    return;
+  }
   const here = decodeURIComponent(location.pathname.split("/").pop());
   const nav = document.createElement("nav");
   nav.className = "doc-nav";

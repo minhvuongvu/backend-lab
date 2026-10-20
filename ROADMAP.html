@@ -1,0 +1,349 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>backend-lab — Lộ trình</title>
+<link rel="stylesheet" href="shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="shared/docs/lab-roadmap.js" defer></script>  <!-- must precede lab.js: builds pre.mermaid before lab.js renders -->
+<script src="shared/docs/lab.js" defer></script>
+</head>
+<!--
+  LỘ TRÌNH TOPIC — trang tổng, Claude đọc và cập nhật.
+  Hợp đồng dữ liệu (máy đọc), mỗi topic là một <tr> trong table.roadmap:
+    data-slug      slug kebab-case, trùng thư mục topics/<slug>/ và id của <tr>
+    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture
+    data-prereq    danh sách slug tiền đề, phân tách bằng dấu phẩy (rỗng nếu không có); đồ thị phải là DAG
+    data-mode      full | lite — chế độ gợi ý cho /research
+    data-priority  1 (cao) – 3 (thấp)
+    data-status    planned | in-progress | done | skipped
+    data-created   true | false — đã có topics/<slug>/README.html chưa
+  Khi cập nhật: sửa data-status và chip hiển thị (class status-<status>, chữ Dự kiến / Đang làm / Xong / Bỏ qua);
+  khi tạo topic: data-created="true" (chữ "chưa tạo" tự ẩn). Chip trạng thái nằm trong ô đầu của hàng.
+  Trạng thái thật của topic đã tạo lấy từ topics/<slug>/README.html (ol.phase-list); trang này chỉ phản ánh lại.
+  Topic tạo bằng /research mà chưa có trong lộ trình: thêm một <tr> mới cuối bảng, điền tiền đề kèm lý do.
+  CHỈ SỬA HÀNG TRONG BẢNG; sơ đồ tự sinh (shared/docs/lab-roadmap.js đọc tr[data-slug]). Track mới: thêm <figure data-roadmap="<track>" data-track-name="..."> dưới §Đồ thị tiền đề.
+-->
+<body data-page="hub">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">backend-lab</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Trang tổng · Lộ trình</div>
+    <h1>Lộ trình topic</h1>
+    <div class="meta"><span>28 topic đề xuất</span><span>Nền tảng tính đúng đắn: 3, PostgreSQL: 5, Messaging &amp; Kafka: 8, Phân tán &amp; nhất quán: 2, Caching: 3, Resilience: 5, Kiến trúc: 2</span></div>
+  </header>
+
+  <section>
+    <h2 id="usage">Cách dùng</h2>
+    <ul>
+      <li>Đây là kế hoạch học có chủ đích, sửa được: thêm, bỏ, đổi ưu tiên tuỳ nhu cầu công việc. Topic được xếp theo <strong>quan hệ tiền đề</strong>: topic sau dựa trên cơ chế của topic trước, học đúng thứ tự thì kiến thức nối vào nhau.</li>
+      <li><code>/lab-status</code> đọc trang này để gợi ý topic kế tiếp (topic có mọi tiền đề đã <em>Xong</em>); <code>/research</code> đọc để cảnh báo khi tiền đề chưa học và gợi ý chế độ <code>full</code> / <code>lite</code>.</li>
+      <li>Trạng thái của topic đã tạo lấy từ <code>topics/&lt;slug&gt;/README.html</code>; cột Trạng thái ở đây chỉ phản ánh lại.</li>
+      <li>Tiền đề là gợi ý, không bắt buộc: học trước một topic khi chưa xong tiền đề vẫn được, nhưng phần cơ chế nền sẽ phải đọc nhanh trong topic đó.</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 id="paths">Gợi ý thứ tự học</h2>
+    <h3 id="path-1">Tính đúng đắn trước (Data consistency first)</h3>
+    <p>Đi từ anomaly của một DB tới giao dịch trải nhiều service: mỗi bước dùng lại cơ chế của bước trước.</p>
+    <ol class="learning-path">
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — hiểu anomaly nào DB tự chặn</li>
+        <li><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a> — cách tự chặn anomaly còn lại</li>
+        <li><a href="#idempotency-key">Idempotency key cho API</a> — retry không gây side effect kép, dựa trên locking</li>
+        <li><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a> — ngữ nghĩa thứ tự trước khi bàn giao nhận</li>
+        <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — mất hay trùng xảy ra ở đâu</li>
+        <li><a href="#transactional-outbox">Transactional outbox</a> — gửi sự kiện đáng tin từ một transaction DB</li>
+        <li><a href="#inbox-dedup">Inbox pattern / deduplication phía consumer</a> — nhận sự kiện không trùng</li>
+        <li><a href="#saga-orchestration-vs-choreography">Saga: orchestration vs choreography</a> — ghép outbox + inbox thành giao dịch nhiều service</li>
+    </ol>
+    <h3 id="path-2">Kafka-centric</h3>
+    <p>Dành khi công việc hằng ngày xoay quanh Kafka: từ partition tới exactly-once và CDC.</p>
+    <ol class="learning-path">
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — nền cho outbox và inbox</li>
+        <li><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a> — nền cho idempotency</li>
+        <li><a href="#idempotency-key">Idempotency key cho API</a> — điều kiện để retry an toàn</li>
+        <li><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a> — thứ tự và phân tải</li>
+        <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — acks, retry, commit offset</li>
+        <li><a href="#consumer-rebalancing">Consumer group rebalancing</a> — gián đoạn khi scale/deploy</li>
+        <li><a href="#inbox-dedup">Inbox pattern / deduplication phía consumer</a> — xử lý trùng phía consumer</li>
+        <li><a href="#retry-dlq">Retry &amp; dead letter queue cho consumer</a> — message lỗi không chặn partition</li>
+        <li><a href="#transactional-outbox">Transactional outbox</a> — phía producer đáng tin</li>
+        <li><a href="#kafka-transactions-eos">Kafka transactions &amp; exactly-once (read-process-write)</a> — exactly-once trong vòng Kafka</li>
+        <li><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a> — WAL và dead tuple, tiền đề cho CDC</li>
+        <li><a href="#cdc-debezium">Change data capture với Debezium</a> — publish từ WAL thay vì polling</li>
+    </ol>
+    <h3 id="path-3">Hiệu năng &amp; chịu tải</h3>
+    <p>Dành khi cần làm service Spring + PostgreSQL chịu tải cao và không sập dây chuyền.</p>
+    <ol class="learning-path">
+        <li><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a> — điểm nghẽn đầu tiên của service dùng DB</li>
+        <li><a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a> — latency query</li>
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — tiền đề cho MVCC và cache</li>
+        <li><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a> — hiệu năng suy giảm theo thời gian</li>
+        <li><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a> — chặn sự cố lan truyền</li>
+        <li><a href="#circuit-breaker">Circuit breaker (Resilience4j)</a> — ngắt sớm dependency hỏng</li>
+        <li><a href="#bulkhead">Bulkhead: cô lập tài nguyên</a> — cô lập pool</li>
+        <li><a href="#cache-aside-invalidation">Cache-aside &amp; invalidation</a> — giảm tải đọc</li>
+        <li><a href="#cache-stampede">Cache stampede / thundering herd</a> — bảo vệ DB khi key nóng hết hạn</li>
+        <li><a href="#backpressure-load-shedding">Backpressure &amp; load shedding</a> — giữ goodput khi quá tải</li>
+        <li><a href="#rate-limiting">Rate limiting (token bucket, sliding window trên Redis)</a> — giới hạn từ phía client</li>
+    </ol>
+  </section>
+
+  <section>
+    <h2 id="graph">Đồ thị tiền đề</h2>
+    <h3 id="graph-overview">Tổng quan giữa các track</h3>
+    <figure class="diagram" data-roadmap="overview">
+      <figcaption>Số trên mũi tên: số quan hệ tiền đề từ track này sang track kia; trong mỗi khối: số topic đã xong / tổng.</figcaption>
+    </figure>
+    <h3 id="graph-correctness">Nền tảng tính đúng đắn</h3>
+    <figure class="diagram" data-roadmap="correctness" data-track-name="Nền tảng tính đúng đắn">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+    <h3 id="graph-postgres">PostgreSQL</h3>
+    <figure class="diagram" data-roadmap="postgres" data-track-name="PostgreSQL">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+    <h3 id="graph-kafka">Messaging &amp; Kafka</h3>
+    <figure class="diagram" data-roadmap="kafka" data-track-name="Messaging &amp; Kafka">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+    <h3 id="graph-distributed">Phân tán &amp; nhất quán</h3>
+    <figure class="diagram" data-roadmap="distributed" data-track-name="Phân tán &amp; nhất quán">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+    <h3 id="graph-caching">Caching</h3>
+    <figure class="diagram" data-roadmap="caching" data-track-name="Caching">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+    <h3 id="graph-resilience">Resilience</h3>
+    <figure class="diagram" data-roadmap="resilience" data-track-name="Resilience">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+    <h3 id="graph-architecture">Kiến trúc</h3>
+    <figure class="diagram" data-roadmap="architecture" data-track-name="Kiến trúc">
+      <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
+    </figure>
+  </section>
+
+  <section>
+    <h2 id="topics">Danh sách topic</h2>
+    <div class="table-wrap"><table class="roadmap">
+      <thead><tr><th>Topic</th><th>Track</th><th>Tiền đề</th><th>Vì sao nên học</th><th>Chế độ gợi ý</th></tr></thead>
+      <tbody>
+        <tr id="isolation-levels-anomalies" data-slug="isolation-levels-anomalies" data-track="correctness" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Isolation level &amp; anomaly trong PostgreSQL</strong><br><code>isolation-levels-anomalies</code><br><a class="topic-link" href="topics/isolation-levels-anomalies/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-correctness">Nền tảng tính đúng đắn</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Mọi bài toán đúng đắn (lost update, double booking, đọc lệch) bắt nguồn từ việc hai transaction đồng thời nhìn thấy dữ liệu khác nhau; hiểu Read Committed / Repeatable Read / Serializable (SSI) của PostgreSQL cho biết anomaly nào DB tự chặn, anomaly nào code phải tự chặn.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: anomaly chỉ lộ ra dưới tải đồng thời, cần thí nghiệm tái hiện mới thấy rõ.</td>
+        </tr>
+        <tr id="optimistic-vs-pessimistic-locking" data-slug="optimistic-vs-pessimistic-locking" data-track="correctness" data-prereq="isolation-levels-anomalies" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Optimistic vs pessimistic locking</strong><br><code>optimistic-vs-pessimistic-locking</code><br><a class="topic-link" href="topics/optimistic-vs-pessimistic-locking/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-correctness">Nền tảng tính đúng đắn</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a></td>
+          <td>Khi isolation mặc định không đủ, phải chọn giữa <code>@Version</code> (retry khi xung đột) và <code>SELECT … FOR UPDATE</code> (chờ lock); lựa chọn quyết định throughput dưới contention và nguy cơ deadlock.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đánh đổi chỉ thấy khi quét mức contention (hot row vs phân tán).</td>
+        </tr>
+        <tr id="idempotency-key" data-slug="idempotency-key" data-track="correctness" data-prereq="optimistic-vs-pessimistic-locking" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Idempotency key cho API</strong><br><code>idempotency-key</code><br><a class="topic-link" href="topics/idempotency-key/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-correctness">Nền tảng tính đúng đắn</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a></td>
+          <td>Client retry khi timeout làm request bị xử lý hai lần (trừ tiền hai lần); idempotency key cần ràng buộc unique + xử lý request đồng thời cùng key — dựa trực tiếp trên locking. Là nền cho inbox, retry, saga.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần kịch bản retry + request đồng thời cùng key để chứng minh không trùng.</td>
+        </tr>
+        <tr id="index-strategies" data-slug="index-strategies" data-track="postgres" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Chiến lược index (B-tree, composite, partial, covering)</strong><br><code>index-strategies</code><br><a class="topic-link" href="topics/index-strategies/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-postgres">PostgreSQL</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Phần lớn latency DB đến từ query không dùng được index hoặc index sai thứ tự cột; hiểu planner + <code>EXPLAIN ANALYZE</code> là công cụ cho mọi topic dùng PostgreSQL sau này.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: so sánh plan và latency theo kích thước dữ liệu lớn hơn bộ nhớ.</td>
+        </tr>
+        <tr id="mvcc-vacuum-bloat" data-slug="mvcc-vacuum-bloat" data-track="postgres" data-prereq="isolation-levels-anomalies" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>MVCC, VACUUM &amp; bloat</strong><br><code>mvcc-vacuum-bloat</code><br><a class="topic-link" href="topics/mvcc-vacuum-bloat/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-postgres">PostgreSQL</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a></td>
+          <td>UPDATE/DELETE trong PostgreSQL tạo dead tuple; bảng ghi nhiều (outbox, queue table, session) phình to và chậm dần nếu autovacuum không theo kịp — cơ chế này giải thích vì sao snapshot của isolation có giá.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: hiện tượng chỉ thấy qua soak test kéo dài.</td>
+        </tr>
+        <tr id="connection-pooling-hikari-pgbouncer" data-slug="connection-pooling-hikari-pgbouncer" data-track="postgres" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Connection pooling: HikariCP &amp; PgBouncer</strong><br><code>connection-pooling-hikari-pgbouncer</code><br><a class="topic-link" href="topics/connection-pooling-hikari-pgbouncer/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-postgres">PostgreSQL</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Mỗi connection PostgreSQL là một process; pool quá nhỏ gây xếp hàng, quá lớn làm DB thrash. Định cỡ pool theo Little's law và hiểu transaction pooling của PgBouncer là điều kiện để mọi service Spring chịu tải.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần quét kích thước pool × tải để thấy điểm gãy.</td>
+        </tr>
+        <tr id="table-partitioning" data-slug="table-partitioning" data-track="postgres" data-prereq="index-strategies,mvcc-vacuum-bloat" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Table partitioning trong PostgreSQL</strong><br><code>table-partitioning</code><br><a class="topic-link" href="topics/table-partitioning/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-postgres">PostgreSQL</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a>, <a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a></td>
+          <td>Bảng tăng trưởng không giới hạn (event, audit, outbox) cần partition để xoá dữ liệu cũ bằng DROP thay vì DELETE + VACUUM; hiệu quả phụ thuộc partition pruning và index cục bộ.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: cơ chế rõ, một kịch bản tăng trưởng dữ liệu là đủ minh hoạ.</td>
+        </tr>
+        <tr id="read-replica-lag" data-slug="read-replica-lag" data-track="postgres" data-prereq="mvcc-vacuum-bloat" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Read replica &amp; replication lag</strong><br><code>read-replica-lag</code><br><a class="topic-link" href="topics/read-replica-lag/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-postgres">PostgreSQL</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a></td>
+          <td>Đẩy đọc sang replica làm lộ dữ liệu cũ (không read-your-writes) và replica có thể huỷ query vì xung đột với VACUUM trên primary; cần hiểu WAL streaming để định tuyến đọc đúng.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần tiêm lag và đo tỉ lệ đọc dữ liệu cũ.</td>
+        </tr>
+        <tr id="kafka-partitioning-ordering" data-slug="kafka-partitioning-ordering" data-track="kafka" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Kafka partitioning &amp; ordering</strong><br><code>kafka-partitioning-ordering</code><br><a class="topic-link" href="topics/kafka-partitioning-ordering/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Kafka chỉ đảm bảo thứ tự trong một partition; chọn key sai làm sự kiện của cùng một aggregate xử lý lệch thứ tự hoặc tạo hot partition. Là nền cho mọi topic Kafka.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần đo phân phối key, hot partition và thứ tự dưới nhiều consumer.</td>
+        </tr>
+        <tr id="kafka-delivery-semantics" data-slug="kafka-delivery-semantics" data-track="kafka" data-prereq="kafka-partitioning-ordering" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Kafka delivery semantics (at-most / at-least / exactly-once)</strong><br><code>kafka-delivery-semantics</code><br><a class="topic-link" href="topics/kafka-delivery-semantics/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a></td>
+          <td><code>acks</code>, retry, idempotent producer và thời điểm commit offset quyết định message bị mất hay bị trùng; hiểu đúng ngữ nghĩa giao nhận là điều kiện để thiết kế outbox, inbox và retry.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: phải kill broker/consumer giữa chừng để đếm mất/trùng.</td>
+        </tr>
+        <tr id="consumer-rebalancing" data-slug="consumer-rebalancing" data-track="kafka" data-prereq="kafka-partitioning-ordering" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Consumer group rebalancing</strong><br><code>consumer-rebalancing</code><br><a class="topic-link" href="topics/consumer-rebalancing/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a></td>
+          <td>Rebalance dừng tiêu thụ và có thể xử lý trùng các message chưa commit; eager vs cooperative-sticky, <code>max.poll.interval.ms</code> và static membership quyết định thời gian gián đoạn khi scale hay deploy.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần kịch bản scale/deploy để đo thời gian dừng và số message trùng.</td>
+        </tr>
+        <tr id="retry-dlq" data-slug="retry-dlq" data-track="kafka" data-prereq="kafka-delivery-semantics,idempotency-key" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Retry &amp; dead letter queue cho consumer</strong><br><code>retry-dlq</code><br><a class="topic-link" href="topics/retry-dlq/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a>, <a href="#idempotency-key">Idempotency key cho API</a></td>
+          <td>Message lỗi có thể chặn cả partition (poison pill); retry topic + DLQ giữ luồng chạy nhưng làm đổi thứ tự và tạo xử lý lặp — chỉ an toàn khi handler idempotent.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: so sánh blocking retry vs retry topic dưới tỉ lệ lỗi khác nhau.</td>
+        </tr>
+        <tr id="inbox-dedup" data-slug="inbox-dedup" data-track="kafka" data-prereq="kafka-delivery-semantics,idempotency-key" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Inbox pattern / deduplication phía consumer</strong><br><code>inbox-dedup</code><br><a class="topic-link" href="topics/inbox-dedup/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a>, <a href="#idempotency-key">Idempotency key cho API</a></td>
+          <td>At-least-once nghĩa là consumer sẽ nhận trùng; inbox (ghi message-id cùng transaction nghiệp vụ) biến xử lý trùng thành no-op. Là nửa còn lại của outbox.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần tiêm trùng lặp và crash giữa xử lý để chứng minh không side effect kép.</td>
+        </tr>
+        <tr id="transactional-outbox" data-slug="transactional-outbox" data-track="kafka" data-prereq="kafka-delivery-semantics,isolation-levels-anomalies" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Transactional outbox</strong><br><code>transactional-outbox</code><br><a class="topic-link" href="topics/transactional-outbox/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a>, <a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a></td>
+          <td>Ghi DB rồi publish Kafka (dual write) không atomic nên mất hoặc lệch sự kiện khi crash; outbox ghi sự kiện cùng transaction nghiệp vụ rồi publish sau. Là xương sống của saga, CQRS, CDC.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: reliability topic — bắt buộc tiêm lỗi và đối soát dữ liệu.</td>
+        </tr>
+        <tr id="cdc-debezium" data-slug="cdc-debezium" data-track="kafka" data-prereq="transactional-outbox,mvcc-vacuum-bloat" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Change data capture với Debezium</strong><br><code>cdc-debezium</code><br><a class="topic-link" href="topics/cdc-debezium/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#transactional-outbox">Transactional outbox</a>, <a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a></td>
+          <td>CDC đọc WAL qua logical replication slot thay vì polling bảng; giảm tải DB nhưng slot giữ WAL khi connector dừng, có thể làm đầy đĩa primary — cần hiểu WAL/MVCC trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần kịch bản dừng connector để đo WAL tích tụ.</td>
+        </tr>
+        <tr id="kafka-transactions-eos" data-slug="kafka-transactions-eos" data-track="kafka" data-prereq="kafka-delivery-semantics,consumer-rebalancing" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Kafka transactions &amp; exactly-once (read-process-write)</strong><br><code>kafka-transactions-eos</code><br><a class="topic-link" href="topics/kafka-transactions-eos/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kafka">Messaging &amp; Kafka</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a>, <a href="#consumer-rebalancing">Consumer group rebalancing</a></td>
+          <td>Exactly-once của Kafka chỉ đúng trong vòng Kafka → Kafka (transactional producer + <code>read_committed</code>), dựa trên fencing theo generation của consumer group; hiểu giới hạn để không tin nhầm cho side effect ra DB.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần crash giữa transaction và đo chi phí throughput.</td>
+        </tr>
+        <tr id="distributed-lock-redis" data-slug="distributed-lock-redis" data-track="distributed" data-prereq="optimistic-vs-pessimistic-locking,timeout-retry-backoff" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Distributed lock với Redis</strong><br><code>distributed-lock-redis</code><br><a class="topic-link" href="topics/distributed-lock-redis/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-distributed">Phân tán &amp; nhất quán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Lock có TTL bị mất khi process pause (GC, network) quá TTL, hai node cùng tin mình giữ lock; cần fencing token. Dựa trên hiểu biết về locking cục bộ và timeout.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần tiêm pause/clock drift để tái hiện hai owner.</td>
+        </tr>
+        <tr id="saga-orchestration-vs-choreography" data-slug="saga-orchestration-vs-choreography" data-track="distributed" data-prereq="transactional-outbox,inbox-dedup" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Saga: orchestration vs choreography</strong><br><code>saga-orchestration-vs-choreography</code><br><a class="topic-link" href="topics/saga-orchestration-vs-choreography/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-distributed">Phân tán &amp; nhất quán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#transactional-outbox">Transactional outbox</a>, <a href="#inbox-dedup">Inbox pattern / deduplication phía consumer</a></td>
+          <td>Giao dịch trải nhiều service không có distributed transaction rẻ; saga dùng bước bù trừ, và mỗi bước đều cần outbox (gửi đáng tin) + inbox (nhận không trùng) mới đúng.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần crash giữa các bước và kiểm tra trạng thái cuối nhất quán.</td>
+        </tr>
+        <tr id="cache-aside-invalidation" data-slug="cache-aside-invalidation" data-track="caching" data-prereq="isolation-levels-anomalies" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Cache-aside &amp; invalidation</strong><br><code>cache-aside-invalidation</code><br><a class="topic-link" href="topics/cache-aside-invalidation/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-caching">Caching</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a></td>
+          <td>Cache-aside nhanh nhưng race giữa ghi DB và xoá cache để lại dữ liệu cũ vĩnh viễn; thứ tự thao tác và TTL quyết định độ cũ — hiểu cần nắm các transaction chồng lấn.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần tải đọc/ghi đồng thời để đo tỉ lệ đọc dữ liệu cũ.</td>
+        </tr>
+        <tr id="cache-stampede" data-slug="cache-stampede" data-track="caching" data-prereq="cache-aside-invalidation" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Cache stampede / thundering herd</strong><br><code>cache-stampede</code><br><a class="topic-link" href="topics/cache-stampede/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-caching">Caching</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#cache-aside-invalidation">Cache-aside &amp; invalidation</a></td>
+          <td>Key nóng hết hạn làm hàng nghìn request cùng đánh vào DB; request coalescing, lock khi nạp lại hoặc làm mới sớm theo xác suất chặn được đỉnh tải.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: một kịch bản key nóng hết hạn là đủ thấy hiện tượng.</td>
+        </tr>
+        <tr id="write-through-write-behind" data-slug="write-through-write-behind" data-track="caching" data-prereq="cache-aside-invalidation" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Write-through vs write-behind cache</strong><br><code>write-through-write-behind</code><br><a class="topic-link" href="topics/write-through-write-behind/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-caching">Caching</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#cache-aside-invalidation">Cache-aside &amp; invalidation</a></td>
+          <td>Ghi qua cache giảm độ cũ nhưng write-behind có thể mất dữ liệu khi cache chết trước khi flush; so sánh độ bền và latency với cache-aside.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: khác biệt chính về độ bền thấy được bằng một kịch bản kill cache.</td>
+        </tr>
+        <tr id="timeout-retry-backoff" data-slug="timeout-retry-backoff" data-track="resilience" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Timeout, retry &amp; backoff</strong><br><code>timeout-retry-backoff</code><br><a class="topic-link" href="topics/timeout-retry-backoff/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-resilience">Resilience</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Không có timeout thì một dependency chậm giữ hết thread/connection; retry không có backoff + jitter biến sự cố nhỏ thành retry storm. Là nền cho mọi pattern resilience.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần tiêm latency và đo lan truyền sự cố.</td>
+        </tr>
+        <tr id="circuit-breaker" data-slug="circuit-breaker" data-track="resilience" data-prereq="timeout-retry-backoff" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Circuit breaker (Resilience4j)</strong><br><code>circuit-breaker</code><br><a class="topic-link" href="topics/circuit-breaker/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-resilience">Resilience</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Khi dependency hỏng kéo dài, retry chỉ làm nặng thêm; circuit breaker ngắt sớm dựa trên tỉ lệ lỗi/chậm trong cửa sổ trượt — cấu hình cửa sổ sai thì ngắt nhầm hoặc ngắt muộn.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: cơ chế trạng thái rõ, một kịch bản dependency chết là đủ.</td>
+        </tr>
+        <tr id="bulkhead" data-slug="bulkhead" data-track="resilience" data-prereq="connection-pooling-hikari-pgbouncer,timeout-retry-backoff" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Bulkhead: cô lập tài nguyên</strong><br><code>bulkhead</code><br><a class="topic-link" href="topics/bulkhead/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-resilience">Resilience</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Một endpoint chậm có thể chiếm hết thread pool / connection pool chung và kéo sập endpoint khác; bulkhead chia pool để giới hạn vùng ảnh hưởng.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: một kịch bản endpoint chậm cạnh endpoint khoẻ là đủ minh hoạ.</td>
+        </tr>
+        <tr id="rate-limiting" data-slug="rate-limiting" data-track="resilience" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Rate limiting (token bucket, sliding window trên Redis)</strong><br><code>rate-limiting</code><br><a class="topic-link" href="topics/rate-limiting/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-resilience">Resilience</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Bảo vệ hệ thống khỏi client vượt hạn mức; thuật toán và tính atomic khi nhiều instance cùng đếm trên Redis (Lua / INCR) quyết định độ chính xác và chi phí mỗi request.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần nhiều instance đồng thời để đo sai số đếm.</td>
+        </tr>
+        <tr id="backpressure-load-shedding" data-slug="backpressure-load-shedding" data-track="resilience" data-prereq="timeout-retry-backoff,circuit-breaker" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Backpressure &amp; load shedding</strong><br><code>backpressure-load-shedding</code><br><a class="topic-link" href="topics/backpressure-load-shedding/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-resilience">Resilience</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a>, <a href="#circuit-breaker">Circuit breaker (Resilience4j)</a></td>
+          <td>Vượt công suất, hàng đợi phình làm mọi request chậm tới timeout (goodput về 0); từ chối sớm có chủ đích giữ được throughput hữu ích — cần hiểu timeout và circuit breaker trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần quét tải vượt bão hoà để thấy goodput sụp.</td>
+        </tr>
+        <tr id="cqrs-read-model" data-slug="cqrs-read-model" data-track="architecture" data-prereq="transactional-outbox,read-replica-lag" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>CQRS với read model bất đồng bộ</strong><br><code>cqrs-read-model</code><br><a class="topic-link" href="topics/cqrs-read-model/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-architecture">Kiến trúc</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#transactional-outbox">Transactional outbox</a>, <a href="#read-replica-lag">Read replica &amp; replication lag</a></td>
+          <td>Tách mô hình đọc giúp tối ưu truy vấn nhưng đọc trở thành eventual consistency; cập nhật read model cần outbox để không mất sự kiện, và cùng loại vấn đề read-your-writes như replica.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần đo độ trễ đồng bộ và tỉ lệ đọc cũ.</td>
+        </tr>
+        <tr id="event-sourcing" data-slug="event-sourcing" data-track="architecture" data-prereq="cqrs-read-model,kafka-partitioning-ordering" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Event sourcing</strong><br><code>event-sourcing</code><br><a class="topic-link" href="topics/event-sourcing/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-architecture">Kiến trúc</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#cqrs-read-model">CQRS với read model bất đồng bộ</a>, <a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a></td>
+          <td>Lưu chuỗi sự kiện thay vì trạng thái; replay, snapshot và thứ tự sự kiện theo aggregate là cốt lõi — dựa trên CQRS và ngữ nghĩa ordering của Kafka.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cần đo chi phí replay và snapshot theo độ dài chuỗi.</td>
+        </tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

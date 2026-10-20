@@ -22,7 +22,9 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 - `/research transactional outbox`: chạy phase kế tiếp, dừng ở các điểm duyệt.
 - `/research transactional outbox 5`: chạy riêng một phase.
 - `/research idempotency key all`: chạy một mạch, các điểm cần duyệt ghi vào README của topic.
-- `/lab-status`: xem tiến độ mọi topic.
+- `/research cache stampede lite`: chế độ học nhanh (ít kịch bản, bỏ phase 7); nâng lên đầy đủ sau bằng `/research cache stampede full`.
+- `/lab-status`: xem tiến độ mọi topic và gợi ý topic nên học tiếp theo lộ trình.
+- [ROADMAP.html](ROADMAP.html): lộ trình topic có quan hệ tiền đề. [INSIGHTS.html](INSIGHTS.html): kho insight và chuyên đề của mọi topic, gom theo tag.
 - Một chủ đề, một phiên. Dùng `/clear` khi chuyển chủ đề để context không bị lẫn.
 - `make obs-up` trước phase 5 nếu muốn xem metric trên Grafana.
 - Yêu cầu: Docker, JDK 21, k6, Python 3 (và GNU make + bash; trên Windows dùng Git Bash/WSL).
@@ -36,6 +38,7 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 | `make obs-up OBS=metrics` | Chỉ Prometheus + Grafana + docker-stats (overhead thấp nhất, dùng khi đo hiệu năng thuần) |
 | `make obs-status` | Trạng thái container và health của các target Prometheus |
 | `make obs-down` | Tắt observability stack |
+| `make insights` | Dựng lại `INSIGHTS.html` từ mọi topic và kiểm tra cấu trúc insight |
 
 Cổng đổi được khi bị trùng: `make obs-up PROM_PORT=19090 GRAFANA_PORT=13000 OTLP_GRPC_PORT=14317 OTLP_HTTP_PORT=14318 PYROSCOPE_PORT=14040`.
 Cách nối app, exporter, k6 và xuất số liệu vào `results/raw`: [shared/observability/README.md](shared/observability/README.md).
@@ -45,10 +48,13 @@ Cách nối app, exporter, k6 và xuất số liệu vào `results/raw`: [shared
 ```
 backend-lab/
 ├── CLAUDE.md                 # quy tắc chung
+├── ROADMAP.html              # lộ trình topic theo tiền đề (bảng là nguồn dữ liệu, sơ đồ tự sinh)
+├── INSIGHTS.html             # kho insight + chuyên đề của mọi topic (sinh bởi scripts/build_insights.py)
 ├── Makefile                  # obs-up, obs-down, new-topic
 ├── scripts/new-topic.sh      # logic của make new-topic
 ├── scripts/prom_export.py    # xuất số liệu Prometheus ra CSV cho results/raw
 ├── scripts/stats.py          # thứ tự chạy, steady state, CI bootstrap, so sánh với before
+├── scripts/build_insights.py # dựng INSIGHTS.html, --check cấu trúc insight
 ├── .claude/                  # /research, /lab-status, subagent lab-reviewer
 ├── templates/                # khung tài liệu cho mỗi topic
 ├── shared/observability/     # Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana dùng chung

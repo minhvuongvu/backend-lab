@@ -15,6 +15,12 @@
   Phase 5 — Results (mục tiêu 13, phần dữ liệu). Báo cáo QUAN SÁT theo đúng kế hoạch ở 04; diễn giải sâu để dành cho 06-conclusion.html.
   Mọi con số là [đo được] và link tới file trong results/raw/. Thí nghiệm nào không chạy được: ghi rõ, không ước lượng.
   Số liệu thống kê lấy từ scripts/stats.py summarize / compare, không tính tay.
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+    - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
+      kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
+    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
+    - Kiểm tra trước gate: python3 scripts/build_insights.py --check
 -->
 <body class="draft">
 <div class="layout">

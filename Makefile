@@ -6,7 +6,7 @@ LAB_NETWORK := backend-lab
 # OBS=full (metrics + logs + traces + profiles) or OBS=metrics (Prometheus + Grafana + docker-stats only)
 OBS ?= full
 
-.PHONY: help obs-up obs-down obs-status lab-network new-topic
+.PHONY: help obs-up obs-down obs-status lab-network new-topic insights
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -30,3 +30,7 @@ obs-status: ## Show observability containers and Prometheus target health
 new-topic: ## Create a topic from templates: make new-topic SLUG=transactional-outbox
 	@test -n "$(SLUG)" || { echo "Usage: make new-topic SLUG=<kebab-case-slug>"; exit 1; }
 	@bash scripts/new-topic.sh "$(SLUG)"
+
+insights: ## Rebuild INSIGHTS.html from every topic (and check insight structure)
+	python3 scripts/build_insights.py
+	python3 scripts/build_insights.py --check

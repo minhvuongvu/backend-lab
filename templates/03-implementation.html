@@ -16,6 +16,12 @@
   Mọi đoạn code/config trích NGUYÊN VĂN từ file thật trong system/, caption ghi đường dẫn + dòng (link tương đối, ví dụ system/src/main/java/...#L10-L42).
   Không viết code chỉ tồn tại trong tài liệu.
   Mỗi bước thực thi phải giải thích ý nghĩa (Mục đích, Cơ chế, Thay đổi hành vi, Nếu bỏ qua / làm sai, Kiểm tra) và có code-notes giải thích code theo dòng — không chấp nhận bước chỉ có code.
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+    - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
+      kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
+    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
+    - Kiểm tra trước gate: python3 scripts/build_insights.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -245,7 +251,7 @@ sequenceDiagram
     <h3 id="impl-a-notes">Lưu ý gặp phải khi implement</h3>
     <div class="guide">Những gì thực tế gặp lúc code (khác/thêm so với "lưu ý" ở 01 §17): bug, hành vi framework bất ngờ, default nguy hiểm. Mỗi lưu ý kèm nguyên nhân (vì sao xảy ra). Đây thường là insight giá trị nhất của phase này.</div>
     <div class="callout warn"><span class="callout-title">Lưu ý</span><ul><li></li></ul></div>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-impl-a-notes-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"><!-- khẳng định --></p>
       <div class="why"><strong>Vì sao:</strong> <!-- chuỗi nhân quả từ cơ chế tới hệ quả, từng bước, có số liệu/bậc độ lớn nếu được; không nhắc lại khẳng định --></div>
       <div class="evidence"><!-- Cơ sở: tag đo được / tài liệu / suy luận + cách kiểm chứng --></div>

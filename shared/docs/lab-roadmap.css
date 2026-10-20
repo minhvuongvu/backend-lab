@@ -1,0 +1,47 @@
+/* Roadmap page styles (ROADMAP.html). Uses the variables defined in lab.css. */
+
+/* Five columns fit the normal 880px reading width; status lives in the first cell. */
+table.roadmap { table-layout: fixed; }
+table.roadmap th, table.roadmap td { padding: 9px 10px; font-size: 14px; min-width: 0; overflow-wrap: anywhere; }
+table.roadmap th { white-space: normal; }
+table.roadmap th:nth-child(1) { width: 22%; }
+table.roadmap th:nth-child(2) { width: 14%; }
+table.roadmap th:nth-child(3) { width: 16%; }
+table.roadmap th:nth-child(4) { width: 31%; }
+table.roadmap th:nth-child(5) { width: 17%; }
+table.roadmap td:first-child .status-chip { margin-top: 4px; }
+table.roadmap td:first-child code { font-size: 11.5px; overflow-wrap: anywhere; color: var(--muted); background: none; padding: 0; }
+table.roadmap tr:target td { background: var(--accent-soft); }
+table.roadmap .topic-link { font-size: 13px; font-weight: 600; }
+table.roadmap .not-created { font-size: 11.5px; color: var(--muted); font-style: italic; }
+table.roadmap tr[data-created="true"] .not-created { display: none; }
+
+/* Chips share the shape of phase-list chips in lab.css */
+.status-chip, .track-chip, .mode-chip, .prio {
+  display: inline-block; font-size: 12px; font-weight: 700; line-height: 1.5; padding: 1px 10px;
+  border-radius: 999px; white-space: nowrap;
+}
+.status-chip { background: var(--surface-2); color: var(--muted); }
+.status-chip.status-in-progress { background: var(--warn-bg); color: var(--warn); }
+.status-chip.status-done { background: var(--ok-bg); color: var(--ok); }
+.status-chip.status-skipped { background: var(--surface-2); color: var(--muted); text-decoration: line-through; }
+tr[data-status="done"] td:first-child strong::before { content: "✓ "; color: var(--ok); }
+
+.track-chip { background: var(--accent-soft); color: var(--accent); font-weight: 600; margin-bottom: 4px; white-space: normal; border-radius: 8px; }
+.mode-chip { font-family: var(--mono); font-weight: 600; text-transform: uppercase; font-size: 11px; margin-right: 4px; }
+.mode-chip.mode-full { background: var(--insight-bg); color: var(--insight); }
+.mode-chip.mode-lite { background: var(--ok-bg); color: var(--ok); }
+.prio { font-weight: 600; font-size: 11.5px; padding: 0 8px; }
+.prio.prio-1 { background: var(--danger-bg); color: var(--danger); }
+.prio.prio-2 { background: var(--warn-bg); color: var(--warn); }
+.prio.prio-3 { background: var(--surface-2); color: var(--muted); }
+
+/* Learning paths: numbered rail like ol.steps */
+ol.learning-path { counter-reset: lp; list-style: none; padding-left: 0; margin: 12px 0 28px; }
+ol.learning-path > li { counter-increment: lp; position: relative; padding: 0 0 12px 40px; margin: 0; }
+ol.learning-path > li::before {
+  content: counter(lp); position: absolute; left: 0; top: 2px; width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 12.5px; display: grid; place-items: center;
+}
+ol.learning-path > li:not(:last-child)::after { content: ""; position: absolute; left: 12.5px; top: 30px; bottom: 0; width: 1px; background: var(--border); }
+ol.learning-path a { font-weight: 600; }

@@ -1,11 +1,11 @@
 ---
 description: Nghiên cứu một topic backend theo quy trình 7 phase (research → design → implement → plan → execute → conclusion → production)
-argument-hint: <topic> [1-7 | next | all]
+argument-hint: <topic> [1-7 | next | all] [lite | full]
 ---
 
 Đối số: `$ARGUMENTS`
 
-Tách đối số: nếu TỪ CUỐI CÙNG thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**, phần còn lại là **tên topic**. Nếu không, toàn bộ là tên topic và phase = `next`.
+Tách đối số từ cuối lên: nếu từ cuối thuộc {`lite`, `full`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic (topic mới: `full`).
 
 Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tài liệu HTML, trung thực, tối giản, so sánh công bằng, thí nghiệm, git.
 
@@ -17,15 +17,19 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tà
    - Không khớp:
      - topic quá rộng (ví dụ "caching", "microservices", "kafka"): đề xuất 2–4 cách thu hẹp cụ thể (mỗi cách một dòng + slug gợi ý) và hỏi tôi. DỪNG.
      - ngược lại: chạy `make new-topic SLUG=<slug>`. Đây là cách DUY NHẤT để tạo topic; không tự tạo file/thư mục bằng cách khác. Nếu `make` không có, chạy `bash scripts/new-topic.sh <slug>` (chính là thứ Makefile gọi) và báo tôi.
-3. Nếu hội thoại hiện tại đã làm một topic KHÁC: nhắc tôi chạy `/clear` rồi gọi lại lệnh. DỪNG.
-4. Đọc `topics/<slug>/README.html` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
-5. Xác định phase:
-   - `next` → phase đầu tiên có `data-status` khác `done` trong `ol.phase-list`. Nếu cả 7 đã xong, báo và dừng.
+3. Đối chiếu `ROADMAP.html` (hàng `tr[data-slug]`):
+   - topic có trong roadmap: nếu `data-prereq` có topic chưa `done` (theo README của topic đó, hoặc chưa tạo), báo các tiền đề còn thiếu và vì sao chúng là tiền đề, hỏi tôi có tiếp tục không (chỉ là khuyến nghị, không chặn);
+   - topic chưa có trong roadmap: sau khi tạo topic, thêm một hàng vào roadmap (track, tiền đề có lý do, vì sao nên học, chế độ gợi ý) và báo tôi.
+4. Nếu hội thoại hiện tại đã làm một topic KHÁC: nhắc tôi chạy `/clear` rồi gọi lại lệnh. DỪNG.
+5. Đọc `topics/<slug>/README.html` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
+6. Xác định chế độ và phase:
+   - chế độ: nếu đối số đổi chế độ so với README (ví dụ topic đang `lite` mà gọi `full`), báo những gì phải bổ sung cho các phase đã xong (xem § Chế độ lite) và hỏi trước khi đổi; ghi `data-field="mode"`.
+   - `next` → phase đầu tiên có `data-status` khác `done`/`skipped` trong `ol.phase-list`. Nếu cả 7 đã xong, báo và dừng.
    - `N` → nếu có phase < N chưa `done`, cảnh báo phase nào còn thiếu và hỏi tôi trước khi làm.
    - `all` → chạy lần lượt từ phase `next` tới 7.
-6. Nếu `ul.approvals` trong README còn mục `data-status="open"` thuộc phase trước, liệt kê chúng và hỏi tôi có muốn tiếp tục không (trừ chế độ `all`).
+7. Nếu `ul.approvals` trong README còn mục `data-status="open"` thuộc phase trước, liệt kê chúng và hỏi tôi có muốn tiếp tục không (trừ chế độ `all`).
 
-Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
+Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 
 ## Phase 1 — Research → `01-research.html` (mục tiêu 1–8, 10)
 
@@ -106,14 +110,32 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 - Runbook theo failure mode và checklist go-live.
 - Gọi subagent `lab-reviewer`; sửa vấn đề nghiêm trọng.
 
+## Chế độ lite
+
+Cho topic cần học nhanh. Mục tiêu: vẫn hiểu đúng cơ chế và thấy được khác biệt chính, nhưng bỏ phần tốn thời gian ít giá trị học. Chế độ ghi ở `data-field="mode"` của README topic; mọi quy tắc trong `CLAUDE.md` vẫn áp dụng trừ những điểm nới lỏng dưới đây.
+
+| Phase | Lite làm gì | Được bỏ / rút gọn |
+|---|---|---|
+| 1 | Bắt buộc §1–4, §8–9, §11 (ngắn), §13–14, §16–18, §25, §27 và chuyên đề đặc thù quan trọng nhất; before + tối đa 2 cách implement | Mục khác ghi "— (lite)"; insight vẫn đủ `why-steps` |
+| 2 | Domain, contract, schema, cách cắm implementation | Bảng observability rút gọn |
+| 3 | Code + test đúng đắn như full (không nới) | 03 chỉ viết đủ cho bước cốt lõi và cấu hình; bước khác tóm tắt |
+| 4 | 1 kịch bản bình thường ở một mức tải + 1 kịch bản lỗi (bắt buộc nếu là reliability/consistency) + kịch bản tái hiện chuyên đề | Không quét tải, soak, spike; bỏ pilot; N = 3 được phép |
+| 5 | Thứ tự ngẫu nhiên, steady state, raw, `stats.py` như full | Biểu đồ tối thiểu (CDF + cột có CI) |
+| 6 | Kết luận ghi rõ **"khám phá (lite)"**: tạm thời, CI với N = 3 không đáng tin; liệt kê những gì chế độ full sẽ bổ sung | — |
+| 7 | Bỏ qua: `data-status="skipped"` | Toàn bộ |
+
+- Gate ở lite: chỉ sau phase 1 và 4.
+- Nâng lite → full (`/research <topic> full`): bổ sung các mục đã ghi "— (lite)", thêm implementation và kịch bản còn thiếu, chạy lại phase 5 với N từ pilot, cập nhật 06, rồi làm phase 7.
+
 ## Kiểm tra tài liệu (trước gate / trước khi kết thúc phase có tài liệu HTML)
 
 - Không còn `<div class="guide">`, ô/placeholder rỗng, hay class `draft`.
 - Mỗi phần lớn có ít nhất một `callout insight`; khẳng định quan trọng đều có nhãn; mọi `href="#src-N"` trỏ tới nguồn tồn tại.
-- Mục tiêu học của phase (bảng trong `CLAUDE.md`) đều đã được trả lời cho before và MỌI cách implement.
+- Mục tiêu học của phase (bảng trong `CLAUDE.md`) đều đã được trả lời cho before và MỌI cách implement (ở lite: các mục bắt buộc của lite).
+- Insight có `data-tags` và `id`; chạy `python3 scripts/build_insights.py --check` (lỗi thì sửa trước khi gate).
 - Render bằng headless Chrome/Edge (`--headless=new --dump-dom`) nếu có: không có "Syntax error" của mermaid.
 
-## Gate (sau phase 1, 2 và 4)
+## Gate (sau phase 1, 2 và 4; chế độ lite: sau phase 1 và 4)
 
 1. Gọi subagent `lab-reviewer` với đường dẫn topic và phase vừa xong.
 2. Sửa mọi vấn đề **nghiêm trọng**; vấn đề **nên sửa** thì sửa hoặc ghi lý do không sửa vào nhật ký quyết định.
@@ -123,5 +145,7 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 ## Kết thúc mỗi phase
 
 1. Cập nhật `topics/<slug>/README.html`: phase vừa xong `data-status="done"` + `class="done"` (phase đang làm dở: `in-progress`), `data-field="current-phase"`, `data-field="updated"`, thêm dòng vào bảng nhật ký quyết định, cập nhật câu hỏi mở; phase 1 điền `data-field="scope"` và bảng Implementations, phase 2 điền bảng Stack.
-2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/7 — System design`).
-3. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Chỉ add file trong `topics/<slug>/` và `README.md` gốc.
+2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/7 — System design`, thêm ` (lite)` nếu chế độ lite).
+3. Cập nhật hàng của topic trong `ROADMAP.html`: `data-status` (`in-progress` khi đang làm, `done` khi xong phase 6 ở lite hoặc phase 7 ở full) và chip hiển thị.
+4. Dựng lại kho insight: `python3 scripts/build_insights.py` (cập nhật `INSIGHTS.html`).
+5. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Chỉ add file trong `topics/<slug>/`, `README.md` gốc, `ROADMAP.html`, `INSIGHTS.html`.

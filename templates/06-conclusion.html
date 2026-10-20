@@ -15,6 +15,12 @@
   Phase 6 — Conclusion (mục tiêu 13, phần kết luận). Diễn giải kết quả ở 05-results.html bằng cơ chế ở 01.
   Mọi con số link tới results/raw/. Đánh dấu [đo được] / [theo tài liệu] / [suy luận].
   Insight: p.claim (khẳng định) + div.why (chuỗi nhân quả) + div.evidence (nguồn + cách kiểm chứng).
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+    - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
+      kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
+    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
+    - Kiểm tra trước gate: python3 scripts/build_insights.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -77,7 +83,7 @@
     <h2 id="surprises"><span class="num">4</span>Điều bất ngờ</h2>
     <div class="guide">Đối chiếu từng chuyên đề đặc thù ở 01 (CĐn / CĐ-An): hiện tượng có tái hiện được không, độ lớn đo được so với dự đoán, cơ chế có đúng như mô tả không.
       Mỗi điều bất ngờ là một insight đầy đủ: khẳng định, vì sao (cơ chế, đã kiểm bằng trace/log/profile ở 05 §7), bằng chứng.</div>
-    <div class="callout insight"><span class="callout-title">Insight</span>
+    <div class="callout insight" id="ins-surprises-1" data-tags=""><span class="callout-title">Insight</span>
       <p class="claim"></p>
       <div class="why"></div>
       <div class="evidence"></div>
