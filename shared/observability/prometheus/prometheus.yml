@@ -1,0 +1,20 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+scrape_configs:
+  - job_name: prometheus
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Spring Boot apps running on the host (Actuator + micrometer-registry-prometheus).
+  # Add more targets/ports per topic as needed; a down target does not affect the rest.
+  - job_name: spring-app
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:
+          - host.docker.internal:8080
+          - host.docker.internal:8081
+          - host.docker.internal:8082
+
+# k6 metrics arrive via remote write (/api/v1/write), not scraping.

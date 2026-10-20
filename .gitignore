@@ -1,0 +1,19 @@
+# Build output
+target/
+build/
+
+# Logs
+*.log
+
+# Python
+.venv/
+__pycache__/
+
+# IDE / OS
+.idea/
+.DS_Store
+
+# Claude Code local (per-user) settings
+.claude/settings.local.json
+
+# NOTE: results/ is intentionally NOT ignored — raw data is part of the research record.
