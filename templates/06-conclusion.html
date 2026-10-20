@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Conclusion</title>
+<link rel="stylesheet" href="../../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Phase 6 — Conclusion (mục tiêu 13, phần kết luận). Diễn giải kết quả ở 05-results.html bằng cơ chế ở 01.
+  Mọi con số link tới results/raw/. Đánh dấu [đo được] / [theo tài liệu] / [suy luận].
+-->
+<body class="draft">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Phase 6 · Conclusion</div>
+    <h1>{{TOPIC}} — Conclusion</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span></div>
+  </header>
+
+  <section>
+    <h2 id="tldr">TL;DR</h2>
+    <div class="tldr"><p class="one-liner"></p><ul><li><!-- nên dùng cách nào, khi nào, vì sao — dựa trên số đo --></li></ul></div>
+  </section>
+
+  <section>
+    <h2 id="per-impl"><span class="num">1</span>Kết luận từng implementation so với before</h2>
+    <div class="guide">Mỗi implementation một khối: giải quyết được bài toán chưa (đúng đắn), trả giá bao nhiêu (Δ hiệu năng, tài nguyên, độ phức tạp), vì sao (cơ chế).</div>
+    <div class="impl">
+      <h3 id="per-impl-a">A. <!-- tên --></h3>
+      <div class="split">
+        <div class="pos"><h4>Được</h4><ul><li></li></ul></div>
+        <div class="neg"><h4>Mất</h4><ul><li></li></ul></div>
+      </div>
+      <p><strong>Kết luận:</strong> </p>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="hypotheses"><span class="num">2</span>Kết quả giả thuyết</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Giả thuyết</th><th>Kết quả</th><th>Bằng chứng</th><th>Giải thích cơ chế</th></tr></thead>
+      <tbody><tr><td>H1</td><td></td><td><!-- ĐÚNG / SAI / CHƯA KẾT LUẬN --></td><td><a class="tag measured" href="results/raw/">raw</a></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="nfr-verified"><span class="num">3</span>Tiêu chí phi chức năng: dự đoán vs thực đo</h2>
+    <div class="guide">Đối chiếu bảng 01 §13 với số đo. Dự đoán sai ở đâu và vì sao — đây là chỗ học được nhiều nhất.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tiêu chí</th><th>Impl</th><th>Dự đoán (01 §13)</th><th>Thực đo</th><th>Khớp?</th><th>Giải thích</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="surprises"><span class="num">4</span>Điều bất ngờ</h2>
+    <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+  </section>
+
+  <section>
+    <h2 id="decision"><span class="num">5</span>Decision guide (đã hiệu chỉnh)</h2>
+    <div class="guide">Cập nhật cây quyết định 01 §14 bằng số đo. Ghi rõ chỗ nào đổi so với bản giả thuyết.</div>
+    <figure class="diagram">
+<pre class="mermaid">
+flowchart TD
+    Q1{Câu hỏi ngữ cảnh?} -->|có| A[Cách A]
+    Q1 -->|không| B[Cách B]
+</pre>
+    </figure>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Ngữ cảnh</th><th>Chọn</th><th>Vì sao</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="limitations"><span class="num">6</span>Giới hạn của thí nghiệm so với production</h2>
+    <div class="guide">Một máy, dữ liệu nhỏ, không có network thật, không multi-AZ, workload tổng hợp... Kết luận nào có thể KHÔNG còn đúng ở production — phase 7 cần chú ý.</div>
+    <ul><li></li></ul>
+  </section>
+
+  <section>
+    <h2 id="lessons"><span class="num">7</span>Bài học rút ra</h2>
+    <ul><li></li></ul>
+  </section>
+
+  <section>
+    <h2 id="next"><span class="num">8</span>Câu hỏi nghiên cứu tiếp</h2>
+    <div class="guide">Có thể thành topic mới: ghi slug gợi ý.</div>
+    <ul><li></li></ul>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

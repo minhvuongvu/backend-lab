@@ -127,7 +127,7 @@ td.bad  { color: var(--danger); font-weight: 600; }
 .badge { font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 6px; background: var(--surface-2); color: var(--muted); }
 .badge.baseline { background: var(--danger-bg); color: var(--danger); }
 .badge.recommended { background: var(--ok-bg); color: var(--ok); }
-.pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.pros-cons { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
 .pros-cons > div { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; }
 .pros-cons h4 { margin-top: 2px; }
 .pros h4 { color: var(--ok); }
@@ -179,3 +179,40 @@ body.draft .guide { display: block; border: 1px dashed var(--warn); color: var(-
   .layout { display: block; }
   details.qa { break-inside: avoid; }
 }
+
+/* ---- Cross-document navigation (injected by lab.js) ---- */
+nav.doc-nav { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; font-size: 12.5px; }
+nav.doc-nav a { padding: 3px 9px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+nav.doc-nav a:hover { text-decoration: none; color: var(--text); background: var(--surface-2); }
+nav.doc-nav a.current { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+/* ---- Code excerpt with source file caption ---- */
+figure.code { margin: 14px 0; }
+figure.code figcaption { font-family: var(--mono); font-size: 12.5px; color: var(--muted); background: var(--surface-2); border: 1px solid var(--border); border-bottom: 0; border-radius: var(--radius) var(--radius) 0 0; padding: 6px 12px; }
+figure.code figcaption + pre { margin-top: 0; border-radius: 0 0 var(--radius) var(--radius); }
+
+/* ---- Deltas vs "before" and guarantee marks ---- */
+.delta { font-family: var(--mono); font-size: 13px; font-weight: 600; white-space: nowrap; }
+.delta.better { color: var(--ok); }
+.delta.worse { color: var(--danger); }
+.delta.same { color: var(--muted); }
+.yes::before { content: "✓ "; color: var(--ok); font-weight: 700; }
+.no::before  { content: "✗ "; color: var(--danger); font-weight: 700; }
+th.before, td.before { background: var(--surface-2); }
+
+/* ---- Two-column comparison (guarantees vs non-guarantees, choose vs reject) ---- */
+.split { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 14px 0; }
+.split > div { background: var(--surface-2); border-radius: 8px; padding: 10px 14px; }
+.split h4 { margin-top: 2px; }
+.split .pos h4 { color: var(--ok); }
+.split .neg h4 { color: var(--danger); }
+@media (max-width: 1000px) { .split { grid-template-columns: 1fr; } }
+
+/* ---- Implementation sub-navigation chips ---- */
+.impl-index { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.impl-index a { border: 1px solid var(--border); border-radius: 8px; padding: 6px 12px; background: var(--surface); font-size: 14px; }
+
+/* ---- Charts ---- */
+figure.chart { margin: 16px 0; background: #fff; border: 1px solid var(--border); border-radius: var(--radius); padding: 12px; text-align: center; }
+figure.chart img { max-width: 100%; height: auto; }
+figure.chart figcaption { font-size: 13px; color: #5f6368; margin-top: 6px; }

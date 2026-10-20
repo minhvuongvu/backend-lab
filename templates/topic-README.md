@@ -17,11 +17,21 @@
 ## Checklist
 
 - [ ] Phase 1 — Research → [01-research.html](01-research.html)
-- [ ] Phase 2 — System design → [02-system-design.md](02-system-design.md)
-- [ ] Phase 3 — Implement → [system/](system/)
-- [ ] Phase 4 — Experiment plan → [03-experiment-plan.md](03-experiment-plan.md)
-- [ ] Phase 5 — Execute → [experiments/](experiments/) + [results/](results/)
-- [ ] Phase 6 — Conclusion → [04-conclusion.md](04-conclusion.md)
+- [ ] Phase 2 — System design → [02-system-design.html](02-system-design.html)
+- [ ] Phase 3 — Implement → [system/](system/) + [03-implementation.html](03-implementation.html)
+- [ ] Phase 4 — Experiment plan → [04-experiment-plan.html](04-experiment-plan.html)
+- [ ] Phase 5 — Execute → [experiments/](experiments/) + [results/](results/) + [05-results.html](05-results.html)
+- [ ] Phase 6 — Conclusion → [06-conclusion.html](06-conclusion.html)
+- [ ] Phase 7 — Production rollout → [07-production.html](07-production.html) + [deploy/](deploy/)
+
+## Implementations
+
+<!-- Điền ở phase 1 (01 §11). ID dùng nhất quán trong mọi tài liệu; slug dùng cho Spring profile và `make run IMPL=<slug>`.
+     `before` = hệ thống as-is, luôn là mốc so sánh. -->
+
+| ID | Slug (profile / IMPL) | Mô tả |
+|---|---|---|
+| before | `before` | Hệ thống as-is, chưa có solution |
 
 ## Stack
 

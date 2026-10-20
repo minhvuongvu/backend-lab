@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Implementation</title>
+<link rel="stylesheet" href="../../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Phase 3 — Implementation guide (mục tiêu 9, 10, 11). Viết SAU khi code trong system/ đã build + test pass.
+  Mọi đoạn code/config trích NGUYÊN VĂN từ file thật trong system/, caption ghi đường dẫn + dòng (link tương đối, ví dụ system/src/main/java/...#L10-L42).
+  Không viết code chỉ tồn tại trong tài liệu.
+-->
+<body class="draft">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Phase 3 · Implementation</div>
+    <h1>{{TOPIC}} — Implementation</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span><span>Code: <a href="system/">system/</a></span></div>
+  </header>
+
+  <section>
+    <h2 id="overview"><span class="num">1</span>Tổng quan code</h2>
+    <div class="guide">Cấu trúc thư mục system/ (chỉ phần quan trọng), cách build/test/chạy, cách chọn implementation.</div>
+    <pre><code class="language-text">system/
+├── pom.xml
+└── src/...</code></pre>
+    <pre><code class="language-bash">cd system
+./mvnw verify                                   # build + integration tests (Testcontainers)
+SPRING_PROFILES_ACTIVE=before ./mvnw spring-boot:run</code></pre>
+    <div class="impl-index"><a href="#before">before</a><a href="#impl-a">A</a></div>
+  </section>
+
+  <section>
+    <h2 id="before"><span class="num">2</span>before — hệ thống as-is</h2>
+    <div class="guide">Code cốt lõi của before và test CHỨNG MINH bài toán xảy ra (01 §4): test tái hiện mất/trùng/sai thứ tự... và test này được kỳ vọng thể hiện lỗi.</div>
+    <figure class="code"><figcaption><a href="system/">system/...:L1-L1</a></figcaption>
+<pre><code class="language-java">// excerpt</code></pre></figure>
+  </section>
+
+  <section>
+    <h2 id="impl-a"><span class="num">3</span>A. <!-- tên --></h2>
+    <div class="guide">Lặp lại section này cho mỗi implementation. Thứ tự bước = thứ tự một dev làm thật khi thêm cách này vào hệ thống before.</div>
+
+    <h3 id="impl-a-changes">Thay đổi so với before</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>File</th><th>Loại</th><th>Mục đích</th></tr></thead>
+      <tbody><tr><td><a href="system/"><code></code></a></td><td><!-- thêm / sửa / config / migration --></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="impl-a-steps">Từng bước thực thi</h3>
+    <ol class="steps">
+      <li>
+        <strong>Thêm dependency</strong> — <!-- vì sao cần, version -->
+        <figure class="code"><figcaption><a href="system/pom.xml">system/pom.xml:L?-L?</a></figcaption>
+<pre><code class="language-xml">&lt;dependency&gt;...&lt;/dependency&gt;</code></pre></figure>
+      </li>
+      <li>
+        <strong>Migration / schema</strong> —
+        <figure class="code"><figcaption><a href="system/">system/src/main/resources/db/migration/...</a></figcaption>
+<pre><code class="language-sql"></code></pre></figure>
+      </li>
+      <li>
+        <strong>Cấu hình</strong> — giải thích TỪNG thuộc tính: giá trị, mặc định, vì sao chọn giá trị này.
+        <figure class="code"><figcaption><a href="system/">system/src/main/resources/application-a.yml</a></figcaption>
+<pre><code class="language-yaml"></code></pre></figure>
+      </li>
+      <li>
+        <strong>Code cốt lõi</strong> — transaction boundary, thứ tự thao tác, xử lý lỗi/retry.
+        <figure class="code"><figcaption><a href="system/">system/src/main/java/...:L?-L?</a></figcaption>
+<pre><code class="language-java"></code></pre></figure>
+      </li>
+    </ol>
+
+    <h3 id="impl-a-tests">Test chứng minh tính đúng đắn</h3>
+    <div class="guide">Integration test (Testcontainers) cho invariant ở 01 §7 và kịch bản lỗi chính. Ghi test nào, kiểm gì, kết quả chạy (pass/fail) và lệnh chạy.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Test</th><th>Kiểm tra invariant / failure mode</th><th>Kết quả</th></tr></thead>
+      <tbody><tr><td><code></code></td><td></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="impl-a-notes">Lưu ý gặp phải khi implement</h3>
+    <div class="guide">Những gì thực tế gặp lúc code (khác/thêm so với "lưu ý" ở 01 §12): bug, hành vi framework bất ngờ, default nguy hiểm. Đây thường là insight giá trị nhất của phase này.</div>
+    <div class="callout warn"><span class="callout-title">Lưu ý</span><ul><li></li></ul></div>
+    <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+  </section>
+
+  <section>
+    <h2 id="diff-summary"><span class="num">4</span>So sánh code giữa các implementation</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th></th><th class="before">before</th><th>A</th><th>B</th></tr></thead>
+      <tbody>
+        <tr><td>Số file / dòng code thêm</td><td class="before">—</td><td></td><td></td></tr>
+        <tr><td>Thành phần hạ tầng thêm</td><td class="before">—</td><td></td><td></td></tr>
+        <tr><td>Số test / trạng thái</td><td class="before"></td><td></td><td></td></tr>
+        <tr><td>Điểm phức tạp nhất</td><td class="before"></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

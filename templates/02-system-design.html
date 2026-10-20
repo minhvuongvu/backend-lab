@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — System design</title>
+<link rel="stylesheet" href="../../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Phase 2 — System design. Hệ thống NHỎ NHẤT tái hiện được as-is (01 §2) và bài toán (01 §4), để mọi implementation cắm vào cùng một contract.
+-->
+<body class="draft">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Phase 2 · System design</div>
+    <h1>{{TOPIC}} — System design</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span></div>
+  </header>
+
+  <section>
+    <h2 id="summary">Tóm tắt thiết kế</h2>
+    <div class="tldr"><ul><li><!-- domain, thành phần, contract, cách chuyển implementation — 3–5 dòng --></li></ul></div>
+  </section>
+
+  <section>
+    <h2 id="domain"><span class="num">1</span>Domain tối giản</h2>
+    <div class="guide">Thu nhỏ bối cảnh nghiệp vụ ở 01 §1 đến mức tối thiểu vẫn phơi bày được bài toán. Giải thích vì sao đủ, và cái gì bị lược bỏ so với nghiệp vụ thật.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Nghiệp vụ thật (01 §1)</th><th>Trong lab</th><th>Vì sao vẫn đủ phơi bày bài toán</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="before"><span class="num">2</span>Kiến trúc before</h2>
+    <div class="guide">Bản thu nhỏ của as-is (01 §2). Phải tái hiện được điểm hỏng ở 01 §4 — test ở phase 3 sẽ chứng minh điều đó.</div>
+    <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    k6[k6] --> app[Spring Boot app<br/>profile: before]
+    app --> db[(PostgreSQL)]
+</pre>
+    </figure>
+  </section>
+
+  <section>
+    <h2 id="after"><span class="num">3</span>Kiến trúc after (từng implementation)</h2>
+    <div class="guide">Mỗi implementation một sơ đồ, chỉ rõ thành phần thêm vào / thay đổi so với before.</div>
+    <h3 id="after-a">A. <!-- tên --></h3>
+    <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    k6[k6] --> app[Spring Boot app<br/>profile: a]
+    app --> db[(PostgreSQL)]
+</pre>
+    </figure>
+  </section>
+
+  <section>
+    <h2 id="components"><span class="num">4</span>Thành phần &amp; version</h2>
+    <div class="guide">Version tra cứu bản ổn định hiện tại và pin cụ thể. Ghi cổng, tài nguyên giới hạn (cpus/mem) — giống nhau cho mọi implementation.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Thành phần</th><th>Vai trò</th><th>Image / version</th><th>Cổng</th><th>Giới hạn tài nguyên</th><th>Dùng bởi</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td><td><!-- before, A, B --></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="contract"><span class="num">5</span>Contract chung</h2>
+    <div class="guide">Interface Java và/hoặc HTTP API mà before và MỌI implementation tuân theo — điều kiện để so sánh công bằng. Ghi ngữ nghĩa lỗi và đảm bảo kỳ vọng.</div>
+    <figure class="code"><figcaption>contract (dự kiến)</figcaption>
+<pre><code class="language-java">public interface ... {
+}</code></pre></figure>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Endpoint</th><th>Request</th><th>Response</th><th>Lỗi</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="plug-in"><span class="num">6</span>Cách mỗi implementation cắm vào</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Spring profile / env</th><th>Module / package</th><th>Thành phần thêm</th><th>Khác before ở đâu</th></tr></thead>
+      <tbody>
+        <tr><td>before</td><td><code>before</code></td><td></td><td>—</td><td>—</td></tr>
+        <tr><td>A</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="schema"><span class="num">7</span>Schema dữ liệu</h2>
+    <div class="guide">DDL (Flyway), Kafka topic (partition, replication, key), key Redis... Lý do cho index/partition key. Đánh dấu bảng/topic chỉ implementation nào dùng.</div>
+    <pre><code class="language-sql">-- CREATE TABLE ...</code></pre>
+  </section>
+
+  <section>
+    <h2 id="observability"><span class="num">8</span>Quan sát &amp; kiểm tra đúng đắn</h2>
+    <div class="guide">Metric cần expose để đo mọi tiêu chí "có đo" ở 01 §13 (Micrometer timer/counter/gauge, HikariCP, consumer lag...).
+      Cách kiểm tra toàn vẹn dữ liệu sau kịch bản lỗi: query đối soát, checksum, đếm mất/trùng.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tiêu chí (01 §13)</th><th>Metric / cách đo</th><th>Nguồn</th></tr></thead>
+      <tbody><tr><td></td><td><code></code></td><td><!-- app / k6 / docker stats / SQL --></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="omitted"><span class="num">9</span>Cố ý bỏ qua</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Bỏ qua</th><th>Vì sao không ảnh hưởng kết luận</th><th>Xử lý ở production (phase 7)</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="sources"><span class="num">10</span>Nguồn tham khảo</h2>
+    <ol class="sources"><li id="src-1"><span class="src-kind">docs</span><a href=""></a></li></ol>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

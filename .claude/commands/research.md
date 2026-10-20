@@ -1,13 +1,13 @@
 ---
-description: Nghiên cứu một topic backend theo quy trình 6 phase (research → design → implement → plan → execute → conclusion)
-argument-hint: <topic> [1-6 | next | all]
+description: Nghiên cứu một topic backend theo quy trình 7 phase (research → design → implement → plan → execute → conclusion → production)
+argument-hint: <topic> [1-7 | next | all]
 ---
 
 Đối số: `$ARGUMENTS`
 
-Tách đối số: nếu TỪ CUỐI CÙNG thuộc {`1`,`2`,`3`,`4`,`5`,`6`,`next`,`all`} thì đó là **phase**, phần còn lại là **tên topic**. Nếu không, toàn bộ là tên topic và phase = `next`.
+Tách đối số: nếu TỪ CUỐI CÙNG thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**, phần còn lại là **tên topic**. Nếu không, toàn bộ là tên topic và phase = `next`.
 
-Tuân thủ mọi quy tắc trong `CLAUDE.md` (ngôn ngữ, trung thực, tối giản, so sánh công bằng, thí nghiệm, git).
+Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tài liệu HTML, trung thực, tối giản, so sánh công bằng, thí nghiệm, git.
 
 ## Phase 0 — Định vị topic
 
@@ -18,81 +18,88 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md` (ngôn ngữ, trung thực, tối 
      - topic quá rộng (ví dụ "caching", "microservices", "kafka"): đề xuất 2–4 cách thu hẹp cụ thể (mỗi cách một dòng + slug gợi ý) và hỏi tôi. DỪNG.
      - ngược lại: chạy `make new-topic SLUG=<slug>`. Đây là cách DUY NHẤT để tạo topic; không tự tạo file/thư mục bằng cách khác. Nếu `make` không có, chạy `bash scripts/new-topic.sh <slug>` (chính là thứ Makefile gọi) và báo tôi.
 3. Nếu hội thoại hiện tại đã làm một topic KHÁC: nhắc tôi chạy `/clear` rồi gọi lại lệnh. DỪNG.
-4. Đọc `topics/<slug>/README.md` và mọi file phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
+4. Đọc `topics/<slug>/README.md` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
 5. Xác định phase:
-   - `next` → phase đầu tiên chưa tick trong checklist. Nếu cả 6 đã xong, báo và dừng.
+   - `next` → phase đầu tiên chưa tick trong checklist. Nếu cả 7 đã xong, báo và dừng.
    - `N` → nếu có phase < N chưa tick, cảnh báo phase nào còn thiếu và hỏi tôi trước khi làm.
-   - `all` → chạy lần lượt từ phase `next` tới 6.
+   - `all` → chạy lần lượt từ phase `next` tới 7.
 6. Nếu mục "Chờ duyệt" trong README còn mục chưa tick thuộc phase trước, liệt kê chúng và hỏi tôi có muốn tiếp tục không (trừ chế độ `all`).
 
 Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
-## Phase 1 — Research → `01-research.html`
+## Phase 1 — Research → `01-research.html` (mục tiêu 1–8, 10)
 
 - Dùng subagent song song để tìm nguồn, mỗi agent một góc:
-  1. tài liệu chính thức / spec / paper gốc;
-  2. source code & internals (link tới file/dòng);
-  3. engineering blog, postmortem, talk của công ty vận hành thật (cho §10 case study);
-  4. failure mode, anti-pattern, issue/bug tracker (cho §8, §11).
+  1. bối cảnh nghiệp vụ & case study: engineering blog, postmortem, talk của công ty vận hành thật (quy mô, lý do chọn, sự cố);
+  2. tài liệu chính thức / spec / paper gốc / định lý nền tảng (đảm bảo, giới hạn lý thuyết);
+  3. source code & internals của các thư viện/hạ tầng dùng cho từng cách implement (link tới file/dòng, giá trị mặc định theo version);
+  4. failure mode, anti-pattern, issue/bug tracker.
   Mỗi agent trả về tóm tắt kèm link; tự tổng hợp và kiểm tra chéo, chỗ nguồn mâu thuẫn thì ghi rõ.
-- Viết vào `01-research.html` theo đúng khung template (quy tắc HTML trong `CLAUDE.md`). Nội dung bắt buộc:
-  - **TL;DR** (viết cuối cùng);
-  - **Phần A — Bối cảnh:** kiến thức nền & thuật ngữ; vấn đề (tình huống cụ thể, sequence diagram có điểm hỏng, hệ thống hỏng thế nào nếu không có nó, vì sao vấn đề khó);
-  - **Phần B — Cơ chế:** internals kèm sơ đồ mermaid, đảm bảo/bất biến/giả định ngầm, vòng đời trạng thái, chi phí ở tầng thấp (bậc độ lớn); tham số quan trọng & giá trị mặc định theo version;
-  - **Phần C — Các cách implement:** 2–4 cách, gồm cả cách "ngây thơ" làm baseline; mỗi cách: nguyên lý, sơ đồ, các bước implement chi tiết, snippet cốt lõi, ưu/nhược, lỗi thường gặp và cách tránh; ma trận trade-off;
-  - **Phần D — Thực tế production:** danh mục failure mode (cả khi đã làm đúng), vận hành (metric, alert, tuning), case study có nguồn, hiểu lầm & anti-pattern, khi nào KHÔNG nên dùng, cây quyết định;
-  - **Phần E — Hướng tới thí nghiệm:** câu hỏi cần kiểm chứng (kèm dự đoán hiện tại), câu hỏi tự kiểm tra kiểu phỏng vấn senior, nguồn tham khảo.
-- Tiêu chí chất lượng trước khi gọi gate:
-  - không còn `<div class="guide">`, comment placeholder rỗng, hay class `draft`;
-  - mỗi phần A–D có ít nhất một `callout insight`; khẳng định quan trọng đều có nhãn;
-  - mọi `href="#src-N"` trỏ tới nguồn tồn tại;
-  - render kiểm tra bằng headless Chrome/Edge (`--headless --screenshot`, hoặc `--dump-dom` để chắc mermaid không lỗi) nếu có trình duyệt.
-- Điền mục "Phạm vi" trong README của topic.
-- → **Gate**.
+- Viết theo đúng khung template, đủ 5 phần:
+  - **A. Bối cảnh:** nghiệp vụ (có số liệu quy mô), hệ thống as-is (= before), mục tiêu đo được, bài toán (điểm hỏng, hậu quả, vì sao khó), thuật ngữ;
+  - **B. Solution:** cách hoạt động, đảm bảo / KHÔNG đảm bảo, mạnh/yếu, failure mode, tiêu chí chọn/bỏ + solution thay thế;
+  - **C. Các cách implement:** tổng quan (before + 2–4 cách); mỗi cách: cách hoạt động, đảm bảo/không đảm bảo, mạnh/yếu, failure mode, giới hạn lý thuyết & đánh đổi nền tảng, tiêu chí chọn/bỏ, các bước thực thi (thiết kế), lưu ý; bảng tiêu chí phi chức năng so với before; cây quyết định;
+  - **D. Thực tế:** case study có nguồn, hiểu lầm & anti-pattern;
+  - **E. Hướng tới thí nghiệm:** câu hỏi cần kiểm chứng, tự kiểm tra kiểu phỏng vấn senior, nguồn.
+- Điền mục "Phạm vi" và bảng "Implementations" trong README của topic.
+- Kiểm tra chất lượng (xem "Kiểm tra tài liệu" bên dưới) → **Gate**.
 
-## Phase 2 — System design → `02-system-design.md`
+## Phase 2 — System design → `02-system-design.html`
 
-- Domain tối giản, các thành phần (version pin, đã tra phiên bản ổn định hiện tại), sơ đồ mermaid.
-- Contract chung, cách mỗi implementation cắm vào (Spring profile / biến môi trường).
-- Schema dữ liệu, metric cần expose, cách kiểm tra đúng đắn dữ liệu, những gì cố ý bỏ qua.
+- Domain tối giản (ánh xạ từ nghiệp vụ thật), kiến trúc before và after của từng cách (mermaid), thành phần + version pin (đã tra bản ổn định hiện tại) + giới hạn tài nguyên giống nhau.
+- Contract chung, cách mỗi implementation cắm vào (Spring profile / env).
+- Schema dữ liệu, metric cần expose cho mọi tiêu chí "có đo" ở 01 §13, cách kiểm tra đúng đắn dữ liệu, những gì cố ý bỏ qua.
 - Điền bảng "Stack" trong README của topic.
-- → **Gate**.
+- Kiểm tra tài liệu → **Gate**.
 
-## Phase 3 — Implement → `system/`
+## Phase 3 — Implement → `system/` + `03-implementation.html` (mục tiêu 9–11)
 
-- Code mọi cách implement có trong 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 3.x.
-- Mỗi cách có integration test (Testcontainers) chứng minh tính đúng đắn trước khi đo hiệu năng — bao gồm test cho chính vấn đề mà baseline mắc phải (baseline được phép fail theo cách đã dự đoán; ghi rõ).
-- Expose `/actuator/prometheus` để dùng với `shared/observability`.
+- Code before và mọi cách implement ở 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 3.x. Expose `/actuator/prometheus`.
+- Integration test (Testcontainers):
+  - before: test tái hiện bài toán (được kỳ vọng thể hiện lỗi; ghi rõ);
+  - mỗi cách: test chứng minh các invariant ở 01 §7 và failure mode chính được xử lý.
 - `./mvnw verify` phải pass. Nếu không chạy được (thiếu Docker/JDK), báo rõ và DỪNG, không đánh dấu phase xong.
+- Sau khi pass, viết `03-implementation.html`: từng bước thực thi (dependency → migration → config → code → test) của mỗi cách, trích code NGUYÊN VĂN kèm đường dẫn + dòng, giải thích từng thuộc tính cấu hình, lưu ý gặp phải thực tế khi code, bảng so sánh code giữa các cách.
 
-## Phase 4 — Experiment plan → `03-experiment-plan.md`
+## Phase 4 — Experiment plan → `04-experiment-plan.html` (mục tiêu 12)
 
-- Giả thuyết (lấy từ câu hỏi ở 01), biến độc lập, biến phụ thuộc, biến kiểm soát.
-- Workload, kịch bản bình thường và kịch bản lỗi (bắt buộc với reliability/consistency).
-- Ma trận impl × scenario, tiêu chí đánh giá.
-- Yếu tố có thể làm sai lệch kết quả trên máy local, và cách giảm thiểu.
-- → **Gate**.
+- Giả thuyết so sánh từng cách với before (từ 01 §17 và các ô "có đo" ở 01 §13), biến độc lập/phụ thuộc/kiểm soát.
+- Workload (open model), kịch bản bình thường và kịch bản lỗi (từ failure mode ở 01; bắt buộc với reliability/consistency); before cũng chạy kịch bản lỗi.
+- Ma trận implementation × kịch bản (luôn có before), cách đo từng tiêu chí phi chức năng, tiêu chí đánh giá.
+- Yếu tố gây sai lệch trên máy local và cách giảm thiểu.
+- Kiểm tra tài liệu → **Gate**.
 
-## Phase 5 — Execute → `experiments/` + `results/`
+## Phase 5 — Execute → `experiments/` + `results/` + `05-results.html` (mục tiêu 13)
 
-- Viết `experiments/`: `docker-compose.yml`, script k6 / chaos, `Makefile` với `make up`, `make run IMPL=x`, `make report`, `make down`.
+- Viết `experiments/`: `docker-compose.yml`, script k6 / chaos, `Makefile` với `make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`.
 - Ghi `results/env.md` bằng output của lệnh thật trước khi chạy.
 - Chạy toàn bộ ma trận (warmup, ≥ 3 lần mỗi ô), lưu raw vào `results/raw/<impl>-<scenario>-<run>-<timestamp>.*`, không sửa tay.
 - Kiểm tra toàn vẹn dữ liệu sau các kịch bản lỗi; lưu kết quả kiểm tra vào raw.
-- Vẽ biểu đồ bằng Python (pandas + matplotlib) vào `results/charts/`.
-- Kết quả bất thường (độ biến thiên lớn, trái giả thuyết, lỗi lạ) → điều tra và ghi lại trong README (câu hỏi mở / nhật ký).
+- Vẽ biểu đồ bằng Python (pandas + matplotlib) vào `results/charts/`, ưu tiên biểu đồ before vs từng cách.
+- Viết `05-results.html`: nhật ký chạy, bảng before vs after kèm Δ, toàn vẹn dữ liệu, độ biến thiên, bất thường & điều tra. Mọi số link tới raw.
 - Lệnh nào thất bại thì báo rõ kèm output và DỪNG; không ước lượng thay số liệu.
 
-## Phase 6 — Conclusion → `04-conclusion.md`
+## Phase 6 — Conclusion → `06-conclusion.html` (mục tiêu 13)
 
-- Tóm tắt.
-- Bảng so sánh có link tới raw data (mọi con số phải truy được về `results/raw/`).
-- Từng giả thuyết: đúng, sai hay chưa kết luận được, và vì sao.
-- Những điều bất ngờ.
-- Decision guide theo ngữ cảnh.
-- Giới hạn của thí nghiệm so với production.
-- Bài học rút ra, câu hỏi nghiên cứu tiếp.
-- Gọi subagent `lab-reviewer` kiểm tra khả năng truy vết số liệu; sửa vấn đề nghiêm trọng.
+- Kết luận từng cách so với before (được gì, mất gì, vì sao theo cơ chế).
+- Kết quả từng giả thuyết: đúng, sai hay chưa kết luận được, và vì sao.
+- Tiêu chí phi chức năng: dự đoán (01 §13) vs thực đo, giải thích chỗ lệch.
+- Điều bất ngờ, decision guide đã hiệu chỉnh, giới hạn so với production, bài học, câu hỏi nghiên cứu tiếp.
+- Gọi subagent `lab-reviewer` kiểm tra truy vết số liệu; sửa vấn đề nghiêm trọng.
+
+## Phase 7 — Production rollout → `07-production.html` + `deploy/` (mục tiêu 14)
+
+- Với mỗi cách đáng triển khai (theo 06): khác biệt lab → production, topology, cấu hình lab vs production, capacity planning từ số đo, migration zero-downtime từ before, rollout/rollback, SLO/metric/alert, security, chi phí.
+- Viết artifact mẫu trong `deploy/` (Kubernetes manifest / Helm values / config) và validate bằng công cụ có sẵn; công cụ không có thì ghi rõ là chưa validate.
+- Runbook theo failure mode và checklist go-live.
+- Gọi subagent `lab-reviewer`; sửa vấn đề nghiêm trọng.
+
+## Kiểm tra tài liệu (trước gate / trước khi kết thúc phase có tài liệu HTML)
+
+- Không còn `<div class="guide">`, ô/placeholder rỗng, hay class `draft`.
+- Mỗi phần lớn có ít nhất một `callout insight`; khẳng định quan trọng đều có nhãn; mọi `href="#src-N"` trỏ tới nguồn tồn tại.
+- Mục tiêu học của phase (bảng trong `CLAUDE.md`) đều đã được trả lời cho before và MỌI cách implement.
+- Render bằng headless Chrome/Edge (`--headless=new --dump-dom`) nếu có: không có "Syntax error" của mermaid.
 
 ## Gate (sau phase 1, 2 và 4)
 
@@ -104,5 +111,5 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 ## Kết thúc mỗi phase
 
 1. Cập nhật README của topic: tick checklist, "Phase hiện tại", "Cập nhật lần cuối", thêm dòng nhật ký quyết định, câu hỏi mở.
-2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/6 — System design`).
+2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/7 — System design`).
 3. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Chỉ add file trong `topics/<slug>/` và `README.md` gốc.

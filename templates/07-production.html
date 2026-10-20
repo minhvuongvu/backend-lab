@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Production rollout</title>
+<link rel="stylesheet" href="../../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Phase 7 — Production rollout (mục tiêu 14). Cách đưa từng implementation từ hệ thống before lên môi trường người dùng thật.
+  Dựa trên 06 §6 (giới hạn lab). Manifest/config mẫu đặt trong deploy/ và đã được validate (ghi lệnh validate).
+  Phần nào chưa kiểm chứng được trong lab thì đánh dấu [theo tài liệu] hoặc [suy luận].
+-->
+<body class="draft">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Phase 7 · Production rollout</div>
+    <h1>{{TOPIC}} — Triển khai production</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span><span>Artifact: <a href="deploy/">deploy/</a></span></div>
+  </header>
+
+  <section>
+    <h2 id="lab-vs-prod"><span class="num">1</span>Khác biệt lab → production</h2>
+    <div class="guide">Những gì lab đơn giản hoá (02 §9, 06 §6) và phải xử lý khi lên production: HA, multi-AZ, dữ liệu lớn, security, network thật.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Khía cạnh</th><th>Trong lab</th><th>Production</th><th>Hệ quả</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="impl-a"><span class="num">2</span>A. <!-- tên --></h2>
+    <div class="guide">Lặp section này cho mỗi implementation đáng triển khai (bỏ qua cách mà 06 kết luận không nên dùng, ghi lý do).</div>
+
+    <h3 id="impl-a-topology">Topology production</h3>
+    <div class="guide">Self-hosted vs managed service (RDS, MSK, ElastiCache...), số replica, AZ, network. Sơ đồ.</div>
+    <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    lb[Load balancer] --> app1[App x N]
+    app1 --> db[(Primary + replica)]
+</pre>
+    </figure>
+
+    <h3 id="impl-a-config">Cấu hình: lab vs production</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Thuộc tính</th><th>Lab</th><th>Production khuyến nghị</th><th>Lý do</th></tr></thead>
+      <tbody><tr><td><code></code></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="impl-a-capacity">Capacity planning</h3>
+    <div class="guide">Từ số đo phase 5 (throughput/core, connection/req...) suy ra sizing cho tải ở 01 §1. Ghi rõ công thức và giả định; đây là [suy luận] dựa trên [đo được].</div>
+
+    <h3 id="impl-a-migration">Migration từ before → A</h3>
+    <div class="guide">Zero-downtime: expand/contract schema, dual-write/backfill, feature flag, thứ tự deploy (DB → consumer → producer...), tương thích ngược giữa các version chạy song song.</div>
+    <ol class="steps"><li></li></ol>
+
+    <h3 id="impl-a-rollout">Rollout &amp; rollback</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Giai đoạn</th><th>Hành động</th><th>Tiêu chí đi tiếp</th><th>Rollback</th></tr></thead>
+      <tbody>
+        <tr><td>Shadow / dark launch</td><td></td><td></td><td></td></tr>
+        <tr><td>Canary</td><td></td><td></td><td></td></tr>
+        <tr><td>100%</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="impl-a-observability">SLO, metric &amp; alert</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>SLO / metric</th><th>Ngưỡng alert</th><th>Ý nghĩa</th><th>Runbook</th></tr></thead>
+      <tbody><tr><td><code></code></td><td></td><td></td><td><a href="#runbook">§3</a></td></tr></tbody>
+    </table></div>
+
+    <h3 id="impl-a-security">Security &amp; compliance</h3>
+    <ul><li></li></ul>
+
+    <h3 id="impl-a-cost">Chi phí</h3>
+    <div class="guide">Hạ tầng thêm, license, công sức vận hành. Ước tính có nguồn giá.</div>
+
+    <h3 id="impl-a-artifacts">Artifact triển khai</h3>
+    <div class="guide">Manifest Kubernetes / Helm values / Terraform / config mẫu trong deploy/, trích ở đây và ghi lệnh đã dùng để validate
+      (ví dụ <code>kubectl apply --dry-run=client -f</code>, <code>helm template</code>, <code>terraform validate</code>).</div>
+    <figure class="code"><figcaption><a href="deploy/">deploy/...</a></figcaption>
+<pre><code class="language-yaml"></code></pre></figure>
+  </section>
+
+  <section>
+    <h2 id="runbook"><span class="num">3</span>Runbook theo failure mode</h2>
+    <div class="guide">Mỗi failure mode ở 01 §9/§12 và bất thường ở 05: triệu chứng → chẩn đoán (query/lệnh cụ thể) → xử lý → phòng ngừa.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Failure mode</th><th>Triệu chứng / alert</th><th>Chẩn đoán</th><th>Xử lý</th><th>Phòng ngừa</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="checklist"><span class="num">4</span>Checklist go-live</h2>
+    <ul>
+      <li>☐ Load test ở môi trường staging với tải thật × hệ số dự phòng</li>
+      <li>☐ Chaos test các failure mode chính trên staging</li>
+      <li>☐ Dashboard + alert đã bật và có người nhận</li>
+      <li>☐ Runbook đã review bởi on-call</li>
+      <li>☐ Rollback đã diễn tập</li>
+      <li>☐ <!-- mục riêng của topic --></li>
+    </ul>
+  </section>
+
+  <section>
+    <h2 id="sources"><span class="num">5</span>Nguồn tham khảo</h2>
+    <ol class="sources"><li id="src-1"><span class="src-kind">docs</span><a href=""></a></li></ol>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

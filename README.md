@@ -1,15 +1,18 @@
 # backend-lab
 
-"Phòng thí nghiệm" để nghiên cứu sâu từng công nghệ/kỹ thuật backend (Java/Spring Boot, PostgreSQL, Redis, Kafka...) theo quy trình 6 phase, kiểm chứng bằng thí nghiệm thật thay vì chỉ đọc tài liệu.
+"Phòng thí nghiệm" để nghiên cứu sâu từng công nghệ/kỹ thuật backend (Java/Spring Boot, PostgreSQL, Redis, Kafka...) theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật thay vì chỉ đọc tài liệu.
 
 | Phase | Nội dung | Nơi ghi |
 |---|---|---|
-| 1 | Research | `01-research.html` |
-| 2 | System design | `02-system-design.md` |
-| 3 | Implement | `system/` |
-| 4 | Experiment plan | `03-experiment-plan.md` |
-| 5 | Execute | `experiments/` + `results/` |
-| 6 | Conclusion | `04-conclusion.md` |
+| 1 | Research: bối cảnh, lý thuyết, các cách implement, đánh đổi | `01-research.html` |
+| 2 | System design: hệ thống tối giản, before/after | `02-system-design.html` |
+| 3 | Implement: code + hướng dẫn từng bước | `system/` + `03-implementation.html` |
+| 4 | Experiment plan: thí nghiệm trước/sau | `04-experiment-plan.html` |
+| 5 | Execute: chạy, đo, báo cáo số liệu | `experiments/` + `results/` + `05-results.html` |
+| 6 | Conclusion | `06-conclusion.html` |
+| 7 | Production rollout | `07-production.html` + `deploy/` |
+
+Mỗi topic so sánh **before** (hệ thống as-is) với từng cách implement. 14 mục tiêu học và nơi trả lời: xem [CLAUDE.md](CLAUDE.md#mục-tiêu-học--nơi-trả-lời). Tài liệu là HTML: mở trực tiếp bằng trình duyệt (cần internet để tải mermaid/highlight.js).
 
 Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 

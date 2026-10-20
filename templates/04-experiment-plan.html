@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Experiment plan</title>
+<link rel="stylesheet" href="../../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Phase 4 — Experiment plan (mục tiêu 12). Thiết kế thí nghiệm so sánh TRƯỚC (before) và SAU (từng implementation).
+  Viết TRƯỚC khi chạy. Sau khi chạy không sửa giả thuyết; sai thì ghi là sai ở 06-conclusion.html.
+-->
+<body class="draft">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Phase 4 · Experiment plan</div>
+    <h1>{{TOPIC}} — Experiment plan</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span></div>
+  </header>
+
+  <section>
+    <h2 id="hypotheses"><span class="num">1</span>Giả thuyết</h2>
+    <div class="guide">Từ 01 §17 và các ô "có đo" ở 01 §13. Mỗi giả thuyết so sánh một implementation với before (hoặc giữa các implementation), bác bỏ được, có ngưỡng định lượng.
+      Ví dụ: "H1: Ở 500 req/s, A có p99 cao hơn before không quá 20% vì thêm 1 INSERT trong cùng transaction; bác bỏ nếu &gt; 20%."</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Từ</th><th>So sánh</th><th>Giả thuyết</th><th>Cơ sở</th><th>Bác bỏ nếu</th></tr></thead>
+      <tbody><tr><td>H1</td><td>Q1</td><td>A vs before</td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="variables"><span class="num">2</span>Biến</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Loại</th><th>Biến</th><th>Giá trị / mức</th></tr></thead>
+      <tbody>
+        <tr><td>Độc lập (mỗi lần đổi 1)</td><td>Implementation</td><td>before, A, B</td></tr>
+        <tr><td>Độc lập</td><td><!-- tải, payload, số partition... --></td><td></td></tr>
+        <tr><td>Phụ thuộc</td><td><!-- throughput, p50/p95/p99, error rate, CPU/RAM, connection, số bản ghi mất/trùng --></td><td></td></tr>
+        <tr><td>Kiểm soát</td><td><!-- version, heap, pool size, giới hạn tài nguyên Docker, dữ liệu seed --></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="workload"><span class="num">3</span>Workload</h2>
+    <div class="guide">k6 scenario: ưu tiên executor constant-arrival-rate (open model) để tránh coordinated omission. Rate, duration, phân phối key, dữ liệu seed. Warmup bao lâu, có loại khỏi số liệu không.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tham số</th><th>Giá trị</th><th>Lý do</th></tr></thead>
+      <tbody>
+        <tr><td>Executor</td><td></td><td></td></tr>
+        <tr><td>Warmup</td><td></td><td></td></tr>
+        <tr><td>Thời lượng đo</td><td></td><td></td></tr>
+        <tr><td>Số lần lặp mỗi ô</td><td>≥ 3</td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="scenarios"><span class="num">4</span>Kịch bản</h2>
+    <h3 id="scenarios-normal">4.1 Bình thường</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Mô tả</th><th>Tham số</th><th>Kiểm giả thuyết</th></tr></thead>
+      <tbody><tr><td>S1</td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <h3 id="scenarios-failure">4.2 Lỗi</h3>
+    <div class="guide">Từ failure mode ở 01 §9 và §12. Bắt buộc với reliability/consistency: kill container, network delay/partition (tc netem, toxiproxy), crash giữa transaction...
+      before cũng chạy các kịch bản này để thấy bài toán xảy ra.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Failure mode</th><th>Lỗi tiêm vào</th><th>Thời điểm / thời lượng</th><th>Kiểm tra toàn vẹn</th><th>Kỳ vọng before</th><th>Kỳ vọng sau</th></tr></thead>
+      <tbody><tr><td>F1</td><td>FM1</td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="matrix"><span class="num">5</span>Ma trận implementation × kịch bản</h2>
+    <div class="guide">✓ = chạy, — = không áp dụng (ghi lý do). Cột before luôn có. Mỗi ô ✓ chạy ≥ 3 lần.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Impl \ Kịch bản</th><th>S1</th><th>F1</th></tr></thead>
+      <tbody>
+        <tr><td class="before">before</td><td>✓</td><td>✓</td></tr>
+        <tr><td>A</td><td>✓</td><td>✓</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="nfr-measure"><span class="num">6</span>Đo tiêu chí phi chức năng</h2>
+    <div class="guide">Với mỗi tiêu chí ở 01 §13: đo bằng gì, ở kịch bản nào. Tiêu chí không đo được trên local (availability dài hạn, chi phí cloud...) thì ghi cách đánh giá thay thế.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tiêu chí</th><th>Đo bằng</th><th>Kịch bản</th><th>Ghi chú</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="criteria"><span class="num">7</span>Tiêu chí đánh giá</h2>
+    <div class="guide">Thứ tự ưu tiên: đúng đắn &gt; ... Ngưỡng chênh lệch có ý nghĩa so với độ biến thiên giữa các lần chạy (ví dụ: chênh &gt; 2× stddev).</div>
+    <ul><li></li></ul>
+  </section>
+
+  <section>
+    <h2 id="bias"><span class="num">8</span>Yếu tố gây sai lệch trên máy local</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Yếu tố</th><th>Ảnh hưởng</th><th>Giảm thiểu</th></tr></thead>
+      <tbody>
+        <tr><td>k6 và hệ thống tranh CPU cùng máy</td><td></td><td></td></tr>
+        <tr><td>Giới hạn tài nguyên Docker Desktop VM</td><td></td><td></td></tr>
+        <tr><td>JIT / cache chưa warm</td><td></td><td></td></tr>
+        <tr><td>Thermal throttling, tác vụ nền</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="procedure"><span class="num">9</span>Quy trình chạy &amp; lưu kết quả</h2>
+    <pre><code class="language-bash">cd experiments
+make up
+make run IMPL=before SCENARIO=S1   # repeat for every cell of the matrix
+make report</code></pre>
+    <ul>
+      <li>Raw: <code>results/raw/&lt;impl&gt;-&lt;scenario&gt;-&lt;run&gt;-&lt;timestamp&gt;.*</code> (không sửa tay)</li>
+      <li>Môi trường: <code>results/env.md</code></li>
+      <li>Biểu đồ: <code>results/charts/</code></li>
+    </ul>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

@@ -100,6 +100,36 @@ function syncHljsTheme() {
   if (light && dark) { dark.disabled = !isDark(); light.disabled = isDark(); }
 }
 
+// Links between the documents of one topic; file N belongs to phase N.
+const DOCS = [
+  ["01-research.html", "1 · Research"],
+  ["02-system-design.html", "2 · Design"],
+  ["03-implementation.html", "3 · Implement"],
+  ["04-experiment-plan.html", "4 · Plan"],
+  ["05-results.html", "5 · Results"],
+  ["06-conclusion.html", "6 · Conclusion"],
+  ["07-production.html", "7 · Production"],
+  ["README.md", "README"],
+];
+
+function buildDocNav() {
+  const header = document.querySelector("header.doc-header");
+  if (!header) return;
+  const here = decodeURIComponent(location.pathname.split("/").pop());
+  const nav = document.createElement("nav");
+  nav.className = "doc-nav";
+  nav.setAttribute("aria-label", "Tài liệu của topic");
+  for (const [file, label] of DOCS) {
+    const a = document.createElement("a");
+    a.href = file;
+    a.textContent = label;
+    if (file === here) a.className = "current";
+    nav.appendChild(a);
+  }
+  header.appendChild(nav);
+}
+
+buildDocNav();
 scrollspy(buildToc());
 setupThemeToggle();
 syncHljsTheme();

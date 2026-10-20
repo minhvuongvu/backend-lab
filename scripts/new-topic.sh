@@ -20,8 +20,8 @@ fi
 TOPIC="$(echo "$SLUG" | tr '-' ' ' | awk '{for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2)} 1')"
 DATE="$(date +%Y-%m-%d)"
 
-mkdir -p "$TOPIC_DIR"/{system,experiments,results/raw,results/charts}
-for d in system experiments results/raw results/charts; do
+mkdir -p "$TOPIC_DIR"/{system,experiments,results/raw,results/charts,deploy}
+for d in system experiments results/raw results/charts deploy; do
   touch "$TOPIC_DIR/$d/.gitkeep"
 done
 
@@ -29,11 +29,11 @@ render() {
   sed -e "s/{{TOPIC}}/$TOPIC/g" -e "s/{{SLUG}}/$SLUG/g" -e "s/{{DATE}}/$DATE/g" "$1" > "$2"
 }
 
-render "$ROOT/templates/topic-README.md"      "$TOPIC_DIR/README.md"
-render "$ROOT/templates/01-research.html"     "$TOPIC_DIR/01-research.html"
-render "$ROOT/templates/02-system-design.md"  "$TOPIC_DIR/02-system-design.md"
-render "$ROOT/templates/03-experiment-plan.md" "$TOPIC_DIR/03-experiment-plan.md"
-render "$ROOT/templates/04-conclusion.md"     "$TOPIC_DIR/04-conclusion.md"
+render "$ROOT/templates/topic-README.md" "$TOPIC_DIR/README.md"
+# One HTML document per phase: 01-research.html ... 07-production.html
+for tpl in "$ROOT"/templates/0[1-7]-*.html; do
+  render "$tpl" "$TOPIC_DIR/$(basename "$tpl")"
+done
 
 cat > "$TOPIC_DIR/results/env.md" <<EOF
 # Môi trường chạy thí nghiệm — $TOPIC
