@@ -35,12 +35,15 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
   3. source code & internals của các thư viện/hạ tầng dùng cho từng cách implement (link tới file/dòng, giá trị mặc định theo version);
   4. failure mode, anti-pattern, issue/bug tracker.
   Mỗi agent trả về tóm tắt kèm link; tự tổng hợp và kiểm tra chéo, chỗ nguồn mâu thuẫn thì ghi rõ.
-- Viết theo đúng khung template, đủ 5 phần:
-  - **A. Bối cảnh:** nghiệp vụ (có số liệu quy mô), hệ thống as-is (= before), mục tiêu đo được, bài toán (điểm hỏng, hậu quả, vì sao khó), thuật ngữ;
-  - **B. Solution:** cách hoạt động, đảm bảo / KHÔNG đảm bảo, mạnh/yếu, failure mode, tiêu chí chọn/bỏ + solution thay thế;
-  - **C. Các cách implement:** tổng quan (before + 2–4 cách); mỗi cách: cách hoạt động, đảm bảo/không đảm bảo, mạnh/yếu, failure mode, giới hạn lý thuyết & đánh đổi nền tảng, tiêu chí chọn/bỏ, các bước thực thi (thiết kế), lưu ý; bảng tiêu chí phi chức năng so với before; cây quyết định;
-  - **D. Thực tế:** case study có nguồn, hiểu lầm & anti-pattern;
-  - **E. Hướng tới thí nghiệm:** câu hỏi cần kiểm chứng, tự kiểm tra kiểu phỏng vấn senior, nguồn.
+- Viết theo đúng khung template (27 mục, 5 phần):
+  - **A. Bối cảnh:** nghiệp vụ (có số liệu quy mô), hệ thống as-is (= before), mục tiêu đo được, bài toán — xác định loại vấn đề (đúng đắn / hiệu năng / mở rộng / chi phí / vận hành), biểu hiện và chỉ số đo, vì sao khó; lịch sử & bối cảnh ra đời; thuật ngữ;
+  - **B. Solution:** mô hình tư duy, cách hoạt động (internals), đảm bảo / KHÔNG đảm bảo, lập luận tính đúng đắn từng bước, mô hình định lượng (công thức + ước lượng bậc độ lớn), mạnh/yếu, failure mode, tiêu chí chọn/bỏ + thay thế, quan hệ với pattern khác;
+  - **C. Các cách implement:** tổng quan (before + 2–4 cách); mỗi cách: cách hoạt động, đảm bảo/không đảm bảo, mạnh/yếu, failure mode, giới hạn lý thuyết & đánh đổi nền tảng, mô hình định lượng riêng, tiêu chí chọn/bỏ, các bước thực thi (thiết kế), lưu ý; bảng phi chức năng so với before; hệ sinh thái & công cụ; cây quyết định;
+  - **D. Thực tế:** case study có nguồn, hiểu lầm & anti-pattern, tranh luận & câu hỏi mở;
+  - **E. Hướng tới thí nghiệm:** chiến lược kiểm chứng, câu hỏi cần kiểm chứng (kèm dự đoán định lượng), tự kiểm tra kiểu phỏng vấn senior, nguồn.
+- Mỗi insight có `claim` + `why` (chuỗi nhân quả, không nhắc lại khẳng định) + `evidence`.
+- Nếu thấy topic cần thêm mục lý thuyết ngoài template (ví dụ mô hình nhất quán hình thức, thuật toán đồng thuận, cấu trúc dữ liệu đặc thù), thêm mục đó và ghi lý do vào nhật ký quyết định.
+- Tài liệu dài: có thể chia viết song song theo phần (mỗi agent một phần A–E), agent chính hợp nhất và kiểm tra tính nhất quán.
 - Điền mục "Phạm vi" và bảng "Implementations" trong README của topic.
 - Kiểm tra chất lượng (xem "Kiểm tra tài liệu" bên dưới) → **Gate**.
 
@@ -64,10 +67,10 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
 ## Phase 4 — Experiment plan → `04-experiment-plan.html` (mục tiêu 12)
 
-- Giả thuyết so sánh từng cách với before (từ 01 §17 và các ô "có đo" ở 01 §13), biến độc lập/phụ thuộc/kiểm soát.
-- Workload (open model), kịch bản bình thường và kịch bản lỗi (từ failure mode ở 01; bắt buộc với reliability/consistency); before cũng chạy kịch bản lỗi.
-- Ma trận implementation × kịch bản (luôn có before), cách đo từng tiêu chí phi chức năng, tiêu chí đánh giá.
-- Yếu tố gây sai lệch trên máy local và cách giảm thiểu.
+- Theo phương pháp luận trong `CLAUDE.md` § Thí nghiệm và khung 04: giả thuyết có hướng + độ lớn dự đoán (01 §11, §25) + ngưỡng thực tế + tiêu chí bác bỏ; thiết kế đối chứng với before; biến và biến gây nhiễu; tuning công bằng; thứ tự chạy ngẫu nhiên theo block; số lần lặp từ pilot.
+- Mô hình workload (open model, phân phối arrival/key, dữ liệu so với bộ nhớ), phương pháp đo (điểm đo, percentile từ mẫu thô, steady state, hiệu chuẩn, sức khoẻ load generator, USE/RED, đo tính đúng đắn).
+- Đi hết danh mục kịch bản (bình thường, quét tải, spike, soak, quá tải, tiêm lỗi gồm gray failure, phục hồi, nhiều instance, hot key, cold start, tăng trưởng dữ liệu); không áp dụng phải ghi lý do. before cũng chạy mọi kịch bản liên quan.
+- Tiêu chí hợp lệ của một lần chạy, quy tắc loại bỏ, kế hoạch phân tích thống kê, đe doạ tính hợp lệ (internal/external/construct/statistical) và cách giảm thiểu.
 - Kiểm tra tài liệu → **Gate**.
 
 ## Phase 5 — Execute → `experiments/` + `results/` + `05-results.html` (mục tiêu 13)
@@ -75,7 +78,9 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 - Viết `experiments/`: `docker-compose.yml` (join network `backend-lab`, `include` exporter cần thiết, app chạy trong container có giới hạn tài nguyên), script k6 (remote write + `--tag testid=<impl>-<scenario>-<run>`) / chaos, `Makefile` với `make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`.
 - `make obs-up` trước khi chạy; ghi chế độ observability (`OBS`, sampling, profiling) vào `results/env.md` và giữ nguyên cho mọi ô của ma trận.
 - Ghi `results/env.md` bằng output của lệnh thật trước khi chạy.
-- Chạy toàn bộ ma trận (warmup, ≥ 3 lần mỗi ô), lưu raw vào `results/raw/<impl>-<scenario>-<run>-<timestamp>.*`, không sửa tay.
+- Chạy pilot → chốt số lần lặp và thời gian warmup (`scripts/stats.py steady-state`); hiệu chuẩn công cụ đo bằng độ trễ biết trước.
+- Sinh thứ tự chạy `scripts/stats.py plan-order` → `results/raw/run-order.csv`; chạy toàn bộ ma trận theo đúng thứ tự đó; lưu raw (k6 summary + mẫu thô `--out csv`) vào `results/raw/<impl>-<scenario>-<run>-<timestamp>.*`, không sửa tay; ghi lần chạy không hợp lệ kèm lý do.
+- Phân tích bằng `scripts/stats.py summarize` và `compare --baseline before` (CI bootstrap theo lần chạy, Mann–Whitney, Cliff's delta, ngưỡng thực tế).
 - Sau mỗi lần chạy, xuất số liệu Prometheus của khoảng thời gian chạy vào raw bằng `scripts/prom_export.py` (preset `resources`, `jvm`, `http`, `k6` và datastore liên quan) kèm `--meta`.
 - Kiểm tra toàn vẹn dữ liệu sau các kịch bản lỗi; lưu kết quả kiểm tra vào raw.
 - Bất thường: dùng trace (Tempo), log (Loki) và profile (Pyroscope) để tìm nguyên nhân; ghi lại truy vấn đã dùng.
@@ -86,7 +91,9 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 ## Phase 6 — Conclusion → `06-conclusion.html` (mục tiêu 13)
 
 - Kết luận từng cách so với before (được gì, mất gì, vì sao theo cơ chế).
-- Kết quả từng giả thuyết: đúng, sai hay chưa kết luận được, và vì sao.
+- Kết quả từng giả thuyết: đúng, sai hay chưa kết luận được, kèm effect size, CI và ngưỡng thực tế, và vì sao (cơ chế).
+- Mô hình định lượng ở 01 §11 dự đoán đúng/sai bao nhiêu; hiệu chỉnh mô hình bằng số đo.
+- Đe doạ tính hợp lệ nào đã thực sự xảy ra và ảnh hưởng tới kết luận ra sao.
 - Tiêu chí phi chức năng: dự đoán (01 §13) vs thực đo, giải thích chỗ lệch.
 - Điều bất ngờ, decision guide đã hiệu chỉnh, giới hạn so với production, bài học, câu hỏi nghiên cứu tiếp.
 - Gọi subagent `lab-reviewer` kiểm tra truy vết số liệu; sửa vấn đề nghiêm trọng.

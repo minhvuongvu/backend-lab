@@ -12,18 +12,18 @@ Mỗi topic phải trả lời đủ 14 mục tiêu sau. `lab-reviewer` dùng b�
 
 | # | Mục tiêu | Nơi trả lời |
 |---|---|---|
-| 1 | Bối cảnh nghiệp vụ, hệ thống đang có, mục tiêu, bài toán | 01 §1–4 |
-| 2 | Lý thuyết solution: cách hoạt động, mạnh/yếu, đảm bảo/không đảm bảo, failure mode, tiêu chí chọn/bỏ | 01 §6–10 |
-| 3 | Các cách implement | 01 §11 |
-| 4 | Cách hoạt động của từng cách | 01 §12 |
-| 5 | Mạnh/yếu, đảm bảo/không đảm bảo, failure mode của từng cách | 01 §12 |
-| 6 | Thay đổi mọi tiêu chí phi chức năng của từng cách so với before | 01 §13 (dự đoán) → 06 §3 (thực đo) |
-| 7 | Giới hạn lý thuyết & đánh đổi nền tảng của từng cách | 01 §12 |
-| 8 | Tiêu chí chọn/bỏ của từng cách | 01 §12, §14 → 06 §5 |
+| 1 | Bối cảnh nghiệp vụ, hệ thống đang có, mục tiêu, bài toán | 01 §1–6 |
+| 2 | Lý thuyết solution: cách hoạt động, mạnh/yếu, đảm bảo/không đảm bảo, failure mode, tiêu chí chọn/bỏ | 01 §7–15 |
+| 3 | Các cách implement | 01 §16 |
+| 4 | Cách hoạt động của từng cách | 01 §17 |
+| 5 | Mạnh/yếu, đảm bảo/không đảm bảo, failure mode của từng cách | 01 §17 |
+| 6 | Thay đổi mọi tiêu chí phi chức năng của từng cách so với before | 01 §18 (dự đoán, dựa trên mô hình định lượng §11) → 06 (thực đo) |
+| 7 | Giới hạn lý thuyết & đánh đổi nền tảng của từng cách | 01 §11, §17 |
+| 8 | Tiêu chí chọn/bỏ của từng cách | 01 §17, §20 → 06 (decision guide hiệu chỉnh) |
 | 9 | Từng bước thực thi (code, cấu hình) | 03 |
-| 10 | Lưu ý khi implement | 01 §12 (lý thuyết) + 03 (gặp thực tế) |
+| 10 | Lưu ý khi implement | 01 §17 (lý thuyết) + 03 (gặp thực tế) |
 | 11 | Xem code của từng cách | `system/` + trích dẫn trong 03 |
-| 12 | Thiết kế thí nghiệm trước/sau cho từng cách | 04 |
+| 12 | Thiết kế thí nghiệm trước/sau cho từng cách (phương pháp luận, phương pháp đo, độ phủ kịch bản) | 01 §24 + 04 |
 | 13 | Thực thi, so sánh trước/sau, kết luận | `experiments/`, `results/`, 05, 06 |
 | 14 | Triển khai lên môi trường người dùng thật | 07 + `deploy/` |
 
@@ -56,6 +56,8 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Thay mọi `<div class="guide">` bằng nội dung thật rồi xoá; khi xong, bỏ class `draft` khỏi `<body>`. Không để ô bảng hay comment placeholder rỗng: không áp dụng thì ghi "—" kèm lý do.
 - Nhãn: `<span class="tag measured">`, `<a class="tag doc" href="#src-N">`, `<span class="tag inferred">`.
 - Mỗi phần lớn có ít nhất một `callout insight`: điều không hiển nhiên (giả định ngầm, cái giá ẩn, bậc độ lớn, chỗ docs và hiểu biết phổ biến khác nhau).
+- Mỗi insight PHẢI giải thích vì sao: `p.claim` (khẳng định) + `div.why` (chuỗi nhân quả từ cơ chế tới hệ quả, từng bước, có số liệu/bậc độ lớn khi được) + `div.evidence` (nhãn nguồn + cách kiểm chứng). Insight không có phần "Vì sao", hoặc "Vì sao" chỉ nhắc lại khẳng định, là không đạt.
+- "Bài toán" không chỉ là hệ thống hỏng: có thể là đúng đắn, hiệu năng, khả năng mở rộng, chi phí hay vận hành. Xác định loại vấn đề trước rồi chọn chỉ số đo tương ứng.
 - Mermaid đặt trong `<pre class="mermaid">`; escape `<`, `>`, `&` trong code (`&lt;`...).
 - Code trong 03 và 07 trích NGUYÊN VĂN từ file thật (`<figure class="code">` với caption là đường dẫn + dòng). Không có code chỉ tồn tại trong tài liệu.
 - Kiểm tra render bằng headless Chrome/Edge (`--dump-dom`, không còn "Syntax error" của mermaid) trước khi kết thúc phase.
@@ -99,13 +101,21 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Ưu tiên tài liệu chính thức, paper gốc, source code, engineering blog của công ty vận hành thật.
 - Ghi link ở cuối mỗi tài liệu.
 
-## Thí nghiệm
-- Viết giả thuyết trước khi chạy; mỗi giả thuyết so sánh một implementation với before (hoặc giữa các implementation).
-- Mỗi lần chỉ thay đổi 1 biến.
-- Có warmup; mỗi kịch bản chạy ít nhất 3 lần.
-- Báo throughput, p50/p95/p99, error rate, và tài nguyên (CPU/RAM/connection) khi liên quan, kèm Δ so với before.
-- Kỹ thuật về reliability/consistency phải có kịch bản lỗi (kill container, network delay/partition, crash giữa transaction...) và kiểm tra tính đúng đắn của dữ liệu, không chỉ đo hiệu năng.
-- Dữ liệu thô trong `results/raw/` đặt tên `<impl>-<scenario>-<run>-<timestamp>`, không sửa tay.
+## Thí nghiệm (phương pháp luận)
+Chi tiết trong `templates/04-experiment-plan.html`; công cụ thống kê `scripts/stats.py`.
+- **Thiết kế trước, chạy sau:** giả thuyết có hướng + độ lớn dự đoán (từ mô hình định lượng 01 §11), ngưỡng hiệu ứng có ý nghĩa thực tế, tiêu chí bác bỏ, quy tắc loại bỏ outlier và số lần lặp — chốt trước khi chạy. Sau khi chạy không sửa giả thuyết.
+- **Đối chứng:** before là nhóm đối chứng; mọi implementation so với before (và với nhau khi cần) trên cùng contract, workload, giới hạn tài nguyên.
+- **Biến:** so sánh chính đổi một yếu tố mỗi lần (OFAT); chỉ dùng thiết kế giai thừa nhỏ khi giả thuyết có tương tác giữa các tham số. Liệt kê biến gây nhiễu đã biết và cách kiểm soát.
+- **Tuning công bằng:** mỗi implementation được chỉnh tới cấu hình hợp lý tốt nhất trong cùng ngân sách tài nguyên, ghi lại quá trình tuning; không so default với đã tune.
+- **Thứ tự chạy ngẫu nhiên, xen kẽ theo block** (`stats.py plan-order`) để trải đều drift, nhiệt độ, tác vụ nền; không chạy hết A rồi mới tới B.
+- **Số lần lặp:** chạy pilot để ước lượng độ biến thiên rồi chốt số lần; mặc định ≥ 5 lần cho latency đuôi (3 lần quá ít để ước lượng p99 và khoảng tin cậy).
+- **Workload:** mô hình mở (constant-arrival-rate) để tránh coordinated omission; ghi rõ phân phối arrival, phân phối key (uniform/Zipf/hot key), payload, kích thước dữ liệu so với bộ nhớ (working set vừa/vượt cache), seed.
+- **Đo:** warmup đến khi đạt steady state theo tiêu chí định trước (`stats.py steady-state`); percentile tính từ mẫu thô (k6 `--out csv`), không lấy trung bình percentile giữa các lần chạy; ghi điểm đo (client/server/DB); hiệu chuẩn công cụ đo bằng độ trễ biết trước; theo dõi sức khoẻ load generator (CPU, dropped iterations); USE cho tài nguyên, RED cho service.
+- **Độ phủ kịch bản:** xét đủ danh mục trong 04 (bình thường, quét tải tới bão hoà, spike, soak, quá tải/backpressure, tiêm lỗi gồm cả gray failure, phục hồi, nhiều instance/đồng thời, hot key, cold start, dữ liệu tăng trưởng); kịch bản nào không áp dụng phải ghi lý do. Kỹ thuật reliability/consistency bắt buộc có tiêm lỗi + kiểm tra toàn vẹn dữ liệu (id duy nhất, invariant checker, lưu lịch sử thao tác).
+- **Thống kê:** báo median + IQR và khoảng tin cậy 95% bằng bootstrap theo lần chạy; Δ so với before kèm CI, Mann–Whitney U và effect size (Cliff's delta); phân biệt "có ý nghĩa thống kê" với "có ý nghĩa thực tế".
+- **Tính hợp lệ:** ghi các đe doạ internal/external/construct/statistical-conclusion và cách giảm thiểu; lần chạy không hợp lệ được ghi lại kèm lý do, không xoá im lặng.
+- **Báo cáo:** throughput, p50/p95/p99/p99.9, error rate, tài nguyên (CPU/RAM/connection), kèm Δ so với before; biểu đồ phân phối (CDF/HDR), đường throughput–latency khi quét tải, chuỗi thời gian để thấy độ ổn định.
+- Dữ liệu thô trong `results/raw/` đặt tên `<impl>-<scenario>-<run>-<timestamp>`, không sửa tay; thứ tự chạy lưu ở `results/raw/run-order.csv`.
 
 ## Tái lập
 - Mọi thứ chạy được bằng `make` trong `experiments/` (`make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`).

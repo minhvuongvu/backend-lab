@@ -46,7 +46,7 @@
 
   <section>
     <h2 id="before"><span class="num">2</span>Kiến trúc before</h2>
-    <div class="guide">Bản thu nhỏ của as-is (01 §2). Phải tái hiện được điểm hỏng ở 01 §4 — test ở phase 3 sẽ chứng minh điều đó.</div>
+    <div class="guide">Bản thu nhỏ của as-is (01 §2). Phải tái hiện được vấn đề ở 01 §4 (lỗi, nút thắt hiệu năng, giới hạn mở rộng...) — test/đo ở phase 3 sẽ chứng minh điều đó.</div>
     <figure class="diagram">
 <pre class="mermaid">
 flowchart LR
@@ -109,11 +109,11 @@ flowchart LR
 
   <section>
     <h2 id="observability"><span class="num">8</span>Quan sát &amp; kiểm tra đúng đắn</h2>
-    <div class="guide">Với mỗi tiêu chí "có đo" ở 01 §13: tín hiệu nào (metric / log / trace / profile), lấy ở đâu (xem shared/observability/README.md),
+    <div class="guide">Với mỗi tiêu chí "có đo" ở 01 §18: tín hiệu nào (metric / log / trace / profile), lấy ở đâu (xem shared/observability/README.md),
       exporter nào cần include (postgres / redis / kafka). Metric riêng của bài toán (Micrometer timer/counter/gauge) ghi tên cụ thể.
       Cách kiểm tra toàn vẹn dữ liệu sau kịch bản lỗi: query đối soát, checksum, đếm mất/trùng.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Tiêu chí (01 §13)</th><th>Tín hiệu</th><th>Metric / truy vấn</th><th>Nguồn</th></tr></thead>
+      <thead><tr><th>Tiêu chí (01 §18)</th><th>Tín hiệu</th><th>Metric / truy vấn</th><th>Nguồn</th></tr></thead>
       <tbody><tr><td></td><td><!-- metric / log / trace / profile --></td><td><code></code></td><td><!-- app / k6 / docker-stats / exporter / Tempo / SQL --></td></tr></tbody>
     </table></div>
   </section>

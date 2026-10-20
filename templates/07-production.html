@@ -13,7 +13,7 @@
 </head>
 <!--
   Phase 7 — Production rollout (mục tiêu 14). Cách đưa từng implementation từ hệ thống before lên môi trường người dùng thật.
-  Dựa trên 06 §6 (giới hạn lab). Manifest/config mẫu đặt trong deploy/ và đã được validate (ghi lệnh validate).
+  Dựa trên 06 §7 (giới hạn lab). Manifest/config mẫu đặt trong deploy/ và đã được validate (ghi lệnh validate).
   Phần nào chưa kiểm chứng được trong lab thì đánh dấu [theo tài liệu] hoặc [suy luận].
 -->
 <body class="draft">
@@ -34,7 +34,7 @@
 
   <section>
     <h2 id="lab-vs-prod"><span class="num">1</span>Khác biệt lab → production</h2>
-    <div class="guide">Những gì lab đơn giản hoá (02 §9, 06 §6) và phải xử lý khi lên production: HA, multi-AZ, dữ liệu lớn, security, network thật.</div>
+    <div class="guide">Những gì lab đơn giản hoá (02 §9, 06 §7) và phải xử lý khi lên production: HA, multi-AZ, dữ liệu lớn, security, network thật.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Khía cạnh</th><th>Trong lab</th><th>Production</th><th>Hệ quả</th></tr></thead>
       <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
@@ -62,7 +62,7 @@ flowchart LR
     </table></div>
 
     <h3 id="impl-a-capacity">Capacity planning</h3>
-    <div class="guide">Từ số đo phase 5 (throughput/core, connection/req...) suy ra sizing cho tải ở 01 §1. Ghi rõ công thức và giả định; đây là [suy luận] dựa trên [đo được].</div>
+    <div class="guide">Từ số đo phase 5 (throughput/core, connection/req...) suy ra sizing cho tải ở 01 §1, dùng mô hình định lượng ở 01 §11 đã hiệu chỉnh bằng số đo. Ghi rõ công thức và giả định; đây là [suy luận] dựa trên [đo được].</div>
 
     <h3 id="impl-a-migration">Migration từ before → A</h3>
     <div class="guide">Zero-downtime: expand/contract schema, dual-write/backfill, feature flag, thứ tự deploy (DB → consumer → producer...), tương thích ngược giữa các version chạy song song.</div>
@@ -99,7 +99,7 @@ flowchart LR
 
   <section>
     <h2 id="runbook"><span class="num">3</span>Runbook theo failure mode</h2>
-    <div class="guide">Mỗi failure mode ở 01 §9/§12 và bất thường ở 05: triệu chứng → chẩn đoán (query/lệnh cụ thể) → xử lý → phòng ngừa.</div>
+    <div class="guide">Mỗi failure mode ở 01 §13/§17 và bất thường ở 05: triệu chứng → chẩn đoán (query/lệnh cụ thể) → xử lý → phòng ngừa.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Failure mode</th><th>Triệu chứng / alert</th><th>Chẩn đoán</th><th>Xử lý</th><th>Phòng ngừa</th></tr></thead>
       <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>

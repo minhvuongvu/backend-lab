@@ -290,3 +290,10 @@ body.draft .guide::before { content: "Hướng dẫn: "; font-weight: 700; }
   h2, h3 { break-after: avoid; }
   .impl, .table-wrap, pre, .diagram { break-inside: avoid; }
 }
+
+/* ---------- Insight = claim + causal explanation + evidence ---------- */
+.callout.insight .claim { font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.callout.insight .why { margin: 8px 0; padding-left: 12px; border-left: 2px solid var(--insight); }
+.callout.insight .why > strong:first-child { color: var(--insight); }
+.callout.insight .evidence { font-size: 14px; color: var(--muted); margin-top: 8px; }
+.callout.insight .why p, .callout.insight .why ol, .callout.insight .why ul { margin: 6px 0; }

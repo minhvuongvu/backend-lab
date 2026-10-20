@@ -14,6 +14,7 @@
 <!--
   Phase 6 — Conclusion (mục tiêu 13, phần kết luận). Diễn giải kết quả ở 05-results.html bằng cơ chế ở 01.
   Mọi con số link tới results/raw/. Đánh dấu [đo được] / [theo tài liệu] / [suy luận].
+  Insight: p.claim (khẳng định) + div.why (chuỗi nhân quả) + div.evidence (nguồn + cách kiểm chứng).
 -->
 <body class="draft">
 <div class="layout">
@@ -33,12 +34,13 @@
 
   <section>
     <h2 id="tldr">TL;DR</h2>
-    <div class="tldr"><p class="one-liner"></p><ul><li><!-- nên dùng cách nào, khi nào, vì sao — dựa trên số đo --></li></ul></div>
+    <div class="tldr"><p class="one-liner"></p><ul><li><!-- nên dùng cách nào, khi nào, vì sao — dựa trên số đo và cơ chế --></li></ul></div>
   </section>
 
   <section>
     <h2 id="per-impl"><span class="num">1</span>Kết luận từng implementation so với before</h2>
-    <div class="guide">Mỗi implementation một khối: giải quyết được bài toán chưa (đúng đắn), trả giá bao nhiêu (Δ hiệu năng, tài nguyên, độ phức tạp), vì sao (cơ chế).</div>
+    <div class="guide">Mỗi implementation một khối: giải quyết được bài toán chưa (đúng đắn), trả giá bao nhiêu (Δ hiệu năng, tài nguyên, độ phức tạp) kèm CI,
+      và vì sao theo cơ chế ở 01. Phân biệt rõ "được" về đúng đắn với "được" về hiệu năng.</div>
     <div class="impl">
       <h3 id="per-impl-a">A. <!-- tên --></h3>
       <div class="split">
@@ -51,29 +53,48 @@
 
   <section>
     <h2 id="hypotheses"><span class="num">2</span>Kết quả giả thuyết</h2>
+    <div class="guide">Mỗi giả thuyết ở 04 §1 nhận một trong bốn kết luận, dựa trên CI của Δ so với ngưỡng thực tế (không chỉ p-value):
+      <strong>ĐÚNG</strong> (CI nằm hẳn về phía dự đoán và vượt ngưỡng) · <strong>SAI</strong> (CI nằm hẳn ở phía ngược lại, hoặc hiệu ứng nằm hẳn dưới ngưỡng dù dự đoán là lớn) ·
+      <strong>CÓ Ý NGHĨA THỐNG KÊ NHƯNG KHÔNG ĐÁNG KỂ THỰC TẾ</strong> (CI không chứa 0 nhưng nằm trong ngưỡng) · <strong>CHƯA KẾT LUẬN</strong> (CI chứa cả 0 và ngưỡng: cần thêm N hoặc thí nghiệm khác).
+      Giải thích cơ chế cho mọi kết luận, đặc biệt khi SAI.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Giả thuyết</th><th>Kết quả</th><th>Bằng chứng</th><th>Giải thích cơ chế</th></tr></thead>
-      <tbody><tr><td>H1</td><td></td><td><!-- ĐÚNG / SAI / CHƯA KẾT LUẬN --></td><td><a class="tag measured" href="results/raw/">raw</a></td><td></td></tr></tbody>
+      <thead><tr><th>ID</th><th>Giả thuyết</th><th>Dự đoán</th><th>Δ đo được [95% CI]</th><th>Cliff's δ</th><th>Ngưỡng thực tế</th><th>Kết luận</th><th>Bằng chứng</th><th>Giải thích cơ chế</th></tr></thead>
+      <tbody><tr><td>H1</td><td></td><td></td><td></td><td></td><td></td><td></td><td><a class="tag measured" href="results/raw/">raw</a></td><td></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
     <h2 id="nfr-verified"><span class="num">3</span>Tiêu chí phi chức năng: dự đoán vs thực đo</h2>
-    <div class="guide">Đối chiếu bảng 01 §13 với số đo. Dự đoán sai ở đâu và vì sao — đây là chỗ học được nhiều nhất.</div>
+    <div class="guide">Đối chiếu bảng 01 §18 và mô hình định lượng 01 §11 với số đo. Mỗi chỗ lệch: mô hình sai ở giả định nào? (bỏ sót chi phí, sai bậc độ lớn,
+      nút thắt nằm ở chỗ khác...). Đây là chỗ học được nhiều nhất. Tiêu chí không đo được thì ghi "định tính" và lập luận.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Tiêu chí</th><th>Impl</th><th>Dự đoán (01 §13)</th><th>Thực đo</th><th>Khớp?</th><th>Giải thích</th></tr></thead>
+      <thead><tr><th>Tiêu chí</th><th>Impl</th><th>Dự đoán (01 §18 / §11)</th><th>Thực đo [CI]</th><th>Khớp?</th><th>Giả định nào sai / giải thích</th></tr></thead>
       <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
     <h2 id="surprises"><span class="num">4</span>Điều bất ngờ</h2>
-    <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+    <div class="guide">Mỗi điều bất ngờ là một insight đầy đủ: khẳng định, vì sao (cơ chế, đã kiểm bằng trace/log/profile ở 05 §7), bằng chứng.</div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"></p>
+      <div class="why"></div>
+      <div class="evidence"></div>
+    </div>
   </section>
 
   <section>
-    <h2 id="decision"><span class="num">5</span>Decision guide (đã hiệu chỉnh)</h2>
-    <div class="guide">Cập nhật cây quyết định 01 §14 bằng số đo. Ghi rõ chỗ nào đổi so với bản giả thuyết.</div>
+    <h2 id="validity"><span class="num">5</span>Đe doạ tính hợp lệ đã xảy ra</h2>
+    <div class="guide">Đi lại bảng 04 §9: đe doạ nào thực sự xảy ra (dấu hiệu gì trong 05), ảnh hưởng tới kết luận nào, mức độ tin cậy còn lại.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Đe doạ (04 §9)</th><th>Đã xảy ra?</th><th>Dấu hiệu</th><th>Kết luận bị ảnh hưởng</th><th>Mức tin cậy còn lại</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="decision"><span class="num">6</span>Decision guide (đã hiệu chỉnh)</h2>
+    <div class="guide">Cập nhật cây quyết định 01 §20 bằng số đo. Ghi rõ nhánh nào đổi so với bản giả thuyết và vì sao. Ngưỡng trong cây (QPS, kích thước dữ liệu...) lấy từ số đo, kèm giới hạn ở §7.</div>
     <figure class="diagram">
 <pre class="mermaid">
 flowchart TD
@@ -82,25 +103,29 @@ flowchart TD
 </pre>
     </figure>
     <div class="table-wrap"><table>
-      <thead><tr><th>Ngữ cảnh</th><th>Chọn</th><th>Vì sao</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Ngữ cảnh</th><th>Chọn</th><th>Vì sao (số đo + cơ chế)</th><th>Khác bản 01 §20?</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
-    <h2 id="limitations"><span class="num">6</span>Giới hạn của thí nghiệm so với production</h2>
-    <div class="guide">Một máy, dữ liệu nhỏ, không có network thật, không multi-AZ, workload tổng hợp... Kết luận nào có thể KHÔNG còn đúng ở production — phase 7 cần chú ý.</div>
+    <h2 id="limitations"><span class="num">7</span>Giới hạn của thí nghiệm so với production</h2>
+    <div class="guide">Một máy, dữ liệu nhỏ, mạng loopback, không multi-AZ, workload tổng hợp... Với mỗi giới hạn: kết luận nào có thể KHÔNG còn đúng ở production, theo hướng nào, và phase 7 cần chú ý gì.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Giới hạn</th><th>Kết luận có thể đổi</th><th>Hướng thay đổi dự đoán</th><th>Lưu ý cho 07</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="lessons"><span class="num">8</span>Bài học rút ra</h2>
+    <div class="guide">Bài học về kỹ thuật và về phương pháp (ví dụ: thiết kế thí nghiệm nào lẽ ra nên khác). Mỗi bài học kèm vì sao.</div>
     <ul><li></li></ul>
   </section>
 
   <section>
-    <h2 id="lessons"><span class="num">7</span>Bài học rút ra</h2>
-    <ul><li></li></ul>
-  </section>
-
-  <section>
-    <h2 id="next"><span class="num">8</span>Câu hỏi nghiên cứu tiếp</h2>
-    <div class="guide">Có thể thành topic mới: ghi slug gợi ý.</div>
+    <h2 id="next"><span class="num">9</span>Câu hỏi nghiên cứu tiếp</h2>
+    <div class="guide">Từ giả thuyết CHƯA KẾT LUẬN, đe doạ chưa xử lý, và điều bất ngờ. Có thể thành topic mới: ghi slug gợi ý.</div>
     <ul><li></li></ul>
   </section>
 

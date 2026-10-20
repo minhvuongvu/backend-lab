@@ -48,6 +48,7 @@ backend-lab/
 ├── Makefile                  # obs-up, obs-down, new-topic
 ├── scripts/new-topic.sh      # logic của make new-topic
 ├── scripts/prom_export.py    # xuất số liệu Prometheus ra CSV cho results/raw
+├── scripts/stats.py          # thứ tự chạy, steady state, CI bootstrap, so sánh với before
 ├── .claude/                  # /research, /lab-status, subagent lab-reviewer
 ├── templates/                # khung tài liệu cho mỗi topic
 ├── shared/observability/     # Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana dùng chung

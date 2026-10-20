@@ -46,7 +46,7 @@ SPRING_PROFILES_ACTIVE=before ./mvnw spring-boot:run</code></pre>
 
   <section>
     <h2 id="before"><span class="num">2</span>before — hệ thống as-is</h2>
-    <div class="guide">Code cốt lõi của before và test CHỨNG MINH bài toán xảy ra (01 §4): test tái hiện mất/trùng/sai thứ tự... và test này được kỳ vọng thể hiện lỗi.</div>
+    <div class="guide">Code cốt lõi của before và test CHỨNG MINH vấn đề ở 01 §4 xảy ra: lỗi đúng đắn (mất/trùng/sai thứ tự...) thì test tái hiện lỗi; vấn đề hiệu năng thì micro-benchmark/test đo được nút thắt. Test này được kỳ vọng thể hiện vấn đề.</div>
     <figure class="code"><figcaption><a href="system/">system/...:L1-L1</a></figcaption>
 <pre><code class="language-java">// excerpt</code></pre></figure>
   </section>
@@ -86,16 +86,20 @@ SPRING_PROFILES_ACTIVE=before ./mvnw spring-boot:run</code></pre>
     </ol>
 
     <h3 id="impl-a-tests">Test chứng minh tính đúng đắn</h3>
-    <div class="guide">Integration test (Testcontainers) cho invariant ở 01 §7 và kịch bản lỗi chính. Ghi test nào, kiểm gì, kết quả chạy (pass/fail) và lệnh chạy.</div>
+    <div class="guide">Integration test (Testcontainers) cho invariant ở 01 §9–10 và kịch bản lỗi chính, theo chiến lược kiểm chứng ở 01 §24. Ghi test nào, kiểm gì, kết quả chạy (pass/fail) và lệnh chạy.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Test</th><th>Kiểm tra invariant / failure mode</th><th>Kết quả</th></tr></thead>
       <tbody><tr><td><code></code></td><td></td><td></td></tr></tbody>
     </table></div>
 
     <h3 id="impl-a-notes">Lưu ý gặp phải khi implement</h3>
-    <div class="guide">Những gì thực tế gặp lúc code (khác/thêm so với "lưu ý" ở 01 §12): bug, hành vi framework bất ngờ, default nguy hiểm. Đây thường là insight giá trị nhất của phase này.</div>
+    <div class="guide">Những gì thực tế gặp lúc code (khác/thêm so với "lưu ý" ở 01 §17): bug, hành vi framework bất ngờ, default nguy hiểm. Đây thường là insight giá trị nhất của phase này.</div>
     <div class="callout warn"><span class="callout-title">Lưu ý</span><ul><li></li></ul></div>
-    <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"><!-- khẳng định --></p>
+      <div class="why"><strong>Vì sao:</strong> <!-- chuỗi nhân quả từ cơ chế tới hệ quả, từng bước, có số liệu/bậc độ lớn nếu được; không nhắc lại khẳng định --></div>
+      <div class="evidence"><!-- Cơ sở: tag đo được / tài liệu / suy luận + cách kiểm chứng --></div>
+    </div>
   </section>
 
   <section>

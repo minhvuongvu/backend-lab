@@ -15,6 +15,15 @@
   Phase 1 — Research. Trả lời mục tiêu học 1–8 và 10 (xem CLAUDE.md § Mục tiêu học).
   Quy tắc viết HTML: CLAUDE.md § Tài liệu HTML. Thay mỗi <div class="guide"> bằng nội dung thật rồi xoá; xong thì bỏ class "draft" khỏi <body>.
   ID implementation (before, A, B, C...) phải khớp bảng "Implementations" trong README của topic và dùng nhất quán ở mọi tài liệu sau.
+
+  QUY TẮC INSIGHT (áp dụng cho MỌI callout.insight trong tài liệu):
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim">Khẳng định — một câu, cụ thể, kiểm chứng được.</p>
+      <div class="why"><strong>Vì sao:</strong> chuỗi nhân quả từng bước: cơ chế → hệ quả → hệ quả tiếp theo, có số / bậc độ lớn khi có thể.</div>
+      <div class="evidence"><strong>Căn cứ:</strong> nhãn [đo được] / [theo tài liệu + link] / [suy luận] và ID câu hỏi kiểm chứng (Qn) nếu cần đo.</div>
+    </div>
+  Insight KHÔNG có "Vì sao" là không đạt. "Vì sao" không được chỉ diễn đạt lại khẳng định ("vì nó không atomic" là không đủ);
+  phải chỉ ra cơ chế cụ thể và lần theo từng bước tới hệ quả. Nếu không giải thích được thì đó chưa phải insight — đưa vào §23 (câu hỏi mở).
 -->
 <body class="draft">
 <div class="layout">
@@ -46,14 +55,23 @@
     <div class="tldr">
       <p class="one-liner"><!-- Một câu để nhớ: solution này đổi cái gì lấy cái gì. --></p>
       <ul>
-        <li><!-- Bài toán cốt lõi --></li>
+        <li><!-- Bài toán cốt lõi và loại bài toán (đúng đắn / hiệu năng / mở rộng / chi phí / vận hành) --></li>
         <li><!-- Cơ chế chính --></li>
         <li><!-- Đảm bảo gì / KHÔNG đảm bảo gì --></li>
+        <li><!-- Bậc độ lớn của cái giá (từ §11) --></li>
         <li><!-- Cách implement nên chọn mặc định và khi nào đổi --></li>
-        <li><!-- Cái giá lớn nhất / bẫy nguy hiểm nhất --></li>
       </ul>
     </div>
     <div class="guide">Viết CUỐI CÙNG. Mỗi dòng đứng được một mình.</div>
+    <div class="guide">
+      <strong>Mẫu insight đạt yêu cầu</strong> (dùng làm chuẩn độ sâu cho mọi insight trong tài liệu):<br>
+      <em>Khẳng định:</em> Với dual write DB → Kafka, mất event xảy ra theo lịch deploy chứ không ngẫu nhiên.<br>
+      <em>Vì sao:</em> (1) Event chỉ mất khi process chết trong khoảng giữa lúc DB commit xong và lúc broker ack — khoảng này bằng 1 RTT tới broker cộng thời gian batch của producer (<code>linger.ms</code>), cỡ 5–50 ms.
+      (2) Crash ngẫu nhiên hiếm, nhưng mỗi lần rolling restart, mỗi pod nhận SIGTERM; nếu graceful shutdown không đợi producer flush (hoặc bị SIGKILL sau <code>terminationGracePeriodSeconds</code>), mọi request đang nằm trong khoảng (1) đều có thể mất.
+      (3) Số event có nguy cơ mỗi lần restart ≈ QPS × độ dài khoảng (1) ≈ 1.000 × 0,02 s = ~20 event/pod; 10 pod × 3 lần deploy/ngày ≈ 600 event/ngày có rủi ro.
+      (4) Vì vậy tỉ lệ mất tương quan với số lần deploy, không tương quan với tải hay lỗi hạ tầng — và test chức năng thông thường không bao giờ thấy.<br>
+      <em>Căn cứ:</em> <span class="tag inferred">suy luận</span> từ cơ chế ở §8; kiểm chứng bằng Q3 (kill -9 trong lúc chạy tải, đếm event mất).
+    </div>
   </section>
 
   <!-- ================================================================ -->
@@ -62,21 +80,22 @@
   <section>
     <h2 id="business"><span class="num">1</span>Bối cảnh nghiệp vụ</h2>
     <div class="guide">Một domain điển hình nơi bài toán xuất hiện (ví dụ: e-commerce đặt hàng, ví điện tử, feed mạng xã hội).
-      Nêu quy mô định lượng: số user, QPS đọc/ghi, kích thước dữ liệu, tỉ lệ tăng trưởng, yêu cầu SLA. Con số lấy từ case study thật nếu có, nếu không thì đánh dấu suy luận.</div>
+      Nêu quy mô định lượng: số user, QPS đọc/ghi (trung bình và đỉnh), kích thước dữ liệu, tỉ lệ tăng trưởng, yêu cầu SLA. Con số lấy từ case study thật nếu có, nếu không thì đánh dấu suy luận.
+      Các con số này là đầu vào cho mô hình định lượng ở §11.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Khía cạnh</th><th>Giá trị</th><th>Nguồn / ghi chú</th></tr></thead>
       <tbody>
         <tr><td>Use case nghiệp vụ</td><td></td><td></td></tr>
-        <tr><td>Quy mô (user, QPS đọc/ghi, dữ liệu)</td><td></td><td></td></tr>
+        <tr><td>Quy mô (user, QPS đọc/ghi trung bình / đỉnh, dữ liệu)</td><td></td><td></td></tr>
         <tr><td>Yêu cầu nghiệp vụ không được vi phạm</td><td><!-- ví dụ: không trừ tiền 2 lần --></td><td></td></tr>
-        <tr><td>Chi phí khi sai</td><td><!-- tiền, uy tín, pháp lý --></td><td></td></tr>
+        <tr><td>Chi phí khi sai / khi chậm</td><td><!-- tiền, uy tín, pháp lý; mỗi 100 ms latency mất bao nhiêu conversion... --></td><td></td></tr>
       </tbody>
     </table></div>
   </section>
 
   <section>
     <h2 id="as-is"><span class="num">2</span>Hệ thống hiện tại (as-is)</h2>
-    <div class="guide">Kiến trúc "trước" khi có solution — đây chính là <code>before</code> trong mọi thí nghiệm. Thành phần, luồng chính, chỗ lưu dữ liệu, cách giao tiếp.</div>
+    <div class="guide">Kiến trúc "trước" khi có solution — đây chính là <code>before</code> trong mọi thí nghiệm. Thành phần, luồng chính, chỗ lưu dữ liệu, cách giao tiếp (sync/async), nơi có trạng thái.</div>
     <figure class="diagram">
 <pre class="mermaid">
 flowchart LR
@@ -89,7 +108,7 @@ flowchart LR
 
   <section>
     <h2 id="goals"><span class="num">3</span>Mục tiêu cần đạt</h2>
-    <div class="guide">Mục tiêu phải đo được (SLO / invariant). Tách chức năng và phi chức năng. Đây là thước đo để đánh giá mọi implementation.</div>
+    <div class="guide">Mục tiêu phải đo được (SLO / invariant). Tách chức năng và phi chức năng. Đây là thước đo để đánh giá mọi implementation, và là cột "mục tiêu" ở §4.1.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Mục tiêu</th><th>Loại</th><th>Chỉ số đo</th><th>Ngưỡng đạt</th></tr></thead>
       <tbody><tr><td></td><td><!-- chức năng / phi chức năng --></td><td></td><td></td></tr></tbody>
@@ -98,8 +117,21 @@ flowchart LR
 
   <section>
     <h2 id="problem"><span class="num">4</span>Bài toán</h2>
-    <h3 id="problem-scenario">4.1 Hệ thống hiện tại hỏng ở đâu</h3>
-    <div class="guide">Sequence diagram của luồng as-is, đánh dấu chính xác điểm hỏng (✗).</div>
+
+    <h3 id="problem-current">4.1 Hệ thống hiện tại đang gặp vấn đề gì</h3>
+    <div class="guide">Vấn đề không chỉ là "hỏng". Phân loại TRƯỚC khi mô tả:
+      <strong>đúng đắn / độ tin cậy</strong> (mất, trùng, sai thứ tự, dữ liệu lệch),
+      <strong>hiệu năng</strong> (latency cao, trần throughput, contention),
+      <strong>khả năng mở rộng</strong> (thêm node không tăng tương ứng),
+      <strong>chi phí / tài nguyên</strong> (CPU, RAM, IO, connection, tiền cloud),
+      <strong>vận hành</strong> (khó debug, khó deploy, on-call nặng). Một bài toán có thể thuộc nhiều loại.
+      Mỗi dòng phải có chỉ số đo được và so sánh hiện trạng với mục tiêu ở §3.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Loại vấn đề</th><th>Biểu hiện</th><th>Đo bằng chỉ số nào</th><th>Hiện tại</th><th>Mục tiêu (§3)</th></tr></thead>
+      <tbody><tr><td><!-- đúng đắn / hiệu năng / mở rộng / chi phí / vận hành --></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <div class="guide">Sequence diagram của luồng as-is. Đánh dấu chính xác: <strong>✗</strong> tại điểm hỏng (vấn đề đúng đắn) HOẶC <strong>⏱</strong> tại điểm nghẽn
+      (chỗ xếp hàng, lock, round-trip, I/O đồng bộ) kèm thời gian / tài nguyên tiêu tốn ở đó (ví dụ "⏱ 2 RTT ≈ 4 ms", "⏱ chờ row lock, p99 120 ms").</div>
     <figure class="diagram">
 <pre class="mermaid">
 sequenceDiagram
@@ -109,21 +141,52 @@ sequenceDiagram
     participant DB as Database
     C->>S: request
     S->>DB: write
-    Note over S,DB: ✗ điểm hỏng — thay bằng luồng thật
+    Note over S,DB: ✗ điểm hỏng hoặc ⏱ điểm nghẽn — thay bằng luồng thật
 </pre>
+      <figcaption>Luồng as-is và vị trí vấn đề.</figcaption>
     </figure>
-    <h3 id="problem-impact">4.2 Hậu quả</h3>
+
+    <h3 id="problem-impact">4.2 Tác động</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>Điều kiện kích hoạt</th><th>Hậu quả nghiệp vụ</th><th>Hậu quả kỹ thuật</th><th>Phát hiện bằng</th><th>Tần suất / mức độ</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Điều kiện / mức tải kích hoạt</th><th>Biểu hiện (lỗi / chậm / tốn tài nguyên)</th><th>Tác động nghiệp vụ</th><th>Tác động kỹ thuật</th><th>Phát hiện bằng</th><th>Tần suất / mức độ</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
+
     <h3 id="problem-why-hard">4.3 Vì sao bài toán khó</h3>
-    <div class="guide">Giới hạn nền tảng làm cách hiển nhiên không đủ: không có distributed transaction rẻ, two generals, network không tin cậy, clock không đồng bộ, at-least-once là mặc định... Thường là nơi có insight lớn nhất.</div>
-    <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+    <div class="guide">Giới hạn nền tảng làm cách hiển nhiên không đủ. Chỉ nêu giới hạn THỰC SỰ áp dụng, và giải thích cách nó chặn cách làm hiển nhiên.
+      <br><strong>Giới hạn về đúng đắn:</strong> two generals (không thể đồng thuận chắc chắn qua kênh mất gói), FLP (không có consensus tất định trong hệ async khi có 1 node lỗi),
+      không có distributed transaction rẻ (2PC chặn khi coordinator chết, tăng latency), at-least-once là mặc định của network, clock không đồng bộ.
+      <br><strong>Giới hạn về hiệu năng:</strong> Amdahl (phần tuần tự chặn speedup), Little's law (L = λW: muốn throughput cao với latency cố định thì cần nhiều concurrency),
+      contention &amp; coherence trong USL (thêm node có thể làm throughput GIẢM), vật lý I/O (fsync SSD ~0,1–2 ms, HDD ~5–10 ms; RTT cùng DC ~0,2–0,5 ms, liên vùng 30–150 ms;
+      L1 ~1 ns, RAM ~100 ns, SSD ~100 µs).</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Giới hạn</th><th>Loại</th><th>Chặn cách làm hiển nhiên nào</th><th>Vì sao (cơ chế)</th></tr></thead>
+      <tbody><tr><td></td><td><!-- đúng đắn / hiệu năng --></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"></p>
+      <div class="why"><strong>Vì sao:</strong> </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
   </section>
 
   <section>
-    <h2 id="prerequisites"><span class="num">5</span>Kiến thức nền &amp; thuật ngữ</h2>
+    <h2 id="history"><span class="num">5</span>Lịch sử &amp; bối cảnh ra đời</h2>
+    <div class="guide">Bài toán xuất hiện từ khi nào, trước đó người ta giải bằng gì, và điều gì thay đổi (quy mô, phần cứng, cloud, microservices, kiến trúc dữ liệu) khiến cách cũ không còn đủ.
+      Ghi paper / talk / bài viết then chốt kèm năm. Mục đích: hiểu solution là phản ứng với ràng buộc nào — ràng buộc đó còn đúng với hệ thống của mình không.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Năm</th><th>Sự kiện / cách tiếp cận</th><th>Giải quyết được gì</th><th>Vì sao chưa đủ / bị thay thế</th><th>Nguồn</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"></p>
+      <div class="why"><strong>Vì sao:</strong> </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="prerequisites"><span class="num">6</span>Kiến thức nền &amp; thuật ngữ</h2>
     <div class="guide">Chỉ những khái niệm thực sự dùng ở dưới. Mỗi thuật ngữ: định nghĩa chính xác + chỗ hay hiểu nhầm + link gốc.</div>
     <dl class="glossary"><dt></dt><dd></dd></dl>
   </section>
@@ -132,8 +195,19 @@ sequenceDiagram
   <div class="part-title">Phần B — Solution (mục tiêu 2)</div>
 
   <section>
-    <h2 id="how-it-works"><span class="num">6</span>Cách solution hoạt động</h2>
-    <div class="guide">Ý tưởng cốt lõi, độc lập với cách implement. Đi tới internals: cấu trúc dữ liệu, giao thức, trạng thái, thứ tự thao tác. Trả lời "TẠI SAO nó đúng". Có sequence/state diagram.</div>
+    <h2 id="mental-model"><span class="num">7</span>Mô hình tư duy</h2>
+    <div class="guide">Một phép so sánh trực quan (đời thường hoặc hệ thống quen thuộc) giúp nhớ solution, VÀ chỉ rõ phép so sánh sai ở đâu — chỗ sai thường là nơi có bug.
+      Sau đó liệt kê 3–5 ý cốt lõi người đọc phải nắm; mỗi ý một câu, các mục sau đều quy về các ý này.</div>
+    <div class="split">
+      <div class="pos"><h4>Phép so sánh</h4><p></p></div>
+      <div class="neg"><h4>Phép so sánh sai ở đâu</h4><ul><li></li></ul></div>
+    </div>
+    <ol class="steps"><li><!-- ý cốt lõi 1 --></li></ol>
+  </section>
+
+  <section>
+    <h2 id="how-it-works"><span class="num">8</span>Cách solution hoạt động</h2>
+    <div class="guide">Ý tưởng cốt lõi, độc lập với cách implement. Đi tới internals: cấu trúc dữ liệu, giao thức, trạng thái, thứ tự thao tác. Có sequence diagram và (nếu có trạng thái) state diagram.</div>
     <figure class="diagram">
 <pre class="mermaid">
 sequenceDiagram
@@ -143,11 +217,15 @@ sequenceDiagram
 </pre>
       <figcaption>Luồng to-be.</figcaption>
     </figure>
-    <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"></p>
+      <div class="why"><strong>Vì sao:</strong> </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
   </section>
 
   <section>
-    <h2 id="guarantees"><span class="num">7</span>Đảm bảo và KHÔNG đảm bảo</h2>
+    <h2 id="guarantees"><span class="num">9</span>Đảm bảo và KHÔNG đảm bảo</h2>
     <div class="guide">Phần dễ hiểu sai nhất. Mỗi dòng: đảm bảo dựa trên cơ chế nào, giả định ngầm là gì, vỡ khi nào.
       Cột "KHÔNG đảm bảo" quan trọng ngang cột "đảm bảo": ví dụ outbox đảm bảo at-least-once nhưng KHÔNG đảm bảo exactly-once hay thứ tự toàn cục.</div>
     <div class="table-wrap"><table>
@@ -160,7 +238,51 @@ sequenceDiagram
   </section>
 
   <section>
-    <h2 id="strengths"><span class="num">8</span>Điểm mạnh &amp; điểm yếu</h2>
+    <h2 id="correctness"><span class="num">10</span>Lập luận tính đúng đắn</h2>
+    <div class="guide">Chứng minh (không hình thức nhưng chặt) vì sao các đảm bảo ở §9 đúng. Liệt kê invariant, rồi đi từng bước của luồng §8:
+      sau mỗi bước, nếu xảy ra crash / timeout / message trùng / message đảo thứ tự thì trạng thái thế nào, invariant còn giữ không, VÌ SAO.
+      Với solution thiên về hiệu năng (cache, batching, sharding...): lập luận vì sao vẫn đúng — giới hạn độ cũ (staleness bound) của cache, đảm bảo thứ tự, điều kiện đọc-sau-ghi.
+      Ô nào không áp dụng ghi "—" kèm lý do.</div>
+    <h3 id="correctness-invariants">10.1 Invariant</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Invariant</th><th>Ý nghĩa nghiệp vụ</th><th>Kiểm tra bằng (query / checker)</th></tr></thead>
+      <tbody><tr><td>I1</td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <h3 id="correctness-steps">10.2 Phân tích từng bước</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Bước</th><th>Trạng thái sau bước</th><th>Nếu crash / timeout / duplicate / reorder ngay sau bước này</th><th>Invariant còn giữ? Vì sao</th></tr></thead>
+      <tbody><tr><td>1</td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="quant-model"><span class="num">11</span>Mô hình định lượng</h2>
+    <div class="guide">Biến lý thuyết thành con số dự đoán TRƯỚC khi đo. Dùng quy mô ở §1. Mỗi công thức ghi rõ giả định; kết quả là bậc độ lớn, đánh dấu suy luận.
+      Các dự đoán ở đây thành giả thuyết ở §25 và 04-experiment-plan.
+      <br>Công cụ thường dùng:
+      <strong>phân rã latency budget</strong> (tổng = Σ RTT + Σ fsync + xử lý + chờ hàng đợi);
+      <strong>trần throughput</strong> (min của các tài nguyên: connection pool / thời gian giữ connection, partition × throughput mỗi partition, IOPS);
+      <strong>Little's law</strong> L = λW (concurrency cần = throughput × latency);
+      <strong>queueing</strong> ρ = λ/μ, thời gian chờ ≈ W₀·ρ/(1−ρ) — tăng vọt khi ρ &gt; 0,7–0,8;
+      <strong>USL / Amdahl</strong> cho khả năng mở rộng;
+      <strong>hệ số khuếch đại</strong> (write / read / network amplification), tăng trưởng lưu trữ theo thời gian.</div>
+    <div class="guide"><strong>Ví dụ mini:</strong> outbox thêm 1 INSERT trong cùng transaction. INSERT nhỏ + fsync khi commit đã có sẵn → latency thêm ≈ thời gian INSERT (~0,1–0,3 ms), KHÔNG thêm fsync.
+      Publisher polling mỗi 100 ms → latency giao event trung bình ≈ 50 ms + thời gian gửi. Ở 1.000 msg/s, bảng outbox nhận 1.000 INSERT + 1.000 UPDATE/DELETE mỗi giây → write amplification ≈ 2× số ghi trên bảng nghiệp vụ,
+      và nếu không xoá dòng đã gửi thì tăng ≈ 1.000 × 86.400 ≈ 86 triệu dòng/ngày. Dự đoán: Δp99 ghi &lt; 1 ms; tải ghi DB +~2× → kiểm chứng bằng Q1, Q2.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Đại lượng</th><th>Công thức / mô hình</th><th>Giả định</th><th>Giá trị với quy mô §1</th><th>Dùng cho câu hỏi</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td><span class="tag inferred">suy luận</span></td><td>Q?</td></tr></tbody>
+    </table></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"></p>
+      <div class="why"><strong>Vì sao:</strong> </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="strengths"><span class="num">12</span>Điểm mạnh &amp; điểm yếu</h2>
+    <div class="guide">Mỗi điểm mạnh/yếu kèm cơ chế gây ra nó (trỏ về §8–§11), không liệt kê suông.</div>
     <div class="pros-cons">
       <div class="pros"><h4>Điểm mạnh</h4><ul><li></li></ul></div>
       <div class="cons"><h4>Điểm yếu</h4><ul><li></li></ul></div>
@@ -168,17 +290,17 @@ sequenceDiagram
   </section>
 
   <section>
-    <h2 id="failure-modes"><span class="num">9</span>Failure mode của solution</h2>
-    <div class="guide">Những gì vẫn hỏng KỂ CẢ khi áp dụng đúng. Đây là input cho kịch bản lỗi ở phase 4.</div>
+    <h2 id="failure-modes"><span class="num">13</span>Failure mode của solution</h2>
+    <div class="guide">Những gì vẫn hỏng hoặc vẫn chậm KỂ CẢ khi áp dụng đúng (bao gồm suy giảm hiệu năng: hot key, hàng đợi dồn, cache stampede...). Đây là input cho kịch bản lỗi ở phase 4.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Failure mode</th><th>Kích hoạt</th><th>Hậu quả</th><th>Phát hiện</th><th>Giảm thiểu</th></tr></thead>
-      <tbody><tr><td>FM1</td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>ID</th><th>Failure mode</th><th>Kích hoạt</th><th>Cơ chế (vì sao xảy ra)</th><th>Hậu quả</th><th>Phát hiện</th><th>Giảm thiểu</th></tr></thead>
+      <tbody><tr><td>FM1</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
-    <h2 id="choose-reject"><span class="num">10</span>Tiêu chí chọn &amp; tiêu chí bỏ</h2>
-    <div class="guide">Ở cấp solution (chưa nói cách implement). Tiêu chí phải kiểm tra được trên một hệ thống cụ thể. Kèm các solution thay thế khi bỏ.</div>
+    <h2 id="choose-reject"><span class="num">14</span>Tiêu chí chọn &amp; tiêu chí bỏ</h2>
+    <div class="guide">Ở cấp solution (chưa nói cách implement). Tiêu chí phải kiểm tra được trên một hệ thống cụ thể, tốt nhất có ngưỡng định lượng từ §11. Kèm các solution thay thế khi bỏ.</div>
     <div class="split">
       <div class="pos"><h4>Chọn khi</h4><ul><li></li></ul></div>
       <div class="neg"><h4>Bỏ khi</h4><ul><li></li></ul></div>
@@ -189,11 +311,20 @@ sequenceDiagram
     </table></div>
   </section>
 
+  <section>
+    <h2 id="relations"><span class="num">15</span>Quan hệ với pattern / công nghệ khác</h2>
+    <div class="guide">Solution hiếm khi đứng một mình. Pattern nào là tiền đề (phải có trước), kết hợp (thường đi cùng), thay thế (giải cùng bài toán), xung đột (dùng cùng thì phá đảm bảo của nhau). Giải thích cơ chế của từng quan hệ.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Pattern / công nghệ</th><th>Quan hệ</th><th>Vì sao</th></tr></thead>
+      <tbody><tr><td></td><td><!-- tiền đề / kết hợp / thay thế / xung đột --></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
   <!-- ================================================================ -->
   <div class="part-title">Phần C — Các cách implement (mục tiêu 3–8, 10)</div>
 
   <section>
-    <h2 id="impl-overview"><span class="num">11</span>Tổng quan các cách implement</h2>
+    <h2 id="impl-overview"><span class="num">16</span>Tổng quan các cách implement</h2>
     <div class="guide">2–4 cách, gồm cả cách dùng tính năng có sẵn của DB/broker/thư viện nếu có. <code>before</code> là hệ thống as-is (§2), luôn là mốc so sánh.
       Nếu có cách "ngây thơ" khác với before, liệt kê nó như một implementation.</div>
     <div class="table-wrap"><table>
@@ -207,7 +338,7 @@ sequenceDiagram
   </section>
 
   <section>
-    <h2 id="impl-detail"><span class="num">12</span>Chi tiết từng cách</h2>
+    <h2 id="impl-detail"><span class="num">17</span>Chi tiết từng cách</h2>
     <div class="guide">Lặp khối .impl cho mỗi cách. Phần "các bước thực thi" ở đây là bản thiết kế; code thật và config thật nằm ở 03-implementation.html.</div>
 
     <div class="impl">
@@ -237,14 +368,26 @@ sequenceDiagram
 
       <h4>Failure mode</h4>
       <div class="table-wrap"><table>
-        <thead><tr><th>Failure mode</th><th>Kích hoạt</th><th>Hậu quả</th><th>Phát hiện</th><th>Giảm thiểu</th></tr></thead>
-        <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+        <thead><tr><th>Failure mode</th><th>Kích hoạt</th><th>Cơ chế</th><th>Hậu quả</th><th>Phát hiện</th><th>Giảm thiểu</th></tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
       </table></div>
 
       <h4>Giới hạn lý thuyết &amp; đánh đổi nền tảng</h4>
       <div class="guide">Định lý / giới hạn chi phối cách này: CAP/PACELC, FLP, two generals, end-to-end argument, Little's law, Amdahl/USL, giới hạn fsync/round-trip, độ phức tạp thuật toán...
         Giải thích cách này đứng ở đâu trong đánh đổi và vì sao KHÔNG thể có cả hai phía.</div>
       <ul><li></li></ul>
+
+      <h4>Mô hình định lượng riêng</h4>
+      <div class="guide">Chi phí thêm so với before, áp dụng mô hình §11 cho riêng cách này. Bậc độ lớn + giả định.</div>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Chi phí thêm</th><th>Mỗi request</th><th>Mỗi message / bản ghi</th><th>Ở quy mô §1</th><th>Giả định</th></tr></thead>
+        <tbody>
+          <tr><td>Round-trip / fsync</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>I/O ghi / đọc</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>Bộ nhớ / lưu trữ</td><td></td><td></td><td></td><td></td></tr>
+          <tr><td>Connection / thread</td><td></td><td></td><td></td><td></td></tr>
+        </tbody>
+      </table></div>
 
       <h4>Tiêu chí chọn / bỏ</h4>
       <div class="split">
@@ -259,17 +402,21 @@ sequenceDiagram
 
       <h4>Lưu ý khi implement</h4>
       <div class="table-wrap"><table>
-        <thead><tr><th>Lưu ý / lỗi thường gặp</th><th>Hậu quả nếu bỏ qua</th><th>Cách làm đúng</th></tr></thead>
-        <tbody><tr><td></td><td></td><td></td></tr></tbody>
+        <thead><tr><th>Lưu ý / lỗi thường gặp</th><th>Hậu quả nếu bỏ qua</th><th>Vì sao xảy ra</th><th>Cách làm đúng</th></tr></thead>
+        <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
       </table></div>
 
-      <div class="callout insight"><span class="callout-title">Insight</span><p></p></div>
+      <div class="callout insight"><span class="callout-title">Insight</span>
+        <p class="claim"></p>
+        <div class="why"><strong>Vì sao:</strong> </div>
+        <div class="evidence"><strong>Căn cứ:</strong> </div>
+      </div>
     </div>
   </section>
 
   <section>
-    <h2 id="nfr"><span class="num">13</span>Đánh giá thay đổi tiêu chí phi chức năng</h2>
-    <div class="guide">Mục tiêu 6. So sánh từng cách với <code>before</code> trên MỌI tiêu chí phi chức năng. Ô ghi hướng + bậc độ lớn dự đoán + lý do ngắn, ví dụ
+    <h2 id="nfr"><span class="num">18</span>Đánh giá thay đổi tiêu chí phi chức năng</h2>
+    <div class="guide">Mục tiêu 6. So sánh từng cách với <code>before</code> trên MỌI tiêu chí phi chức năng. Ô ghi hướng + bậc độ lớn dự đoán (lấy từ §11 / mô hình riêng ở §17) + lý do ngắn, ví dụ
       <span class="delta worse">+1 RTT</span>, <span class="delta better">mất dữ liệu → 0</span>, <span class="delta same">≈</span>.
       Đây là DỰ ĐOÁN (suy luận/tài liệu); cột "Đo ở phase 5" ghi tiêu chí nào sẽ được đo, tiêu chí nào chỉ đánh giá định tính.</div>
     <div class="table-wrap"><table>
@@ -294,8 +441,18 @@ sequenceDiagram
   </section>
 
   <section>
-    <h2 id="decision"><span class="num">14</span>Cây quyết định</h2>
-    <div class="guide">Tổng hợp tiêu chí chọn/bỏ thành flowchart. Bản giả thuyết — phase 6 hiệu chỉnh bằng số đo.</div>
+    <h2 id="ecosystem"><span class="num">19</span>Hệ sinh thái &amp; công cụ</h2>
+    <div class="guide">Thư viện, managed service, tính năng có sẵn của DB/broker cho từng cách. Đánh giá thực tế khi chọn cho production: độ trưởng thành, mức độ bảo trì (release gần nhất, issue mở),
+      license, version ổn định hiện tại, mức lock-in, chi phí vận hành. Kiểm tra trên repo/trang chính thức, ghi ngày tra cứu.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Công cụ</th><th>Cho cách</th><th>Version (ngày tra)</th><th>Trưởng thành / bảo trì</th><th>License</th><th>Lock-in</th><th>Chi phí vận hành</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="decision"><span class="num">20</span>Cây quyết định</h2>
+    <div class="guide">Tổng hợp tiêu chí chọn/bỏ (§14, §17) thành flowchart, ưu tiên câu hỏi có ngưỡng định lượng. Bản giả thuyết — phase 6 hiệu chỉnh bằng số đo.</div>
     <figure class="diagram">
 <pre class="mermaid">
 flowchart TD
@@ -309,16 +466,31 @@ flowchart TD
   <div class="part-title">Phần D — Thực tế</div>
 
   <section>
-    <h2 id="case-studies"><span class="num">15</span>Case study từ hệ thống thật</h2>
-    <div class="guide">2–4 câu chuyện từ engineering blog / postmortem / talk. Mỗi case: bối cảnh → chọn gì → vì sao → sự cố → bài học. Chỉ nguồn kiểm chứng được.</div>
+    <h2 id="case-studies"><span class="num">21</span>Case study từ hệ thống thật</h2>
+    <div class="guide">2–4 câu chuyện từ engineering blog / postmortem / talk. Mỗi case: bối cảnh (quy mô) → chọn gì → vì sao → sự cố / số liệu → bài học. Chỉ nguồn kiểm chứng được.</div>
     <div class="callout"><span class="callout-title"><!-- Công ty — tiêu đề --></span><p></p></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"></p>
+      <div class="why"><strong>Vì sao:</strong> </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
   </section>
 
   <section>
-    <h2 id="myths"><span class="num">16</span>Hiểu lầm phổ biến &amp; anti-pattern</h2>
+    <h2 id="myths"><span class="num">22</span>Hiểu lầm phổ biến &amp; anti-pattern</h2>
     <div class="table-wrap"><table>
-      <thead><tr><th>Hiểu lầm / anti-pattern</th><th>Thực tế</th><th>Bằng chứng</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Hiểu lầm / anti-pattern</th><th>Thực tế</th><th>Vì sao hiểu lầm sai (cơ chế)</th><th>Bằng chứng</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="debates"><span class="num">23</span>Tranh luận &amp; câu hỏi mở</h2>
+    <div class="guide">Chỗ chuyên gia / nguồn bất đồng. Trình bày lập luận mỗi bên và ĐIỀU KIỆN mà mỗi bên đúng — thường bất đồng đến từ giả định khác nhau về quy mô, hạ tầng hay yêu cầu.
+      Câu nào thí nghiệm của lab trả lời được thì chuyển thành câu hỏi ở §25.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Vấn đề tranh luận</th><th>Quan điểm 1 (nguồn)</th><th>Quan điểm 2 (nguồn)</th><th>Mỗi bên đúng khi</th><th>Lab kiểm được?</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
@@ -326,22 +498,36 @@ flowchart TD
   <div class="part-title">Phần E — Hướng tới thí nghiệm</div>
 
   <section>
-    <h2 id="questions"><span class="num">17</span>Câu hỏi cần kiểm chứng</h2>
-    <div class="guide">Mỗi câu đo/kiểm được và so sánh với before. Ưu tiên chỗ tài liệu mâu thuẫn hoặc thiếu số liệu, và các ô ở §13 có thể đo.</div>
+    <h2 id="verification"><span class="num">24</span>Chiến lược kiểm chứng</h2>
+    <div class="guide">Làm sao CHỨNG MINH các khẳng định về đúng đắn (§9–§10) và hiệu năng (§11, §18). Là đầu vào cho test ở phase 3 và kịch bản ở phase 4.
+      <br>Kỹ thuật: integration test (Testcontainers); property-based test (sinh ngẫu nhiên chuỗi thao tác, kiểm invariant); failure injection (kill -9, pause container, toxiproxy / tc netem);
+      invariant checker sau chạy (query đối soát, checksum, đếm mất/trùng); kiểm tra lịch sử thao tác (ghi lịch sử invoke/ok rồi kiểm linearizability bằng công cụ kiểu Porcupine, Jepsen/Knossos, Elle);
+      đo hiệu năng với open-model load và nhiều lần lặp.
+      <br>Ghi tín hiệu quan sát cho từng khẳng định: metric / log / trace / profile (xem shared/observability/README.md).</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Câu hỏi</th><th>Áp dụng cho</th><th>Dự đoán</th><th>Đo gì</th></tr></thead>
-      <tbody><tr><td>Q1</td><td></td><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Khẳng định / invariant</th><th>Kỹ thuật kiểm chứng</th><th>Tín hiệu quan sát</th><th>Phase</th></tr></thead>
+      <tbody><tr><td>I1</td><td></td><td><!-- metric / log / trace / profile / SQL --></td><td><!-- 3 test / 5 thí nghiệm --></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
-    <h2 id="self-check"><span class="num">18</span>Tự kiểm tra</h2>
-    <div class="guide">5–10 câu kiểu phỏng vấn senior / design review, kiểm tra hiểu cơ chế và đánh đổi. Đáp án trỏ về mục liên quan.</div>
+    <h2 id="questions"><span class="num">25</span>Câu hỏi cần kiểm chứng</h2>
+    <div class="guide">Mỗi câu đo/kiểm được và so sánh với before. Nguồn câu hỏi: dự đoán ở §11, các ô "có đo" ở §18, tranh luận ở §23, insight còn ở mức suy luận.
+      Dự đoán phải định lượng (bậc độ lớn, ngưỡng) để có thể bác bỏ.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Câu hỏi</th><th>Từ mục</th><th>Áp dụng cho</th><th>Dự đoán định lượng</th><th>Đo gì</th></tr></thead>
+      <tbody><tr><td>Q1</td><td></td><td><!-- §11 / §18 / §23 --></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="self-check"><span class="num">26</span>Tự kiểm tra</h2>
+    <div class="guide">5–10 câu kiểu phỏng vấn senior / design review, kiểm tra hiểu cơ chế và đánh đổi (không hỏi định nghĩa). Đáp án giải thích "vì sao" và trỏ về mục liên quan.</div>
     <details class="qa"><summary></summary><p></p></details>
   </section>
 
   <section>
-    <h2 id="sources"><span class="num">19</span>Nguồn tham khảo</h2>
+    <h2 id="sources"><span class="num">27</span>Nguồn tham khảo</h2>
     <div class="guide">Tài liệu chính thức, spec, paper gốc, source code (link file/dòng), engineering blog. id="src-N" để nhãn trỏ tới.</div>
     <ol class="sources">
       <li id="src-1"><span class="src-kind">docs</span><a href=""></a> — </li>

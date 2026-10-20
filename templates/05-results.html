@@ -12,8 +12,9 @@
 <script src="../shared/docs/lab.js" defer></script>
 </head>
 <!--
-  Phase 5 — Results (mục tiêu 13, phần dữ liệu). Báo cáo QUAN SÁT, chưa diễn giải sâu (diễn giải ở 06-conclusion.html).
+  Phase 5 — Results (mục tiêu 13, phần dữ liệu). Báo cáo QUAN SÁT theo đúng kế hoạch ở 04; diễn giải sâu để dành cho 06-conclusion.html.
   Mọi con số là [đo được] và link tới file trong results/raw/. Thí nghiệm nào không chạy được: ghi rõ, không ước lượng.
+  Số liệu thống kê lấy từ scripts/stats.py summarize / compare, không tính tay.
 -->
 <body class="draft">
 <div class="layout">
@@ -28,54 +29,116 @@
   <header class="doc-header">
     <div class="eyebrow">Phase 5 · Results</div>
     <h1>{{TOPIC}} — Results</h1>
-    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span><span><a href="results/env.md">Môi trường</a> · <a href="results/raw/">raw</a></span></div>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span><span><a href="results/env.md">Môi trường</a> · <a href="results/raw/">raw</a> · <a href="results/raw/run-order.csv">run-order</a></span></div>
   </header>
 
   <section>
+    <h2 id="summary">Tóm tắt quan sát</h2>
+    <div class="tldr"><ul><li><!-- 3–5 quan sát chính, mỗi quan sát kèm con số và link raw; chưa diễn giải --></li></ul></div>
+  </section>
+
+  <section>
     <h2 id="run-log"><span class="num">1</span>Nhật ký chạy</h2>
-    <div class="guide">Ô nào của ma trận (04 §5) đã chạy, bao nhiêu lần, ô nào lỗi/bỏ và vì sao. Môi trường tóm tắt 1 dòng, chi tiết ở results/env.md.</div>
+    <div class="guide">Theo thứ tự THỰC TẾ (từ run-order.csv). Mọi lần chạy đều có mặt, kể cả lần bị loại, kèm lý do theo tiêu chí ở 04 §7.
+      Nếu đi chệch kế hoạch (đổi N, thêm kịch bản, đổi cấu hình), ghi ở đây và giải thích vì sao.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Impl</th><th>Kịch bản</th><th>Số lần</th><th>Trạng thái</th><th>Raw</th></tr></thead>
-      <tbody><tr><td>before</td><td>S1</td><td></td><td></td><td><a href="results/raw/"></a></td></tr></tbody>
+      <thead><tr><th>#</th><th>Block</th><th>Impl</th><th>Kịch bản</th><th>Run</th><th>Bắt đầu</th><th>Hợp lệ?</th><th>Lý do loại (nếu có)</th><th>Raw</th></tr></thead>
+      <tbody><tr><td>1</td><td>1</td><td class="before">before</td><td>S1</td><td>1</td><td></td><td></td><td></td><td><a href="results/raw/"></a></td></tr></tbody>
+    </table></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Sai lệch so với kế hoạch 04</th><th>Lý do</th><th>Ảnh hưởng tới kết luận</th></tr></thead>
+      <tbody><tr><td><!-- hoặc "Không có" --></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
-    <h2 id="normal"><span class="num">2</span>Kịch bản bình thường: before vs after</h2>
-    <div class="guide">Mỗi kịch bản một bảng. Giá trị = median các lần chạy (kèm min–max). Cột Δ so với before: <span class="delta better">−12%</span> / <span class="delta worse">+35%</span> / <span class="delta same">≈</span>.</div>
-    <h3 id="normal-s1">S1</h3>
+    <h2 id="environment"><span class="num">2</span>Môi trường &amp; hiệu chuẩn</h2>
+    <div class="guide">Tóm tắt 1 dòng (chi tiết ở results/env.md). Kết quả hiệu chuẩn công cụ đo (04 §4.4), bằng chứng đạt steady state (04 §4.3),
+      sức khoẻ load generator (04 §4.6). Nếu hiệu chuẩn lệch ngoài ngưỡng, mọi số latency phía sau phải được cảnh báo.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Chỉ số</th><th class="before">before</th><th>A</th><th>Δ A</th><th>B</th><th>Δ B</th></tr></thead>
+      <thead><tr><th>Kiểm tra</th><th>Kỳ vọng</th><th>Đo được</th><th>Đạt?</th><th>Raw</th></tr></thead>
       <tbody>
-        <tr><td>Throughput (req/s)</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>p50</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>p95</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>p99</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Error rate</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>CPU / RAM</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
-        <tr><td>Connection</td><td class="before"></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Độ trễ tiêm (hiệu chuẩn)</td><td>+20 ms ± 2</td><td></td><td></td><td></td></tr>
+        <tr><td>Overhead observability</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Thời gian tới steady state (median, max)</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>CPU k6 tối đa</td><td>&lt; 70%</td><td></td><td></td><td></td></tr>
+        <tr><td><code>dropped_iterations</code></td><td>0</td><td></td><td></td><td></td></tr>
       </tbody>
     </table></div>
-    <figure class="chart"><img src="results/charts/" alt=""><figcaption></figcaption></figure>
   </section>
 
   <section>
-    <h2 id="failure"><span class="num">3</span>Kịch bản lỗi &amp; toàn vẹn dữ liệu</h2>
+    <h2 id="normal"><span class="num">3</span>Kịch bản bình thường &amp; tải: before vs after</h2>
+    <div class="guide">Mỗi kịch bản một mục. Ô = median [95% CI bootstrap] của metric cấp lần chạy, N = số lần chạy hợp lệ.
+      Cột Δ so với before: Δ% [CI] + Cliff's delta + p (Mann–Whitney). Tô màu Δ theo NGƯỠNG THỰC TẾ ở 04 §1, không theo p-value:
+      <span class="delta better">−12% [−15, −9]</span> / <span class="delta worse">+35% [+28, +41]</span> / <span class="delta same">≈ (CI chứa 0)</span>.</div>
+    <h3 id="normal-s1">S1</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>Kịch bản</th><th>Impl</th><th>Gửi</th><th>Nhận / lưu</th><th>Mất</th><th>Trùng</th><th>Sai thứ tự</th><th>Thời gian phục hồi</th><th>Raw</th></tr></thead>
-      <tbody><tr><td>F1</td><td class="before">before</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Chỉ số</th><th class="before">before (N=)</th><th>A (N=)</th><th>Δ A vs before</th><th>Cliff's δ / p</th><th>B (N=)</th><th>Δ B vs before</th><th>Cliff's δ / p</th></tr></thead>
+      <tbody>
+        <tr><td>Throughput (req/s)</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>p50</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>p95</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>p99</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>p99.9 / max</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Error rate</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+    <figure class="chart"><img src="results/charts/" alt=""><figcaption>Latency CDF (hoặc HDR percentile plot, trục log) theo implementation, gộp mọi sample hợp lệ.</figcaption></figure>
+    <figure class="chart"><img src="results/charts/" alt=""><figcaption>Chuỗi thời gian throughput và p95 của từng lần chạy: kiểm tra ổn định, không có drift.</figcaption></figure>
+
+    <h3 id="normal-sweep">Load sweep</h3>
+    <div class="guide">Đường throughput–latency (trục x: throughput đạt được, trục y: p99) cho mỗi implementation. Ghi knee, throughput tối đa còn giữ SLO, và hành vi sau knee.</div>
+    <figure class="chart"><img src="results/charts/" alt=""><figcaption>Throughput–latency curve.</figcaption></figure>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Impl</th><th>Knee (req/s)</th><th>Max throughput giữ SLO</th><th>Hành vi sau knee</th><th>Raw</th></tr></thead>
+      <tbody><tr><td class="before">before</td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
   <section>
-    <h2 id="variance"><span class="num">4</span>Độ biến thiên giữa các lần chạy</h2>
-    <div class="guide">Stddev hoặc min–max mỗi ô. Chênh lệch giữa implementation nhỏ hơn biến thiên thì không được coi là khác biệt.</div>
+    <h2 id="failure"><span class="num">4</span>Kịch bản lỗi &amp; toàn vẹn dữ liệu</h2>
+    <div class="guide">Số liệu từ invariant checker (04 §4.7). Ghi số tuyệt đối, không chỉ %. Thời gian phục hồi đo từ lúc hết lỗi đến khi metric về ngưỡng định nghĩa trước.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kịch bản</th><th>Impl</th><th>Gửi</th><th>Đã lưu / nhận</th><th>Mất</th><th>Trùng</th><th>Sai thứ tự</th><th>Vi phạm invariant khác</th><th>Thời gian phục hồi</th><th>Tốc độ xả backlog</th><th>Raw</th></tr></thead>
+      <tbody><tr><td>F1</td><td class="before">before</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <figure class="chart"><img src="results/charts/" alt=""><figcaption>Chuỗi thời gian quanh thời điểm tiêm lỗi: error rate, latency, backlog/lag.</figcaption></figure>
   </section>
 
   <section>
-    <h2 id="anomalies"><span class="num">5</span>Bất thường &amp; điều tra</h2>
-    <div class="guide">Kết quả lạ (trái giả thuyết, biến thiên lớn, lỗi không mong đợi): quan sát → giả thuyết nguyên nhân → cách kiểm tra → kết luận. Có điều tra dở dang thì ghi rõ.</div>
-    <div class="callout warn"><span class="callout-title">Bất thường</span><p></p></div>
+    <h2 id="resources"><span class="num">5</span>Tài nguyên (USE)</h2>
+    <div class="guide">Theo bảng USE ở 04 §4.5, lấy từ export Prometheus (<code>prom_export.py --preset resources ...</code>). Saturation quan trọng ngang utilization.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tài nguyên</th><th>Chỉ số</th><th class="before">before</th><th>A</th><th>Δ A</th><th>B</th><th>Δ B</th><th>Raw</th></tr></thead>
+      <tbody>
+        <tr><td>CPU app</td><td>Utilization (cores)</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>CPU app</td><td>Saturation (throttled ratio)</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>RAM</td><td></td><td class="before"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Connection pool</td><td>active / pending / timeout</td><td class="before"></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>DB / broker</td><td></td><td class="before"></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="variance"><span class="num">6</span>Độ biến thiên</h2>
+    <div class="guide">IQR và CoV giữa các lần chạy cho mỗi ô ma trận. Δ nhỏ hơn độ biến thiên thì không được coi là khác biệt.
+      So CoV thực tế với CoV pilot ở 04 §2.5: lớn hơn nhiều thì N đã chọn có thể không đủ, ghi lại.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Impl</th><th>Kịch bản</th><th>Metric</th><th>IQR</th><th>CoV</th><th>CoV pilot</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="anomalies"><span class="num">7</span>Bất thường &amp; điều tra</h2>
+    <div class="guide">Mỗi bất thường (trái giả thuyết, biến thiên lớn, lỗi không mong đợi): quan sát → giả thuyết nguyên nhân → kiểm tra bằng trace (Tempo), log (Loki),
+      profile (Pyroscope) hoặc chạy thêm có kiểm soát → kết luận. Ghi lại truy vấn đã dùng để người khác kiểm lại được. Điều tra dở dang thì ghi rõ.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Quan sát</th><th>Giả thuyết nguyên nhân</th><th>Kiểm tra (truy vấn / lần chạy thêm)</th><th>Kết luận</th><th>Raw</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
   </section>
 
   </article>

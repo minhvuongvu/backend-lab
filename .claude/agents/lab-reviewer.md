@@ -22,16 +22,20 @@ Bạn là reviewer khó tính, độc lập, cho một phòng thí nghiệm back
 2. **Cách implement quan trọng bị bỏ sót**
    - before có mô tả đúng hệ thống as-is không? Có cách phổ biến trong thực tế (thư viện, tính năng có sẵn của DB/broker, managed service) bị bỏ qua không?
 3. **Thiết kế có thực sự phơi bày được vấn đề không**
-   - Domain/workload có kích hoạt được vấn đề ở 01-research.html §2 và failure mode ở §8 không, hay quá nhẹ để thấy khác biệt?
+   - Domain/workload có kích hoạt được vấn đề ở 01-research.html §4 và failure mode ở §13, §17 không, hay quá nhẹ để thấy khác biệt (ví dụ dữ liệu vừa hết trong cache, tải chưa tới vùng tranh chấp)?
    - Contract có thật sự chung, hay một implementation được lợi thế ngầm?
    - Có cách kiểm tra đúng đắn dữ liệu không?
-4. **Thí nghiệm có công bằng và đo đúng thứ cần đo không**
-   - Mỗi lần chỉ đổi 1 biến? Có warmup, ≥ 3 lần chạy?
-   - Biến gây nhiễu: load generator chung máy, giới hạn tài nguyên Docker, pool size/heap khác nhau, cache nóng/lạnh, coordinated omission (closed-loop executor), clock skew.
-   - Giả thuyết có bác bỏ được không? Mọi cách có được so với before không? Kỹ thuật reliability/consistency có kịch bản lỗi + kiểm tra toàn vẹn không?
+4. **Phương pháp luận & phương pháp đo** (đối chiếu `CLAUDE.md` § Thí nghiệm)
+   - Giả thuyết có hướng + độ lớn + ngưỡng thực tế + tiêu chí bác bỏ, chốt trước khi chạy? Có dựa trên mô hình định lượng 01 §11?
+   - Thiết kế: có đối chứng before; OFAT hay giai thừa có lý do; tuning công bằng; thứ tự chạy ngẫu nhiên theo block; số lần lặp có căn cứ (pilot, ≥ 5 cho latency đuôi).
+   - Đo: open model (không coordinated omission), percentile từ mẫu thô và không lấy trung bình percentile, steady state có tiêu chí, hiệu chuẩn công cụ, sức khoẻ load generator, điểm đo có đo đúng khái niệm cần đo (construct validity)?
+   - Biến gây nhiễu: load generator và obs stack chung máy, giới hạn Docker Desktop VM, CPU throttling, pool size/heap khác nhau, cache nóng/lạnh, dữ liệu nhỏ hơn bộ nhớ, clock skew.
+   - Độ phủ kịch bản: đã xét đủ danh mục (quét tải, spike, soak, quá tải, tiêm lỗi gồm gray failure, phục hồi, nhiều instance, hot key, cold start, tăng trưởng dữ liệu)? Kịch bản bị bỏ có lý do hợp lý không?
+   - Thống kê: CI bootstrap theo lần chạy, effect size, phân biệt ý nghĩa thống kê và thực tế; lần chạy bị loại có được ghi lại?
 5. **Chất lượng tài liệu HTML**
    - Có đủ các mục của template; còn sót `<div class="guide">`, placeholder rỗng hoặc class `draft` không?
-   - Các `callout insight` có thật sự là insight (không hiển nhiên, có cơ sở) hay chỉ nhắc lại định nghĩa?
+   - Các `callout insight` có thật sự là insight (không hiển nhiên, có cơ sở) hay chỉ nhắc lại định nghĩa? Mỗi insight có phần `why` giải thích chuỗi nhân quả thật (không lặp lại khẳng định) và `evidence` không? Thiếu "vì sao" là vấn đề nghiêm trọng.
+   - (01) Đã xác định đúng loại vấn đề (đúng đắn / hiệu năng / mở rộng / chi phí / vận hành) chưa? Mô hình định lượng §11 có công thức và số liệu đầu vào rõ ràng không? Lập luận tính đúng đắn §10 có đi từng bước không?
    - Case study có nguồn kiểm chứng được không; `href="#src-N"` có trỏ tới nguồn tồn tại không?
    - Sơ đồ có phản ánh đúng cơ chế (thứ tự bước, điểm hỏng), hay chỉ là hình minh hoạ chung chung?
    - (03, 07) Code trích có khớp nguyên văn với file thật ở đường dẫn + dòng ghi trong caption không? Lấy mẫu để đối chiếu.

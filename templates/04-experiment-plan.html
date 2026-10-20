@@ -12,8 +12,10 @@
 <script src="../shared/docs/lab.js" defer></script>
 </head>
 <!--
-  Phase 4 — Experiment plan (mục tiêu 12). Thiết kế thí nghiệm so sánh TRƯỚC (before) và SAU (từng implementation).
-  Viết TRƯỚC khi chạy. Sau khi chạy không sửa giả thuyết; sai thì ghi là sai ở 06-conclusion.html.
+  Phase 4 — Experiment plan (mục tiêu 12). Thiết kế thí nghiệm so sánh TRƯỚC (before = nhóm đối chứng) và SAU (từng implementation).
+  Viết TRƯỚC khi chạy và commit trước khi chạy (pre-registration): giả thuyết, cỡ mẫu, tiêu chí loại bỏ, phương pháp thống kê
+  không được sửa sau khi đã thấy số liệu. Sai thì ghi là sai ở 06-conclusion.html.
+  Insight: p.claim (khẳng định) + div.why (chuỗi nhân quả) + div.evidence (nguồn + cách kiểm chứng).
 -->
 <body class="draft">
 <div class="layout">
@@ -28,116 +30,319 @@
   <header class="doc-header">
     <div class="eyebrow">Phase 4 · Experiment plan</div>
     <h1>{{TOPIC}} — Experiment plan</h1>
-    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span></div>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span><span>Pre-registered tại commit: <code><!-- hash --></code></span></div>
   </header>
 
   <section>
-    <h2 id="hypotheses"><span class="num">1</span>Giả thuyết</h2>
-    <div class="guide">Từ 01 §17 và các ô "có đo" ở 01 §13. Mỗi giả thuyết so sánh một implementation với before (hoặc giữa các implementation), bác bỏ được, có ngưỡng định lượng.
-      Ví dụ: "H1: Ở 500 req/s, A có p99 cao hơn before không quá 20% vì thêm 1 INSERT trong cùng transaction; bác bỏ nếu &gt; 20%."</div>
+    <h2 id="summary">Tóm tắt kế hoạch</h2>
+    <div class="tldr"><ul>
+      <li><!-- So sánh gì với gì (before vs A, B...), trên workload nào --></li>
+      <li><!-- Giả thuyết quan trọng nhất và ngưỡng có ý nghĩa thực tế --></li>
+      <li><!-- Số kịch bản bình thường / lỗi, số lần lặp, tổng thời gian chạy ước tính --></li>
+    </ul></div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section>
+    <h2 id="hypotheses"><span class="num">1</span>Câu hỏi nghiên cứu &amp; giả thuyết</h2>
+    <div class="guide">Mỗi câu hỏi ở 01 §25 và mỗi ô "có đo" ở 01 §18 → ít nhất một giả thuyết. Mỗi giả thuyết là MỘT phép so sánh (impl vs before hoặc impl vs impl),
+      có hướng + độ lớn dự đoán lấy từ mô hình định lượng ở 01 §11 (không đoán mò), có <strong>ngưỡng hiệu ứng tối thiểu có ý nghĩa thực tế</strong>
+      (ví dụ: chênh p99 &lt; 2 ms không đáng để đổi kiến trúc) và tiêu chí bác bỏ cụ thể.
+      Giả thuyết về đúng đắn (mất/trùng dữ liệu) ghi dưới dạng invariant từ 01 §10, kỳ vọng 0 vi phạm.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Từ</th><th>So sánh</th><th>Giả thuyết</th><th>Cơ sở</th><th>Bác bỏ nếu</th></tr></thead>
-      <tbody><tr><td>H1</td><td>Q1</td><td>A vs before</td><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>ID</th><th>Từ</th><th>So sánh</th><th>Metric</th><th>Dự đoán (hướng + độ lớn)</th><th>Cơ sở (01 §11 / §10)</th><th>Ngưỡng có ý nghĩa thực tế</th><th>Bác bỏ nếu</th></tr></thead>
+      <tbody><tr><td>H1</td><td>Q1</td><td>A vs before</td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
+  <!-- ================================================================ -->
   <section>
-    <h2 id="variables"><span class="num">2</span>Biến</h2>
+    <h2 id="design"><span class="num">2</span>Thiết kế thí nghiệm</h2>
+
+    <h3 id="design-control">2.1 Đối chứng &amp; biến</h3>
+    <div class="guide">before là nhóm đối chứng: chạy cùng workload, cùng giới hạn tài nguyên, cùng chế độ observability như mọi implementation.
+      Liệt kê đủ 4 loại biến. "Gây nhiễu đã biết" là thứ không kiểm soát hoàn toàn được nhưng phải theo dõi (nhiệt độ CPU, tác vụ nền, page cache...).</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Loại</th><th>Biến</th><th>Giá trị / mức</th></tr></thead>
+      <thead><tr><th>Loại</th><th>Biến</th><th>Giá trị / mức</th><th>Cách giữ cố định / theo dõi</th></tr></thead>
       <tbody>
-        <tr><td>Độc lập (mỗi lần đổi 1)</td><td>Implementation</td><td>before, A, B</td></tr>
-        <tr><td>Độc lập</td><td><!-- tải, payload, số partition... --></td><td></td></tr>
-        <tr><td>Phụ thuộc</td><td><!-- throughput, p50/p95/p99, error rate, CPU/RAM, connection, số bản ghi mất/trùng --></td><td></td></tr>
-        <tr><td>Kiểm soát</td><td><!-- version, heap, pool size, giới hạn tài nguyên Docker, dữ liệu seed --></td><td></td></tr>
+        <tr><td>Độc lập (chính)</td><td>Implementation</td><td>before, A, B</td><td>Spring profile / <code>IMPL</code></td></tr>
+        <tr><td>Độc lập (phụ)</td><td><!-- tải, payload, số partition... --></td><td></td><td></td></tr>
+        <tr><td>Phụ thuộc</td><td><!-- throughput, p50/p95/p99/p99.9, error rate, CPU/RAM, connection, số bản ghi mất/trùng, recovery time --></td><td></td><td></td></tr>
+        <tr><td>Kiểm soát</td><td><!-- version, heap, GC, pool size, cpus/mem_limit, dữ liệu seed, OBS mode, sampling --></td><td></td><td></td></tr>
+        <tr><td>Gây nhiễu đã biết</td><td><!-- thermal, tác vụ nền, page cache, JIT, autovacuum, log compaction --></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="design-factors">2.2 OFAT và thiết kế giai thừa</h3>
+    <div class="guide">Phép so sánh chính dùng OFAT (one-factor-at-a-time): chỉ đổi implementation, mọi thứ khác giữ nguyên, để Δ quy được về đúng một nguyên nhân.
+      Chỉ dùng thiết kế giai thừa nhỏ (ví dụ 2×2: batch size × poll interval) khi 01 §11 dự đoán có TƯƠNG TÁC giữa hai yếu tố: OFAT không phát hiện được tương tác,
+      tối ưu từng biến riêng lẻ có thể bỏ lỡ tổ hợp tốt nhất hoặc kết luận sai chiều. Ghi rõ tương tác dự đoán và lý do.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Phép so sánh</th><th>Thiết kế</th><th>Yếu tố &amp; mức</th><th>Lý do (tương tác dự đoán?)</th></tr></thead>
+      <tbody><tr><td></td><td><!-- OFAT / 2×2 / 2×3 --></td><td></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="design-tuning">2.3 Tuning công bằng</h3>
+    <div class="guide">Mỗi implementation (kể cả before) được tune tới cấu hình hợp lý tốt nhất <strong>trong cùng ngân sách tài nguyên</strong>, theo cùng một quy trình
+      (ví dụ: quét pool size 5/10/20, chọn giá trị tốt nhất ở tải S1). Không bao giờ so "default vs đã tune". Ghi lại quá trình: thử gì, số đo, chọn gì, vì sao.
+      Dữ liệu tune lưu riêng (<code>results/raw/tuning-*</code>), không trộn vào số liệu chính.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Impl</th><th>Tham số tune</th><th>Giá trị đã thử</th><th>Chọn</th><th>Lý do</th><th>Raw</th></tr></thead>
+      <tbody><tr><td>before</td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="design-order">2.4 Thứ tự chạy ngẫu nhiên xen kẽ theo block</h3>
+    <div class="guide">Không chạy hết before rồi mới tới A rồi B: drift theo thời gian (nhiệt, tác vụ nền, page cache, dữ liệu tăng dần) sẽ bị nhầm thành khác biệt giữa implementation.
+      Chia thành block, mỗi block chạy mỗi implementation đúng một lần theo thứ tự ngẫu nhiên (seed cố định, ghi lại).
+      Sinh bằng <code>python3 scripts/stats.py plan-order</code> (đầu ra <code>results/raw/run-order.csv</code>).
+      Giữa các lần chạy: reset trạng thái theo quy trình cố định (restart container? xoá dữ liệu? giữ dữ liệu?) và ghi rõ.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mục</th><th>Giá trị</th></tr></thead>
+      <tbody>
+        <tr><td>Seed</td><td></td></tr>
+        <tr><td>Số block</td><td></td></tr>
+        <tr><td>Reset giữa các lần chạy</td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="design-replication">2.5 Số lần lặp &amp; quy tắc dừng</h3>
+    <div class="guide">Chạy pilot (≥ 3 lần mỗi impl ở S1) để đo độ biến thiên giữa các lần chạy (CoV của metric chính), rồi chọn N sao cho khoảng tin cậy
+      đủ hẹp để phân biệt ngưỡng hiệu ứng tối thiểu ở §1. Mặc định ≥ 5 lần cho tail latency (p99 biến thiên mạnh hơn median nhiều; 3 lần không đủ để ước lượng CI).
+      Quy tắc dừng cố định TRƯỚC khi chạy (N cố định, hoặc "thêm 5 lần nếu CI của Δ còn chứa cả 0 và ngưỡng, tối đa M lần"), không dừng khi "thấy kết quả đẹp".</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kịch bản</th><th>CoV pilot (metric chính)</th><th>Ngưỡng hiệu ứng</th><th>N chọn</th><th>Quy tắc dừng</th></tr></thead>
+      <tbody><tr><td>S1</td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section>
+    <h2 id="workload"><span class="num">3</span>Mô hình workload</h2>
+    <div class="guide">Workload quyết định thí nghiệm đo cái gì. Mỗi lựa chọn phải có lý do gắn với bối cảnh nghiệp vụ ở 01 §1.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Khía cạnh</th><th>Lựa chọn</th><th>Lý do</th></tr></thead>
+      <tbody>
+        <tr><td>Mô hình tải</td><td>Open (constant-arrival-rate)</td><td>Closed model (VU chờ response mới gửi tiếp) tự giảm tải khi hệ thống chậm, gây coordinated omission và che mất tail latency. Open model giữ tốc độ đến bất kể hệ thống. Chỉ dùng closed khi client thật có giới hạn đồng thời; khi đó ghi rõ.</td></tr>
+        <tr><td>Arrival process</td><td><!-- constant / Poisson / burst --></td><td><!-- Poisson gần lưu lượng thật; constant dễ tái lập --></td></tr>
+        <tr><td>Phân phối key</td><td><!-- uniform / Zipf(s=?) / hot key --></td><td><!-- contention, cache hit, partition skew phụ thuộc vào đây --></td></tr>
+        <tr><td>Kích thước payload</td><td></td><td></td></tr>
+        <tr><td>Tỉ lệ đọc/ghi</td><td></td><td></td></tr>
+        <tr><td>Khối lượng dữ liệu vs bộ nhớ</td><td><!-- working set vừa / vượt buffer pool, cache --></td><td><!-- khi liên quan, chạy cả hai: kết quả "vừa RAM" không suy ra được cho "vượt RAM" --></td></tr>
+        <tr><td>Sinh dữ liệu</td><td><!-- script + seed --></td><td>Tái lập được; mọi lần chạy cùng dữ liệu khởi đầu.</td></tr>
       </tbody>
     </table></div>
   </section>
 
+  <!-- ================================================================ -->
   <section>
-    <h2 id="workload"><span class="num">3</span>Workload</h2>
-    <div class="guide">k6 scenario: ưu tiên executor constant-arrival-rate (open model) để tránh coordinated omission. Rate, duration, phân phối key, dữ liệu seed. Warmup bao lâu, có loại khỏi số liệu không.</div>
+    <h2 id="measurement"><span class="num">4</span>Phương pháp đo</h2>
+
+    <h3 id="measurement-points">4.1 Điểm đo &amp; mỗi điểm thấy gì</h3>
+    <div class="guide">Client và server đo những thứ khác nhau: latency phía client gồm cả hàng đợi kết nối và mạng; phía server chỉ tính từ lúc request được nhận.
+      Chênh lệch giữa hai điểm đo là thông tin (hàng đợi nằm ở đâu), không phải lỗi.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Tham số</th><th>Giá trị</th><th>Lý do</th></tr></thead>
+      <thead><tr><th>Điểm đo</th><th>Công cụ</th><th>Thấy được</th><th>Không thấy</th><th>Dùng cho metric</th></tr></thead>
       <tbody>
-        <tr><td>Executor</td><td></td><td></td></tr>
-        <tr><td>Warmup</td><td></td><td></td></tr>
-        <tr><td>Thời lượng đo</td><td></td><td></td></tr>
-        <tr><td>Số lần lặp mỗi ô</td><td>≥ 3</td><td></td></tr>
+        <tr><td>Client</td><td>k6 (sample thô)</td><td>Latency end-to-end, error, throughput thực nhận</td><td>Phân bổ thời gian bên trong</td><td></td></tr>
+        <tr><td>Server</td><td>Micrometer / trace</td><td>Thời gian xử lý, pool, GC</td><td>Hàng đợi trước khi accept</td><td></td></tr>
+        <tr><td>DB / broker</td><td>exporter, <code>pg_stat_*</code>, consumer lag</td><td></td><td></td><td></td></tr>
+        <tr><td>Container</td><td><code>lab_container_*</code></td><td>CPU, RAM, IO, throttling</td><td>Chi tiết trong process</td><td></td></tr>
       </tbody>
+    </table></div>
+
+    <h3 id="measurement-latency">4.2 Latency percentile</h3>
+    <div class="guide">Percentile tính từ sample thô (k6 <code>--out csv</code> hoặc HDR histogram). KHÔNG lấy trung bình các p99 giữa các lần chạy
+      (percentile không cộng/trung bình được) và KHÔNG lấy p99 từ Prometheus độ phân giải 5s để kết luận (5s gộp mất spike).
+      Báo cáo percentile từng lần chạy (để tính biến thiên) và percentile gộp mọi sample (để vẽ CDF). Ghi p99.9 và max khi đủ sample
+      (p99.9 cần khoảng ≥ 10.000 sample mỗi lần chạy mới ổn định). Đồng hồ: dùng thời gian của một máy cho latency; khi so sánh mốc thời gian giữa các container, ghi độ lệch đồng hồ.</div>
+
+    <h3 id="measurement-steady">4.3 Warmup &amp; trạng thái ổn định</h3>
+    <div class="guide">Warmup không chọn theo cảm tính. Tiêu chí ổn định cố định trước. Tiêu chí chính là điểm cắt MSER-5 (chọn điểm cắt làm sai số chuẩn của phần còn lại nhỏ nhất),
+      tiêu chí phụ là CoV cuộn (ví dụ 3 cửa sổ liên tiếp &lt; 5%). Không dùng CoV một mình: khi thử với warmup giảm dần, CoV báo "ổn định" lúc giá trị còn lệch ~28% vì
+      độ biến thiên trong cửa sổ ngắn nhỏ dù xu hướng vẫn đang đi lên. Kiểm bằng <code>python3 scripts/stats.py steady-state</code>; nếu điểm cắt rơi sát cuối chuỗi thì lần chạy quá ngắn. Chỉ dữ liệu sau thời điểm ổn định được tính; lần chạy không đạt ổn định là không hợp lệ (§7).
+      JVM cần warmup cho JIT, DB cần warmup buffer pool, trừ khi kịch bản đo chính cold start.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tham số</th><th>Giá trị</th></tr></thead>
+      <tbody>
+        <tr><td>Batch MSER / điểm cắt tối đa cho phép</td><td></td></tr>
+        <tr><td>Cửa sổ / số cửa sổ / ngưỡng CoV (phụ)</td><td></td></tr>
+        <tr><td>Warmup tối đa trước khi coi là không ổn định</td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="measurement-calibration">4.4 Hiệu chuẩn công cụ đo &amp; overhead</h3>
+    <div class="guide">Trước khi tin công cụ đo, kiểm nó: tiêm độ trễ đã biết (toxiproxy latency hoặc <code>tc netem delay 20ms</code>) vào một dependency
+      và kiểm số đo tăng đúng khoảng 20ms. Đo overhead của chính observability (tracing sampling, profiling) bằng một lần chạy before có và không bật.
+      Ghi kết quả hiệu chuẩn vào 05 §2.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Kiểm tra</th><th>Cách làm</th><th>Kỳ vọng</th><th>Ngưỡng chấp nhận</th></tr></thead>
+      <tbody>
+        <tr><td>Độ trễ tiêm</td><td></td><td>+20 ms</td><td>± 2 ms</td></tr>
+        <tr><td>Overhead tracing / profiling</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="measurement-use-red">4.5 USE cho tài nguyên, RED cho service</h3>
+    <div class="guide">Mỗi tài nguyên (CPU, RAM, disk, network, connection pool, thread pool, queue): Utilization, Saturation (hàng đợi, throttling, pending), Errors.
+      Mỗi service: Rate, Errors, Duration. Saturation thường giải thích vì sao latency tăng, nên phải đo nó chứ không chỉ đo utilization.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tài nguyên / service</th><th>Utilization / Rate</th><th>Saturation / Errors</th><th>Errors / Duration</th></tr></thead>
+      <tbody>
+        <tr><td>CPU container</td><td><code>lab_container_cpu_usage_seconds_total</code></td><td><code>lab_container_cpu_throttled_*</code></td><td>—</td></tr>
+        <tr><td>Connection pool</td><td><code>hikaricp_connections_active</code></td><td><code>hikaricp_connections_pending</code></td><td><code>hikaricp_connections_timeout_total</code></td></tr>
+        <tr><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="measurement-loadgen">4.6 Sức khoẻ load generator</h3>
+    <div class="guide">Load generator quá tải thì số đo là của k6, không phải của hệ thống. Mỗi lần chạy kiểm: CPU của k6 &lt; khoảng 70%,
+      <code>dropped_iterations</code> = 0 (open model giữ được rate), số VU chưa chạm <code>maxVUs</code>. Vi phạm thì lần chạy không hợp lệ.</div>
+
+    <h3 id="measurement-correctness">4.7 Đo tính đúng đắn</h3>
+    <div class="guide">Mỗi thao tác mang id duy nhất. Lưu lịch sử thao tác (gửi gì, lúc nào, kết quả) vào raw. Sau mỗi lần chạy, chạy invariant checker
+      (invariant từ 01 §10, chiến lược kiểm chứng ở 01 §24): đếm mất, trùng, sai thứ tự, vi phạm ràng buộc nghiệp vụ. Checker phải được test trước bằng dữ liệu cố ý sai:
+      một checker chưa từng báo lỗi thì chưa chứng minh được gì.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Invariant (01 §10)</th><th>Cách kiểm</th><th>Đã test checker bằng dữ liệu sai?</th><th>Lưu ở</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td><code>results/raw/...-integrity.json</code></td></tr></tbody>
     </table></div>
   </section>
 
+  <!-- ================================================================ -->
   <section>
-    <h2 id="scenarios"><span class="num">4</span>Kịch bản</h2>
-    <h3 id="scenarios-normal">4.1 Bình thường</h3>
+    <h2 id="coverage"><span class="num">5</span>Danh mục kịch bản</h2>
+
+    <h3 id="coverage-checklist">5.1 Checklist độ phủ</h3>
+    <div class="guide">Đi hết từng dòng. Mỗi dòng phải có "Có" kèm ID kịch bản, hoặc "Không" kèm lý do cụ thể; không bỏ trống. Kỹ thuật reliability/consistency bắt buộc có nhóm lỗi và phục hồi.
+      Failure mode lấy từ 01 §13 (solution) và 01 §17 (từng cách).</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Mô tả</th><th>Tham số</th><th>Kiểm giả thuyết</th></tr></thead>
-      <tbody><tr><td>S1</td><td></td><td></td><td></td></tr></tbody>
+      <thead><tr><th>Nhóm</th><th>Câu hỏi nó trả lời</th><th>Áp dụng?</th><th>ID kịch bản / lý do nếu không</th></tr></thead>
+      <tbody>
+        <tr><td>Baseline / bình thường</td><td>Ở tải đại diện, khác biệt là bao nhiêu?</td><td></td><td></td></tr>
+        <tr><td>Load sweep tới bão hoà</td><td>Knee ở đâu? Throughput tối đa còn giữ SLO? Đường cong throughput–latency?</td><td></td><td></td></tr>
+        <tr><td>Spike / burst</td><td>Hấp thụ đột biến thế nào, bao lâu thì về bình thường?</td><td></td><td></td></tr>
+        <tr><td>Soak / endurance</td><td>Rò rỉ bộ nhớ, table bloat, compaction, GC drift sau hàng giờ?</td><td></td><td></td></tr>
+        <tr><td>Quá tải &amp; backpressure</td><td>Vượt capacity thì shed load, hàng đợi phình, hay timeout dây chuyền?</td><td></td><td></td></tr>
+        <tr><td>Crash / <code>kill -9</code></td><td>Mất / trùng dữ liệu khi chết đột ngột?</td><td></td><td></td></tr>
+        <tr><td>Graceful restart / deploy</td><td>Rolling restart có gây lỗi không?</td><td></td><td></td></tr>
+        <tr><td>Network partition</td><td>Hành xử khi mất kết nối giữa các thành phần?</td><td></td><td></td></tr>
+        <tr><td>Latency injection / packet loss</td><td>Dependency chậm, mất gói thì timeout, retry, pool cạn ra sao?</td><td></td><td></td></tr>
+        <tr><td>Slow dependency / gray failure</td><td>Dependency "sống nhưng chậm" (khó phát hiện hơn chết hẳn)?</td><td></td><td></td></tr>
+        <tr><td>Disk đầy</td><td>Ghi thất bại được xử lý hay làm hỏng trạng thái?</td><td></td><td></td></tr>
+        <tr><td>Clock skew</td><td>Logic dựa vào thời gian (TTL, lease, ordering) có vỡ?</td><td></td><td></td></tr>
+        <tr><td>Failover DB / broker</td><td>Mất leader/primary thì mất ghi, trùng ghi, hay chỉ chậm?</td><td></td><td></td></tr>
+        <tr><td>Phục hồi</td><td>Thời gian phục hồi, tốc độ xả backlog?</td><td></td><td></td></tr>
+        <tr><td>Đồng thời / scale-out (≥ 2 instance)</td><td>Race, xử lý trùng, thứ tự khi nhiều instance?</td><td></td><td></td></tr>
+        <tr><td>Contention / hot key</td><td>Một key nóng làm nghẽn cả hệ thống?</td><td></td><td></td></tr>
+        <tr><td>Cold start</td><td>JIT, cache rỗng, connection chưa mở?</td><td></td><td></td></tr>
+        <tr><td>Dữ liệu tăng theo thời gian</td><td>Hiệu năng khi bảng/topic lớn dần?</td><td></td><td></td></tr>
+      </tbody>
     </table></div>
-    <h3 id="scenarios-failure">4.2 Lỗi</h3>
-    <div class="guide">Từ failure mode ở 01 §9 và §12. Bắt buộc với reliability/consistency: kill container, network delay/partition (tc netem, toxiproxy), crash giữa transaction...
-      before cũng chạy các kịch bản này để thấy bài toán xảy ra.</div>
+
+    <h3 id="scenarios-normal">5.2 Kịch bản bình thường &amp; tải</h3>
     <div class="table-wrap"><table>
-      <thead><tr><th>ID</th><th>Failure mode</th><th>Lỗi tiêm vào</th><th>Thời điểm / thời lượng</th><th>Kiểm tra toàn vẹn</th><th>Kỳ vọng before</th><th>Kỳ vọng sau</th></tr></thead>
+      <thead><tr><th>ID</th><th>Nhóm</th><th>Mô tả</th><th>Tham số (rate, thời lượng, phân phối)</th><th>Kiểm giả thuyết</th><th>Kỳ vọng before</th><th>Kỳ vọng sau</th></tr></thead>
+      <tbody><tr><td>S1</td><td>Baseline</td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="scenarios-failure">5.3 Kịch bản lỗi</h3>
+    <div class="guide">Mỗi kịch bản: tiêm lỗi gì, bằng công cụ nào (docker kill, toxiproxy, tc netem, pumba...), tại thời điểm nào (ví dụ giây 60 sau steady state, hoặc chính xác giữa
+      commit DB và gửi broker bằng fault hook), kéo dài bao lâu. before cũng chạy để thấy bài toán xảy ra.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Failure mode (01 §13/§17)</th><th>Lỗi tiêm &amp; công cụ</th><th>Thời điểm / thời lượng</th><th>Kiểm tra toàn vẹn</th><th>Kỳ vọng before</th><th>Kỳ vọng sau</th></tr></thead>
       <tbody><tr><td>F1</td><td>FM1</td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 
+  <!-- ================================================================ -->
   <section>
-    <h2 id="matrix"><span class="num">5</span>Ma trận implementation × kịch bản</h2>
-    <div class="guide">✓ = chạy, — = không áp dụng (ghi lý do). Cột before luôn có. Mỗi ô ✓ chạy ≥ 3 lần.</div>
+    <h2 id="matrix"><span class="num">6</span>Ma trận &amp; thứ tự chạy</h2>
+    <div class="guide">✓ = chạy N lần, — = không áp dụng (ghi lý do). Cột before luôn có. Thứ tự thực tế lấy từ <code>results/raw/run-order.csv</code>.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>Impl \ Kịch bản</th><th>S1</th><th>F1</th></tr></thead>
       <tbody>
-        <tr><td class="before">before</td><td>✓</td><td>✓</td></tr>
-        <tr><td>A</td><td>✓</td><td>✓</td></tr>
+        <tr><td class="before">before</td><td>✓ × N</td><td>✓ × N</td></tr>
+        <tr><td>A</td><td>✓ × N</td><td>✓ × N</td></tr>
       </tbody>
     </table></div>
+    <p>Tổng số lần chạy: <!-- --> · Thời gian ước tính: <!-- --></p>
   </section>
 
+  <!-- ================================================================ -->
   <section>
-    <h2 id="nfr-measure"><span class="num">6</span>Đo tiêu chí phi chức năng</h2>
-    <div class="guide">Với mỗi tiêu chí ở 01 §13: đo bằng gì, ở kịch bản nào. Tiêu chí không đo được trên local (availability dài hạn, chi phí cloud...) thì ghi cách đánh giá thay thế.</div>
+    <h2 id="validity-rules"><span class="num">7</span>Tiêu chí hợp lệ &amp; quy tắc loại bỏ</h2>
+    <div class="guide">Cố định trước khi chạy. Lần chạy bị loại vẫn giữ raw và ghi vào nhật ký 05 §1 kèm lý do, không bao giờ xoá lặng lẽ.
+      Không loại outlier chỉ vì nó "xấu"; chỉ loại khi vi phạm tiêu chí hợp lệ. Nếu có quy tắc outlier thống kê, ghi rõ ở đây và áp dụng như nhau cho mọi impl.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Tiêu chí</th><th>Đo bằng</th><th>Kịch bản</th><th>Ghi chú</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
-    </table></div>
-  </section>
-
-  <section>
-    <h2 id="criteria"><span class="num">7</span>Tiêu chí đánh giá</h2>
-    <div class="guide">Thứ tự ưu tiên: đúng đắn &gt; ... Ngưỡng chênh lệch có ý nghĩa so với độ biến thiên giữa các lần chạy (ví dụ: chênh &gt; 2× stddev).</div>
-    <ul><li></li></ul>
-  </section>
-
-  <section>
-    <h2 id="bias"><span class="num">8</span>Yếu tố gây sai lệch trên máy local</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Yếu tố</th><th>Ảnh hưởng</th><th>Giảm thiểu</th></tr></thead>
+      <thead><tr><th>Tiêu chí</th><th>Kiểm bằng</th><th>Vi phạm thì</th></tr></thead>
       <tbody>
-        <tr><td>k6 và hệ thống tranh CPU cùng máy</td><td></td><td></td></tr>
-        <tr><td>Giới hạn tài nguyên Docker Desktop VM</td><td></td><td></td></tr>
-        <tr><td>JIT / cache chưa warm</td><td></td><td></td></tr>
-        <tr><td>Thermal throttling, tác vụ nền</td><td></td><td></td></tr>
-        <tr><td>Overhead của observability (tracing sampling, profiling, chính stack obs ~600 MiB RAM)</td><td></td><td><!-- giữ cấu hình obs giống nhau cho mọi ô; đo hiệu năng thuần với OBS=metrics + sampling 0 --></td></tr>
-        <tr><td>CPU throttling do giới hạn cpus của container</td><td></td><td><!-- theo dõi lab_container_cpu_throttled_* --></td></tr>
+        <tr><td>Đạt trạng thái ổn định (§4.3)</td><td><code>stats.py steady-state</code></td><td>Loại, chạy lại</td></tr>
+        <tr><td>Load generator khoẻ (§4.6)</td><td>CPU k6, <code>dropped_iterations</code></td><td>Loại, chạy lại</td></tr>
+        <tr><td>Không có lỗi không liên quan (OOM stack obs, mạng host...)</td><td>log, <code>lab_container_oom_killed</code></td><td>Loại, chạy lại</td></tr>
+        <tr><td>Môi trường không đổi (version, cấu hình, OBS mode)</td><td>So với <code>results/env.md</code></td><td>Loại cả block</td></tr>
+        <tr><td>Quy tắc outlier thống kê (nếu có)</td><td></td><td></td></tr>
       </tbody>
     </table></div>
   </section>
 
+  <!-- ================================================================ -->
   <section>
-    <h2 id="procedure"><span class="num">9</span>Quy trình chạy &amp; lưu kết quả</h2>
-    <pre><code class="language-bash">make obs-up OBS=metrics            # or full for diagnosis runs — same mode for every cell
+    <h2 id="statistics"><span class="num">8</span>Phân tích thống kê</h2>
+    <div class="guide">Đơn vị phân tích là LẦN CHẠY, không phải từng request: request trong một lần chạy tương quan với nhau (cùng trạng thái GC, cache, nhiệt),
+      coi chúng là độc lập sẽ cho CI hẹp giả tạo. Lệnh: <code>python3 scripts/stats.py summarize</code> và <code>python3 scripts/stats.py compare</code> (baseline = before).</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Bước</th><th>Phương pháp</th><th>Vì sao</th></tr></thead>
+      <tbody>
+        <tr><td>Mô tả</td><td>Median &amp; IQR của metric cấp lần chạy</td><td>Bền với outlier hơn mean ± sd</td></tr>
+        <tr><td>Khoảng tin cậy</td><td>Bootstrap 95% CI, resample theo lần chạy (cluster bootstrap)</td><td>Không giả định phân phối chuẩn; tôn trọng tương quan trong một lần chạy</td></tr>
+        <tr><td>So với before</td><td>Δ median và Δ% kèm CI bootstrap</td><td>Trả lời "khác bao nhiêu", không chỉ "có khác không"</td></tr>
+        <tr><td>Kiểm định</td><td>Mann–Whitney U trên giá trị cấp lần chạy</td><td>Phi tham số, hợp với N nhỏ và phân phối lệch</td></tr>
+        <tr><td>Độ lớn hiệu ứng</td><td>Cliff's delta</td><td>p-value không cho biết hiệu ứng lớn hay nhỏ</td></tr>
+        <tr><td>Ý nghĩa thực tế</td><td>So CI của Δ với ngưỡng ở §1</td><td>Có ý nghĩa thống kê không có nghĩa là đáng quan tâm</td></tr>
+        <tr><td>Nhiều phép so sánh</td><td>Đếm số phép so sánh; dùng Holm khi kết luận dựa vào nhiều p-value</td><td>Càng nhiều phép thử càng dễ ra "kết quả" do ngẫu nhiên</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section>
+    <h2 id="threats"><span class="num">9</span>Đe doạ tính hợp lệ</h2>
+    <div class="guide">Với mỗi loại, nêu đe doạ CỤ THỂ cho topic này trên laptop + Docker Desktop, và cách giảm thiểu. Đe doạ không giảm được thì ghi lại để 06 thảo luận.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Loại</th><th>Đe doạ</th><th>Ảnh hưởng</th><th>Giảm thiểu</th></tr></thead>
+      <tbody>
+        <tr><td>Nội tại (internal)</td><td>k6, hệ thống và stack obs tranh CPU trên cùng máy</td><td>Latency tăng do tranh chấp chứ không do impl</td><td><!-- giới hạn cpus, OBS=metrics, theo dõi CPU k6 --></td></tr>
+        <tr><td>Nội tại</td><td>Drift theo thời gian (thermal, tác vụ nền)</td><td></td><td>Thứ tự ngẫu nhiên xen kẽ theo block (§2.4)</td></tr>
+        <tr><td>Nội tại</td><td>Page cache / JIT / buffer pool khác trạng thái giữa các lần</td><td></td><td>Reset trạng thái cố định + warmup tới steady state</td></tr>
+        <tr><td>Nội tại</td><td>CPU throttling do <code>cpus</code> của container</td><td>p99 có thể nhảy thêm tới 1 CFS period (100 ms)</td><td>Theo dõi <code>lab_container_cpu_throttled_*</code></td></tr>
+        <tr><td>Bên ngoài (external)</td><td>Dữ liệu nhỏ hơn production; một node thay vì cluster; mạng loopback</td><td>Kết luận có thể không đúng ở production</td><td>Ghi giới hạn; nếu được, chạy thêm mức dữ liệu vượt RAM</td></tr>
+        <tr><td>Bên ngoài</td><td>Giới hạn VM của Docker Desktop (WSL2)</td><td></td><td>Ghi tài nguyên VM vào env.md</td></tr>
+        <tr><td>Cấu trúc (construct)</td><td>Metric có thật sự đại diện cho khái niệm? (vd "throughput" đo ở client hay sau khi consumer xử lý xong?)</td><td></td><td></td></tr>
+        <tr><td>Kết luận thống kê</td><td>N nhỏ, biến thiên lớn, nhiều phép so sánh</td><td></td><td>§2.5, §8</td></tr>
+      </tbody>
+    </table></div>
+    <div class="callout insight"><span class="callout-title">Insight</span>
+      <p class="claim"><!-- khẳng định về phương pháp không hiển nhiên, ví dụ: closed-model load test làm before trông tốt hơn thực tế --></p>
+      <div class="why"><!-- chuỗi nhân quả từng bước, có bậc độ lớn --></div>
+      <div class="evidence"><!-- nhãn nguồn + cách kiểm chứng trong thí nghiệm này --></div>
+    </div>
+  </section>
+
+  <!-- ================================================================ -->
+  <section>
+    <h2 id="procedure"><span class="num">10</span>Quy trình chạy &amp; lưu kết quả</h2>
+    <pre><code class="language-bash">make obs-up OBS=metrics                     # same OBS mode for every cell; full only for diagnosis runs
 cd experiments
 make up
-make run IMPL=before SCENARIO=S1   # repeat for every cell of the matrix
-make report</code></pre>
+make pilot                                  # pilot runs -> variance -> choose N (§2.5)
+python3 ../../../scripts/stats.py plan-order ...   # -> ../results/raw/run-order.csv
+make run-all                                # follows run-order.csv: make run IMPL=x SCENARIO=y RUN=r
+make report                                 # stats.py summarize / compare + charts</code></pre>
     <ul>
-      <li>Raw: <code>results/raw/&lt;impl&gt;-&lt;scenario&gt;-&lt;run&gt;-&lt;timestamp&gt;.*</code> (không sửa tay)</li>
-      <li>Số liệu Prometheus mỗi lần chạy: <code>scripts/prom_export.py --preset resources --preset jvm ... --out results/raw/...csv --meta</code></li>
-      <li>Môi trường + chế độ observability: <code>results/env.md</code></li>
-      <li>Biểu đồ: <code>results/charts/</code></li>
+      <li>Mỗi lần chạy lưu: k6 summary + sample thô, export Prometheus (<code>scripts/prom_export.py ... --meta</code>), kết quả invariant checker;
+        đặt tên <code>results/raw/&lt;impl&gt;-&lt;scenario&gt;-&lt;run&gt;-&lt;timestamp&gt;.*</code>, không sửa tay.</li>
+      <li>Môi trường + chế độ observability + seed: <code>results/env.md</code>.</li>
+      <li>Biểu đồ: <code>results/charts/</code>.</li>
     </ul>
   </section>
 
