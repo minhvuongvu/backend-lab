@@ -16,7 +16,7 @@
 
 ## Checklist
 
-- [ ] Phase 1 — Research → [01-research.md](01-research.md)
+- [ ] Phase 1 — Research → [01-research.html](01-research.html)
 - [ ] Phase 2 — System design → [02-system-design.md](02-system-design.md)
 - [ ] Phase 3 — Implement → [system/](system/)
 - [ ] Phase 4 — Experiment plan → [03-experiment-plan.md](03-experiment-plan.md)

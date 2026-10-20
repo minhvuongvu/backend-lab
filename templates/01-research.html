@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Research</title>
+<link rel="stylesheet" href="../../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  HƯỚNG DẪN CHO NGƯỜI VIẾT (Claude, phase 1)
+  - Đây là tài liệu nghiên cứu TRƯỚC khi thiết kế hệ thống. Người đọc là backend dev muốn hiểu sâu, không phải người mới.
+  - Mỗi <div class="guide"> là hướng dẫn: thay bằng nội dung thật rồi XOÁ div đó. Khi xong, bỏ class "draft" khỏi <body>.
+  - Viết tiếng Việt, giữ thuật ngữ tiếng Anh. Code/snippet tiếng Anh.
+  - Mọi khẳng định quan trọng gắn 1 nhãn:
+      <a class="tag doc" href="#src-1">tài liệu [1]</a>   — theo tài liệu, trỏ tới mục nguồn
+      <span class="tag inferred">suy luận</span>          — suy luận của người viết
+      <span class="tag measured">đo được</span>           — chỉ dùng khi đã có số liệu thật trong results/raw (phase 1 thường KHÔNG có)
+  - Insight = điều một dev trung cấp KHÔNG tự thấy khi đọc docs lướt: hệ quả không hiển nhiên, giả định ngầm,
+    con số bậc độ lớn, cái giá ẩn, điểm mà tài liệu chính thức nói khác blog phổ biến. Mỗi phần lớn có ít nhất 1 callout.insight.
+  - Sơ đồ: <pre class="mermaid">...</pre> trong <figure class="diagram">. Code: <pre><code class="language-java">...</code></pre>.
+  - Không độn chữ. Bảng và sơ đồ thay cho đoạn văn dài khi có thể.
+-->
+<body class="draft">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Phase 1 · Research</div>
+    <h1>{{TOPIC}}</h1>
+    <div class="meta">
+      <span>Slug: <code>{{SLUG}}</code></span>
+      <span>Cập nhật: {{DATE}}</span>
+      <span>Phạm vi: <!-- 1 câu, lấy từ README của topic --></span>
+      <span><a href="README.md">README topic</a> · tiếp theo: <a href="02-system-design.md">System design</a></span>
+    </div>
+    <div class="legend">Nhãn:
+      <span class="tag measured">đo được</span>
+      <span class="tag doc">theo tài liệu</span>
+      <span class="tag inferred">suy luận</span>
+    </div>
+  </header>
+
+  <!-- ===================================================================== -->
+  <section>
+    <h2 id="tldr">TL;DR</h2>
+    <div class="tldr">
+      <p class="one-liner"><!-- Một câu để nhớ: kỹ thuật này đổi cái gì lấy cái gì. --></p>
+      <ul>
+        <li><!-- Vấn đề cốt lõi --></li>
+        <li><!-- Cơ chế chính trong 1 dòng --></li>
+        <li><!-- Cách implement nên chọn mặc định và khi nào đổi --></li>
+        <li><!-- Cái giá lớn nhất / bẫy nguy hiểm nhất --></li>
+      </ul>
+    </div>
+    <div class="guide">Viết phần này CUỐI CÙNG. 4–6 gạch đầu dòng, mỗi dòng phải đứng được một mình.</div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <div class="part-title">Phần A — Bối cảnh</div>
+
+  <section>
+    <h2 id="prerequisites"><span class="num">1</span>Kiến thức nền &amp; thuật ngữ</h2>
+    <div class="guide">Những khái niệm phải nắm để đọc phần còn lại (ví dụ: isolation level, WAL, consumer group, idempotence, CAP/PACELC...).
+      Mỗi thuật ngữ: định nghĩa chính xác 1–2 câu + chỗ hay hiểu nhầm. Link tới tài liệu gốc. Chỉ đưa thuật ngữ THỰC SỰ dùng ở dưới.</div>
+    <dl class="glossary">
+      <dt><!-- term --></dt><dd><!-- definition + common confusion --></dd>
+    </dl>
+  </section>
+
+  <section>
+    <h2 id="problem"><span class="num">2</span>Vấn đề</h2>
+    <div class="guide">Bắt đầu bằng MỘT tình huống cụ thể trong hệ thống backend thật (domain, tải, thành phần).
+      Chỉ ra chính xác thời điểm hỏng bằng sequence diagram có đánh dấu điểm lỗi. Không viết chung chung "đảm bảo nhất quán".</div>
+
+    <h3 id="problem-scenario">2.1 Tình huống</h3>
+    <p><!-- Ví dụ: service ghi order vào PostgreSQL rồi publish event lên Kafka... --></p>
+
+    <figure class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    autonumber
+    participant C as Client
+    participant S as Service
+    participant DB as Database
+    C->>S: request
+    S->>DB: write
+    Note over S,DB: ✗ điểm hỏng — thay bằng luồng thật
+</pre>
+      <figcaption>Luồng không có kỹ thuật này và điểm hỏng.</figcaption>
+    </figure>
+
+    <h3 id="problem-failure">2.2 Hệ thống hỏng thế nào nếu không có nó</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Điều kiện kích hoạt</th><th>Hậu quả</th><th>Phát hiện bằng cách nào</th><th>Mức nghiêm trọng</th></tr></thead>
+      <tbody>
+        <tr><td><!-- crash giữa 2 bước, tải cao, retry, partition... --></td><td><!-- mất / trùng / sai thứ tự / chậm / cascade --></td><td><!-- metric, log, đối soát --></td><td><!-- thấp/TB/cao + lý do --></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="problem-why-hard">2.3 Vì sao vấn đề này khó</h3>
+    <div class="guide">Giới hạn nền tảng làm cho cách hiển nhiên không đủ: ví dụ không có distributed transaction rẻ, two generals,
+      network không đáng tin, clock không đồng bộ, at-least-once delivery là mặc định... Đây thường là nơi có insight lớn nhất.</div>
+    <div class="callout insight"><span class="callout-title">Insight</span><p><!-- --></p></div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <div class="part-title">Phần B — Cơ chế</div>
+
+  <section>
+    <h2 id="internals"><span class="num">3</span>Cơ chế bên trong</h2>
+    <div class="guide">Phần quan trọng nhất. Đi tới tầng internals: cấu trúc dữ liệu, giao thức, lock, log, buffer, trạng thái.
+      Trả lời "TẠI SAO nó đúng" chứ không chỉ "nó làm gì". Trích source code / spec khi có (link tới file/dòng cụ thể).</div>
+
+    <h3 id="internals-flow">3.1 Luồng hoạt động</h3>
+    <figure class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    participant A
+    participant B
+    A->>B: (thay bằng luồng thật khi có kỹ thuật)
+</pre>
+      <figcaption><!-- mô tả sơ đồ --></figcaption>
+    </figure>
+
+    <h3 id="internals-guarantees">3.2 Đảm bảo, bất biến và giả định ngầm</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Đảm bảo / invariant</th><th>Dựa trên cơ chế nào</th><th>Giả định ngầm</th><th>Vỡ khi nào</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="internals-states">3.3 Vòng đời / trạng thái</h3>
+    <div class="guide">Nếu có trạng thái (message, lock, transaction, key...), vẽ stateDiagram và ghi chuyển trạng thái nào có thể bị gián đoạn bởi crash.</div>
+
+    <h3 id="internals-cost">3.4 Chi phí ở tầng thấp</h3>
+    <div class="guide">Mỗi thao tác tốn gì: số round-trip, fsync, lock giữ bao lâu, bytes ghi thêm, write amplification, độ phức tạp thuật toán.
+      Ghi bậc độ lớn (µs / ms / số I/O) kèm nguồn — đây là input cho giả thuyết ở phase 4.</div>
+
+    <div class="callout insight"><span class="callout-title">Insight</span><p><!-- --></p></div>
+  </section>
+
+  <section>
+    <h2 id="knobs"><span class="num">4</span>Tham số quan trọng &amp; giá trị mặc định</h2>
+    <div class="guide">Các config ảnh hưởng tới hành vi/đúng đắn/hiệu năng ở version sẽ dùng. Giá trị mặc định thường là nơi gây bug production.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tham số</th><th>Mặc định (version)</th><th>Ảnh hưởng</th><th>Khi nào nên đổi</th><th>Nguồn</th></tr></thead>
+      <tbody><tr><td><code></code></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <div class="part-title">Phần C — Các cách implement</div>
+
+  <section>
+    <h2 id="impl-overview"><span class="num">5</span>Tổng quan các cách implement</h2>
+    <div class="guide">Thường 2–4 cách. LUÔN có 1 cách "ngây thơ" (naive) làm baseline để thấy vấn đề. Gồm cả cách dùng tính năng có sẵn của DB/broker/thư viện nếu có.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>#</th><th>Cách</th><th>Ý tưởng một dòng</th><th>Vai trò</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td></td><td></td><td>baseline (naive)</td></tr>
+        <tr><td>B</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="impl-detail"><span class="num">6</span>Chi tiết từng cách</h2>
+    <div class="guide">Lặp lại khối .impl cho từng cách. Bước implement phải đủ chi tiết để phase 3 code theo được:
+      bảng nào, transaction boundary ở đâu, config nào, thứ tự thao tác. Snippet chỉ là phác thảo phần cốt lõi (không phải code hoàn chỉnh).</div>
+
+    <div class="impl">
+      <h3 id="impl-a">A. <!-- tên --> <span class="badge baseline">baseline</span></h3>
+      <h4>Nguyên lý</h4>
+      <p><!-- vì sao đúng/sai, dựa trên đảm bảo nào ở §3 --></p>
+      <figure class="diagram">
+<pre class="mermaid">
+sequenceDiagram
+    participant A
+    participant B
+    A->>B: (luồng của cách này)
+</pre>
+      </figure>
+      <h4>Các bước implement</h4>
+      <ol class="steps">
+        <li><!-- bước 1 --></li>
+      </ol>
+      <pre><code class="language-java">// core sketch only</code></pre>
+      <div class="pros-cons">
+        <div class="pros"><h4>Ưu điểm</h4><ul><li></li></ul></div>
+        <div class="cons"><h4>Nhược điểm</h4><ul><li></li></ul></div>
+      </div>
+      <h4>Lỗi thường gặp &amp; cách tránh</h4>
+      <div class="table-wrap"><table>
+        <thead><tr><th>Lỗi</th><th>Hậu quả</th><th>Cách tránh</th></tr></thead>
+        <tbody><tr><td></td><td></td><td></td></tr></tbody>
+      </table></div>
+      <div class="callout insight"><span class="callout-title">Insight</span><p><!-- --></p></div>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="tradeoffs"><span class="num">7</span>Ma trận trade-off</h2>
+    <div class="guide">So sánh định tính các cách trên cùng tiêu chí. Dùng class good / mid / bad cho ô. Mỗi đánh giá phải giải thích được bằng cơ chế ở §3/§6.
+      Đánh dấu suy luận — thí nghiệm sẽ kiểm chứng.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Tiêu chí</th><th>A</th><th>B</th></tr></thead>
+      <tbody>
+        <tr><td>Đúng đắn khi có lỗi</td><td class="bad"></td><td class="good"></td></tr>
+        <tr><td>Latency thêm vào</td><td></td><td></td></tr>
+        <tr><td>Throughput</td><td></td><td></td></tr>
+        <tr><td>Tải thêm lên DB/broker</td><td></td><td></td></tr>
+        <tr><td>Độ phức tạp code</td><td></td><td></td></tr>
+        <tr><td>Gánh nặng vận hành</td><td></td><td></td></tr>
+        <tr><td>Khả năng debug / quan sát</td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <!-- ===================================================================== -->
+  <div class="part-title">Phần D — Thực tế production</div>
+
+  <section>
+    <h2 id="failure-modes"><span class="num">8</span>Danh mục failure mode</h2>
+    <div class="guide">Những gì vẫn hỏng KỂ CẢ khi đã áp dụng kỹ thuật đúng cách. Đây là input trực tiếp cho kịch bản lỗi ở phase 4.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Failure mode</th><th>Áp dụng cho</th><th>Triệu chứng</th><th>Phát hiện (metric/log)</th><th>Khắc phục / giảm thiểu</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="operations"><span class="num">9</span>Vận hành: quan sát, alert, tuning</h2>
+    <div class="guide">Metric cần theo dõi (tên Micrometer/Prometheus nếu có), ngưỡng alert gợi ý, cách tuning, capacity planning, migration/rollback.</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Metric</th><th>Ý nghĩa</th><th>Alert khi</th></tr></thead>
+      <tbody><tr><td><code></code></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="case-studies"><span class="num">10</span>Case study từ hệ thống thật</h2>
+    <div class="guide">2–4 câu chuyện từ engineering blog / postmortem / talk của công ty vận hành thật. Mỗi case: bối cảnh, họ chọn gì,
+      vì sao, gặp sự cố gì, bài học. Chỉ dùng nguồn kiểm chứng được, có link.</div>
+    <div class="callout"><span class="callout-title"><!-- Công ty — tiêu đề --></span>
+      <p><!-- bối cảnh → lựa chọn → sự cố → bài học --></p>
+    </div>
+  </section>
+
+  <section>
+    <h2 id="myths"><span class="num">11</span>Hiểu lầm phổ biến &amp; anti-pattern</h2>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Hiểu lầm / anti-pattern</th><th>Thực tế</th><th>Bằng chứng</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="when-not"><span class="num">12</span>Khi nào KHÔNG nên dùng</h2>
+    <div class="guide">Điều kiện mà chi phí lớn hơn lợi ích, và phương án đơn giản hơn thay thế.</div>
+    <div class="callout warn"><span class="callout-title">Không nên dùng khi</span><ul><li></li></ul></div>
+  </section>
+
+  <section>
+    <h2 id="decision"><span class="num">13</span>Cây quyết định</h2>
+    <div class="guide">Flowchart dựa trên câu hỏi về ngữ cảnh (yêu cầu consistency, tải, hạ tầng sẵn có, đội ngũ). Đây là bản giả thuyết — phase 6 sẽ hiệu chỉnh bằng số liệu đo.</div>
+    <figure class="diagram">
+<pre class="mermaid">
+flowchart TD
+    Q1{Câu hỏi ngữ cảnh?} -->|có| A[Cách ...]
+    Q1 -->|không| B[Cách ...]
+</pre>
+    </figure>
+  </section>
+
+  <!-- ===================================================================== -->
+  <div class="part-title">Phần E — Hướng tới thí nghiệm</div>
+
+  <section>
+    <h2 id="questions"><span class="num">14</span>Câu hỏi cần kiểm chứng bằng thí nghiệm</h2>
+    <div class="guide">Mỗi câu phải đo/kiểm được và sẽ thành giả thuyết ở 03-experiment-plan.md. Ưu tiên câu hỏi mà tài liệu mâu thuẫn hoặc không có số.
+      Tốt: "Polling 100ms làm tăng CPU PostgreSQL bao nhiêu % so với CDC ở 1k msg/s?". Tệ: "Cách nào tốt hơn?".</div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>ID</th><th>Câu hỏi</th><th>Dự đoán hiện tại</th><th>Đo gì</th><th>Vì sao đáng hỏi</th></tr></thead>
+      <tbody><tr><td>Q1</td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="self-check"><span class="num">15</span>Tự kiểm tra</h2>
+    <div class="guide">5–10 câu hỏi kiểu phỏng vấn senior / design review, kiểm tra hiểu cơ chế chứ không phải nhớ định nghĩa. Đáp án ẩn trong details.</div>
+    <details class="qa">
+      <summary><!-- câu hỏi --></summary>
+      <p><!-- đáp án, trỏ về mục liên quan --></p>
+    </details>
+  </section>
+
+  <section>
+    <h2 id="sources"><span class="num">16</span>Nguồn tham khảo</h2>
+    <div class="guide">Ưu tiên: tài liệu chính thức, spec, paper gốc, source code (link tới file/dòng), engineering blog của công ty vận hành thật.
+      id="src-N" để nhãn "tài liệu [N]" trỏ tới. Ghi version/ngày truy cập với trang hay thay đổi.</div>
+    <ol class="sources">
+      <li id="src-1"><span class="src-kind">docs</span><a href=""><!-- title --></a> — <!-- vì sao đáng đọc --></li>
+    </ol>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

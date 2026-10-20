@@ -7,14 +7,21 @@ Repo là "phòng thí nghiệm" để nghiên cứu sâu từng công nghệ/k�
 - Luôn giải thích "tại sao" và cơ chế bên trong (internals), không chỉ "làm thế nào".
 
 ## Ngôn ngữ
-- Tài liệu `.md` viết tiếng Việt, giữ nguyên thuật ngữ tiếng Anh.
+- Tài liệu `.md`/`.html` viết tiếng Việt, giữ nguyên thuật ngữ tiếng Anh.
 - Code, comment, tên biến, commit message viết tiếng Anh.
+
+## Tài liệu HTML (phase 1)
+- `01-research.html` theo khung `templates/01-research.html`, dùng chung `shared/docs/lab.css` + `lab.js` (mục lục, mermaid, highlight, dark mode). Không nhúng CSS/JS riêng vào từng trang.
+- Thay mọi `<div class="guide">` bằng nội dung thật rồi xoá; khi xong, bỏ class `draft` khỏi `<body>`.
+- Nhãn: `<span class="tag measured">`, `<a class="tag doc" href="#src-N">`, `<span class="tag inferred">`.
+- Mỗi phần lớn có ít nhất một `callout insight`: điều không hiển nhiên (giả định ngầm, cái giá ẩn, bậc độ lớn, chỗ docs và hiểu biết phổ biến khác nhau).
+- Mermaid đặt trong `<pre class="mermaid">`; escape `<` thành `&lt;` trong nội dung sơ đồ/code.
 
 ## Ánh xạ phase → nơi ghi kết quả
 
 | Phase | Nội dung | Nơi ghi |
 |---|---|---|
-| 1 | Research | `01-research.md` |
+| 1 | Research | `01-research.html` |
 | 2 | System design | `02-system-design.md` |
 | 3 | Implement | `system/` |
 | 4 | Experiment plan | `03-experiment-plan.md` |

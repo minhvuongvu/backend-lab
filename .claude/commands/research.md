@@ -27,17 +27,26 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md` (ngôn ngữ, trung thực, tối 
 
 Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
-## Phase 1 — Research → `01-research.md`
+## Phase 1 — Research → `01-research.html`
 
-- Dùng subagent song song để tìm nguồn (ví dụ: một agent cho tài liệu chính thức/spec, một cho source code/internals, một cho engineering blog/postmortem). Mỗi agent trả về tóm tắt kèm link; tự tổng hợp và kiểm tra chéo.
-- Nội dung bắt buộc (theo khung template):
-  - vấn đề kỹ thuật này giải quyết, và hệ thống hỏng thế nào nếu không có nó;
-  - cơ chế bên trong, kèm sơ đồ mermaid;
-  - các cách implement (thường 2–4, gồm cả cách "ngây thơ" làm baseline);
-  - với mỗi cách: nguyên lý, các bước implement chi tiết, ưu/nhược, lỗi thường gặp và cách tránh;
-  - khi nào KHÔNG nên dùng;
-  - danh sách câu hỏi cần kiểm chứng bằng thí nghiệm;
-  - nguồn tham khảo.
+- Dùng subagent song song để tìm nguồn, mỗi agent một góc:
+  1. tài liệu chính thức / spec / paper gốc;
+  2. source code & internals (link tới file/dòng);
+  3. engineering blog, postmortem, talk của công ty vận hành thật (cho §10 case study);
+  4. failure mode, anti-pattern, issue/bug tracker (cho §8, §11).
+  Mỗi agent trả về tóm tắt kèm link; tự tổng hợp và kiểm tra chéo, chỗ nguồn mâu thuẫn thì ghi rõ.
+- Viết vào `01-research.html` theo đúng khung template (quy tắc HTML trong `CLAUDE.md`). Nội dung bắt buộc:
+  - **TL;DR** (viết cuối cùng);
+  - **Phần A — Bối cảnh:** kiến thức nền & thuật ngữ; vấn đề (tình huống cụ thể, sequence diagram có điểm hỏng, hệ thống hỏng thế nào nếu không có nó, vì sao vấn đề khó);
+  - **Phần B — Cơ chế:** internals kèm sơ đồ mermaid, đảm bảo/bất biến/giả định ngầm, vòng đời trạng thái, chi phí ở tầng thấp (bậc độ lớn); tham số quan trọng & giá trị mặc định theo version;
+  - **Phần C — Các cách implement:** 2–4 cách, gồm cả cách "ngây thơ" làm baseline; mỗi cách: nguyên lý, sơ đồ, các bước implement chi tiết, snippet cốt lõi, ưu/nhược, lỗi thường gặp và cách tránh; ma trận trade-off;
+  - **Phần D — Thực tế production:** danh mục failure mode (cả khi đã làm đúng), vận hành (metric, alert, tuning), case study có nguồn, hiểu lầm & anti-pattern, khi nào KHÔNG nên dùng, cây quyết định;
+  - **Phần E — Hướng tới thí nghiệm:** câu hỏi cần kiểm chứng (kèm dự đoán hiện tại), câu hỏi tự kiểm tra kiểu phỏng vấn senior, nguồn tham khảo.
+- Tiêu chí chất lượng trước khi gọi gate:
+  - không còn `<div class="guide">`, comment placeholder rỗng, hay class `draft`;
+  - mỗi phần A–D có ít nhất một `callout insight`; khẳng định quan trọng đều có nhãn;
+  - mọi `href="#src-N"` trỏ tới nguồn tồn tại;
+  - render kiểm tra bằng headless Chrome/Edge (`--headless --screenshot`, hoặc `--dump-dom` để chắc mermaid không lỗi) nếu có trình duyệt.
 - Điền mục "Phạm vi" trong README của topic.
 - → **Gate**.
 

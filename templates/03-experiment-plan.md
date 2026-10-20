@@ -5,7 +5,7 @@
 
 ## 1. Giả thuyết
 
-<!-- Lấy từ 01-research.md §5. Mỗi giả thuyết phải bác bỏ được (falsifiable) và có ngưỡng định lượng nếu có thể.
+<!-- Lấy từ 01-research.html §14 (cột "Dự đoán hiện tại"); kịch bản lỗi lấy từ §8. Mỗi giả thuyết phải bác bỏ được (falsifiable) và có ngưỡng định lượng nếu có thể.
      Ví dụ: "H1: Ở 1k req/s, impl B có p99 cao hơn A không quá 20% (vì thêm 1 INSERT trong cùng transaction)." -->
 
 | ID | Từ câu hỏi | Giả thuyết | Lý do kỳ vọng | Bác bỏ nếu |

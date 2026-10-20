@@ -30,7 +30,7 @@ render() {
 }
 
 render "$ROOT/templates/topic-README.md"      "$TOPIC_DIR/README.md"
-render "$ROOT/templates/01-research.md"       "$TOPIC_DIR/01-research.md"
+render "$ROOT/templates/01-research.html"     "$TOPIC_DIR/01-research.html"
 render "$ROOT/templates/02-system-design.md"  "$TOPIC_DIR/02-system-design.md"
 render "$ROOT/templates/03-experiment-plan.md" "$TOPIC_DIR/03-experiment-plan.md"
 render "$ROOT/templates/04-conclusion.md"     "$TOPIC_DIR/04-conclusion.md"

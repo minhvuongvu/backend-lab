@@ -4,7 +4,7 @@
 
 | Phase | Nội dung | Nơi ghi |
 |---|---|---|
-| 1 | Research | `01-research.md` |
+| 1 | Research | `01-research.html` |
 | 2 | System design | `02-system-design.md` |
 | 3 | Implement | `system/` |
 | 4 | Experiment plan | `03-experiment-plan.md` |
@@ -52,6 +52,7 @@ backend-lab/
 ├── .claude/                  # /research, /lab-status, subagent lab-reviewer
 ├── templates/                # khung tài liệu cho mỗi topic
 ├── shared/observability/     # Prometheus + Grafana dùng chung
+├── shared/docs/              # CSS/JS dùng chung cho tài liệu HTML
 └── topics/<slug>/            # mỗi topic một thư mục
 ```
 

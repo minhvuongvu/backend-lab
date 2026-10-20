@@ -1,7 +1,7 @@
 # {{TOPIC}} — System design
 
 > Phase 2 · Cập nhật: {{DATE}}
-> Mục tiêu: hệ thống NHỎ NHẤT đủ để phơi bày vấn đề ở 01-research.md §1 và so sánh công bằng các cách ở §3.
+> Mục tiêu: hệ thống NHỎ NHẤT đủ để phơi bày vấn đề ở 01-research.html §2 và so sánh công bằng các cách ở §5–6.
 
 ## 1. Domain tối giản
 
