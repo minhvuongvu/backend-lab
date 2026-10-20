@@ -25,8 +25,11 @@ for d in system experiments results/raw results/charts deploy; do
   touch "$TOPIC_DIR/$d/.gitkeep"
 done
 
+# Templates live one level below the repo root (templates/), topics two levels (topics/<slug>/),
+# so shared asset paths are rewritten from ../shared/ to ../../shared/ on copy.
 render() {
-  sed -e "s/{{TOPIC}}/$TOPIC/g" -e "s/{{SLUG}}/$SLUG/g" -e "s/{{DATE}}/$DATE/g" "$1" > "$2"
+  sed -e "s/{{TOPIC}}/$TOPIC/g" -e "s/{{SLUG}}/$SLUG/g" -e "s/{{DATE}}/$DATE/g" \
+      -e 's|"\.\./shared/|"../../shared/|g' "$1" > "$2"
 }
 
 render "$ROOT/templates/topic-README.md" "$TOPIC_DIR/README.md"
