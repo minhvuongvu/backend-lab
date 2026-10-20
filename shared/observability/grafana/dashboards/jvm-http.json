@@ -1,6 +1,6 @@
 {
   "uid": "backend-lab-jvm-http",
-  "title": "backend-lab \u2014 JVM / HTTP / k6",
+  "title": "backend-lab — JVM / HTTP / k6",
   "tags": [
     "backend-lab"
   ],
@@ -17,6 +17,7 @@
     "list": [
       {
         "name": "instance",
+        "label": "Instance",
         "type": "query",
         "datasource": {
           "type": "prometheus",
@@ -46,6 +47,18 @@
   "annotations": {
     "list": []
   },
+  "links": [
+    {
+      "title": "backend-lab",
+      "type": "dashboards",
+      "tags": [
+        "backend-lab"
+      ],
+      "asDropdown": true,
+      "includeVars": false,
+      "keepTime": true
+    }
+  ],
   "panels": [
     {
       "id": 1,
@@ -64,6 +77,7 @@
       "id": 2,
       "type": "timeseries",
       "title": "Request rate by status",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -79,18 +93,25 @@
           "unit": "reqps",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -109,6 +130,7 @@
       "id": 3,
       "type": "timeseries",
       "title": "Error rate (5xx / total)",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -124,18 +146,25 @@
           "unit": "percentunit",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -154,6 +183,7 @@
       "id": 4,
       "type": "timeseries",
       "title": "Latency p50/p95/p99 (needs percentiles-histogram=true)",
+      "description": "Exemplars (dots) link to traces when tracing is enabled.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -169,18 +199,25 @@
           "unit": "s",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -191,7 +228,8 @@
             "uid": "prometheus"
           },
           "expr": "histogram_quantile(0.5, sum by (le) (rate(http_server_requests_seconds_bucket{instance=~\"$instance\", uri!~\"/actuator.*\"}[$__rate_interval])))",
-          "legendFormat": "p50"
+          "legendFormat": "p50",
+          "exemplar": true
         },
         {
           "refId": "B",
@@ -217,6 +255,7 @@
       "id": 5,
       "type": "timeseries",
       "title": "Mean latency by uri",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -232,18 +271,25 @@
           "unit": "s",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -275,6 +321,7 @@
       "id": 7,
       "type": "timeseries",
       "title": "Heap used / committed / max",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -290,18 +337,25 @@
           "unit": "bytes",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -338,6 +392,7 @@
       "id": 8,
       "type": "timeseries",
       "title": "GC pause time / s",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -353,18 +408,25 @@
           "unit": "s",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -383,6 +445,7 @@
       "id": 9,
       "type": "timeseries",
       "title": "CPU usage",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -398,18 +461,25 @@
           "unit": "percentunit",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -437,6 +507,7 @@
       "id": 10,
       "type": "timeseries",
       "title": "Threads",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -452,18 +523,25 @@
           "unit": "short",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -490,7 +568,8 @@
     {
       "id": 11,
       "type": "timeseries",
-      "title": "HikariCP connections",
+      "title": "Log events by level",
+      "description": "A burst of WARN/ERROR during a fault-injection scenario is expected; during a normal run it is a red flag.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
@@ -503,21 +582,94 @@
       },
       "fieldConfig": {
         "defaults": {
-          "unit": "short",
+          "unit": "ops",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (level) (rate(logback_events_total{instance=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "{{level}}"
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "type": "row",
+      "title": "Connection pool (HikariCP)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 42,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 13,
+      "type": "timeseries",
+      "title": "HikariCP connections",
+      "description": "pending > 0 = threads waiting for a connection: the pool, not the database, is the bottleneck.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 43,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -547,20 +699,85 @@
           },
           "expr": "hikaricp_connections_pending{instance=~\"$instance\"}",
           "legendFormat": "pending {{pool}}"
+        },
+        {
+          "refId": "D",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "hikaricp_connections_max{instance=~\"$instance\"}",
+          "legendFormat": "max {{pool}}"
         }
       ]
     },
     {
-      "id": 12,
+      "id": 14,
       "type": "timeseries",
-      "title": "HikariCP acquire time (mean)",
+      "title": "HikariCP pool usage",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
-        "y": 34,
+        "y": 43,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "percentunit",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          },
+          "min": 0,
+          "max": 1
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "hikaricp_connections_active{instance=~\"$instance\"} / hikaricp_connections_max{instance=~\"$instance\"}",
+          "legendFormat": "{{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "type": "timeseries",
+      "title": "HikariCP acquire time (mean)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 51,
         "w": 12,
         "h": 8
       },
@@ -569,18 +786,25 @@
           "unit": "s",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -596,29 +820,370 @@
       ]
     },
     {
-      "id": 13,
+      "id": 16,
+      "type": "timeseries",
+      "title": "HikariCP usage time (mean) & timeouts",
+      "description": "Usage = how long a connection is held per borrow (transaction length seen by the pool). Timeouts = SQLTransientConnectionException.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 51,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(hikaricp_connections_usage_seconds_sum{instance=~\"$instance\"}[$__rate_interval]) / rate(hikaricp_connections_usage_seconds_count{instance=~\"$instance\"}[$__rate_interval])",
+          "legendFormat": "held {{pool}}"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "rate(hikaricp_connections_timeout_total{instance=~\"$instance\"}[$__rate_interval])",
+          "legendFormat": "timeouts/s {{pool}}"
+        }
+      ]
+    },
+    {
+      "id": 17,
       "type": "row",
-      "title": "k6 (remote write)",
+      "title": "Kafka client (Spring Kafka / Micrometer)",
       "collapsed": false,
       "gridPos": {
         "x": 0,
-        "y": 42,
+        "y": 59,
         "w": 24,
         "h": 1
       },
       "panels": []
     },
     {
-      "id": 14,
+      "id": 18,
       "type": "timeseries",
-      "title": "k6 request rate",
+      "title": "KafkaTemplate send rate",
+      "description": "Needs spring.kafka.template.observation-enabled=true.",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 0,
-        "y": 43,
+        "y": 60,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (instance) (rate(spring_kafka_template_seconds_count{instance=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "sends/s {{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 19,
+      "type": "timeseries",
+      "title": "KafkaTemplate send latency (mean)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 60,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (instance, result) (rate(spring_kafka_template_seconds_sum{instance=~\"$instance\"}[$__rate_interval])) / sum by (instance, result) (rate(spring_kafka_template_seconds_count{instance=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "{{result}} {{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 20,
+      "type": "timeseries",
+      "title": "Listener processing rate",
+      "description": "Needs spring.kafka.listener.observation-enabled=true.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 68,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (instance, result) (rate(spring_kafka_listener_seconds_count{instance=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "{{result}} {{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 21,
+      "type": "timeseries",
+      "title": "Listener processing time (mean)",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 12,
+        "y": 68,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "s",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "sum by (instance) (rate(spring_kafka_listener_seconds_sum{instance=~\"$instance\"}[$__rate_interval])) / sum by (instance) (rate(spring_kafka_listener_seconds_count{instance=~\"$instance\"}[$__rate_interval]))",
+          "legendFormat": "{{instance}}"
+        }
+      ]
+    },
+    {
+      "id": 22,
+      "type": "timeseries",
+      "title": "Consumer max lag (client view)",
+      "description": "Lag reported by the consumer client itself; compare with the broker-side lag on the Datastores dashboard.",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 76,
+        "w": 12,
+        "h": 8
+      },
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": {
+            "lineWidth": 1,
+            "fillOpacity": 10,
+            "showPoints": "never"
+          }
+        },
+        "overrides": []
+      },
+      "options": {
+        "legend": {
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "desc"
+        }
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "expr": "max by (instance, client_id) (kafka_consumer_fetch_manager_records_lag_max{instance=~\"$instance\"})",
+          "legendFormat": "{{client_id}}"
+        }
+      ]
+    },
+    {
+      "id": 23,
+      "type": "row",
+      "title": "k6 (remote write)",
+      "collapsed": false,
+      "gridPos": {
+        "x": 0,
+        "y": 84,
+        "w": 24,
+        "h": 1
+      },
+      "panels": []
+    },
+    {
+      "id": 24,
+      "type": "timeseries",
+      "title": "k6 request rate",
+      "description": "",
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "gridPos": {
+        "x": 0,
+        "y": 85,
         "w": 12,
         "h": 8
       },
@@ -627,18 +1192,25 @@
           "unit": "reqps",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -663,16 +1235,17 @@
       ]
     },
     {
-      "id": 15,
+      "id": 25,
       "type": "timeseries",
       "title": "k6 http_req_duration p50/p95/p99",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
-        "y": 43,
+        "y": 85,
         "w": 12,
         "h": 8
       },
@@ -681,18 +1254,25 @@
           "unit": "s",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -726,16 +1306,17 @@
       ]
     },
     {
-      "id": 16,
+      "id": 26,
       "type": "timeseries",
       "title": "k6 VUs",
+      "description": "",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 0,
-        "y": 51,
+        "y": 93,
         "w": 12,
         "h": 8
       },
@@ -744,18 +1325,25 @@
           "unit": "short",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [
@@ -780,16 +1368,17 @@
       ]
     },
     {
-      "id": 17,
+      "id": 27,
       "type": "timeseries",
       "title": "k6 dropped iterations",
+      "description": "Dropped iterations with an arrival-rate executor = the generator could not keep the target rate (not enough VUs, or the load generator itself is saturated).",
       "datasource": {
         "type": "prometheus",
         "uid": "prometheus"
       },
       "gridPos": {
         "x": 12,
-        "y": 51,
+        "y": 93,
         "w": 12,
         "h": 8
       },
@@ -798,18 +1387,25 @@
           "unit": "short",
           "custom": {
             "lineWidth": 1,
-            "fillOpacity": 10
+            "fillOpacity": 10,
+            "showPoints": "never"
           }
         },
         "overrides": []
       },
       "options": {
         "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
+          "displayMode": "table",
+          "placement": "bottom",
+          "calcs": [
+            "mean",
+            "max",
+            "lastNotNull"
+          ]
         },
         "tooltip": {
-          "mode": "multi"
+          "mode": "multi",
+          "sort": "desc"
         }
       },
       "targets": [

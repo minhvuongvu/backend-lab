@@ -32,18 +32,13 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 | Lệnh | Tác dụng |
 |---|---|
 | `make new-topic SLUG=<kebab-case>` | Tạo topic mới từ `templates/` (cách duy nhất để tạo topic) |
-| `make obs-up` | Bật Prometheus (http://localhost:9090) + Grafana (http://localhost:3000, admin/admin) |
+| `make obs-up` | Bật observability đầy đủ: metrics, logs, traces, profiles (Grafana http://localhost:3000, admin/admin) |
+| `make obs-up OBS=metrics` | Chỉ Prometheus + Grafana + docker-stats (overhead thấp nhất, dùng khi đo hiệu năng thuần) |
+| `make obs-status` | Trạng thái container và health của các target Prometheus |
 | `make obs-down` | Tắt observability stack |
 
-k6 đẩy metric vào Prometheus qua remote write:
-
-```bash
-K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write \
-K6_PROMETHEUS_RW_TREND_STATS="p(50),p(95),p(99),avg,max" \
-k6 run -o experimental-prometheus-rw script.js
-```
-
-App Spring Boot chạy trên host (cổng 8080, expose `/actuator/prometheus`) được Prometheus scrape qua `host.docker.internal:8080`.
+Cổng đổi được khi bị trùng: `make obs-up PROM_PORT=19090 GRAFANA_PORT=13000 OTLP_GRPC_PORT=14317 OTLP_HTTP_PORT=14318 PYROSCOPE_PORT=14040`.
+Cách nối app, exporter, k6 và xuất số liệu vào `results/raw`: [shared/observability/README.md](shared/observability/README.md).
 
 ## Cấu trúc
 
@@ -52,9 +47,10 @@ backend-lab/
 ├── CLAUDE.md                 # quy tắc chung
 ├── Makefile                  # obs-up, obs-down, new-topic
 ├── scripts/new-topic.sh      # logic của make new-topic
+├── scripts/prom_export.py    # xuất số liệu Prometheus ra CSV cho results/raw
 ├── .claude/                  # /research, /lab-status, subagent lab-reviewer
 ├── templates/                # khung tài liệu cho mỗi topic
-├── shared/observability/     # Prometheus + Grafana dùng chung
+├── shared/observability/     # Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana dùng chung
 ├── shared/docs/              # CSS/JS dùng chung cho tài liệu HTML
 └── topics/<slug>/            # mỗi topic một thư mục
 ```

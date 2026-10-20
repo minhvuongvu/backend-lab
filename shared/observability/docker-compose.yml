@@ -1,29 +1,106 @@
-# Shared observability stack for all topics.
-#   make obs-up   -> Prometheus http://localhost:9090, Grafana http://localhost:3000 (admin/admin)
+# Shared observability stack for all topics (metrics, logs, traces, profiles).
+#   make obs-up                 -> full stack
+#   make obs-up OBS=metrics     -> only Prometheus + Grafana + docker-stats (lowest overhead)
 #   make obs-down
 # Ports are overridable if taken: make obs-up PROM_PORT=19090 GRAFANA_PORT=13000
-# k6 pushes metrics via remote write: k6 run -o experimental-prometheus-rw
-#   (K6_PROMETHEUS_RW_SERVER_URL=http://localhost:9090/api/v1/write)
+# See README.md in this folder for how apps, exporters and k6 plug in.
 name: backend-lab-obs
 
+x-limits: &small
+  cpus: "0.5"
+  mem_limit: 512m
+
 services:
+  # ---------------- Metrics ----------------
   prometheus:
     image: prom/prometheus:v3.13.4  # LTS line
+    user: root  # needs the Docker socket for docker_sd_configs
     command:
       - --config.file=/etc/prometheus/prometheus.yml
       - --storage.tsdb.path=/prometheus
       - --storage.tsdb.retention.time=15d
-      - --web.enable-remote-write-receiver
+      - --web.enable-remote-write-receiver   # k6, Tempo metrics-generator, Alloy push here
       - --web.enable-lifecycle
+      - --enable-feature=exemplar-storage    # metric -> trace links
     ports:
       - "127.0.0.1:${PROM_PORT:-9090}:9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - prometheus-data:/prometheus
     extra_hosts:
       - "host.docker.internal:host-gateway"  # needed on Linux; Docker Desktop resolves it natively
+    cpus: "1.0"
+    mem_limit: 1g
     restart: unless-stopped
 
+  # Per-container CPU / memory / network / IO / throttling from the Docker Engine API.
+  # (cAdvisor cannot discover containers on Docker Desktop/WSL2 — see docker-stats-exporter/exporter.py.)
+  docker-stats:
+    image: python:3.13.7-alpine
+    command: ["python", "-u", "/app/exporter.py"]
+    environment:
+      LAB_NETWORK: backend-lab
+      COLLECT_INTERVAL_SECONDS: "5"
+    volumes:
+      - ./docker-stats-exporter/exporter.py:/app/exporter.py:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    cpus: "0.5"  # at 0.25 it was throttled ~33% of CFS periods, delaying samples
+    mem_limit: 128m
+    restart: unless-stopped
+
+  # ---------------- Logs ----------------
+  loki:
+    image: grafana/loki:3.7.8
+    profiles: [full]
+    command: ["-config.file=/etc/loki/loki.yaml"]
+    volumes:
+      - ./loki/loki.yaml:/etc/loki/loki.yaml:ro
+      - loki-data:/loki
+    <<: *small
+    restart: unless-stopped
+
+  # Collector: Docker container logs -> Loki; OTLP (traces/logs/metrics) from apps -> Tempo/Loki/Prometheus
+  alloy:
+    image: grafana/alloy:v1.21.0
+    profiles: [full]
+    command: ["run", "--server.http.listen-addr=0.0.0.0:12345", "--storage.path=/var/lib/alloy", "/etc/alloy/config.alloy"]
+    ports:
+      - "127.0.0.1:${OTLP_GRPC_PORT:-4317}:4317"
+      - "127.0.0.1:${OTLP_HTTP_PORT:-4318}:4318"
+      - "127.0.0.1:${ALLOY_PORT:-12345}:12345"
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy-data:/var/lib/alloy
+    cpus: "0.5"
+    mem_limit: 256m
+    restart: unless-stopped
+
+  # ---------------- Traces ----------------
+  tempo:
+    image: grafana/tempo:3.1.0
+    profiles: [full]
+    user: root  # writes to the named volume
+    command: ["-config.file=/etc/tempo/tempo.yaml"]
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo/tempo.yaml:ro
+      - tempo-data:/var/tempo
+    <<: *small
+    restart: unless-stopped
+
+  # ---------------- Profiles ----------------
+  pyroscope:
+    image: grafana/pyroscope:1.21.1
+    profiles: [full]
+    ports:
+      - "127.0.0.1:${PYROSCOPE_PORT:-4040}:4040"  # Java agent on the host pushes here
+    volumes:
+      - pyroscope-data:/data
+    <<: *small
+    restart: unless-stopped
+
+  # ---------------- UI ----------------
   grafana:
     image: grafana/grafana:13.2.4
     depends_on:
@@ -42,8 +119,21 @@ services:
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
       - ./grafana/dashboards:/var/lib/grafana/dashboards:ro
       - grafana-data:/var/lib/grafana
+    cpus: "0.5"
+    mem_limit: 768m  # ~330 MiB idle
     restart: unless-stopped
+
+# Topic stacks join this network so Prometheus/Alloy can reach their containers by name.
+# Created by `make obs-up` (or a topic's `make up`) so either side can start first.
+networks:
+  default:
+    name: backend-lab
+    external: true
 
 volumes:
   prometheus-data:
+  loki-data:
+  alloy-data:
+  tempo-data:
+  pyroscope-data:
   grafana-data:

@@ -7,9 +7,14 @@ scrape_configs:
     static_configs:
       - targets: ["localhost:9090"]
 
+  # Per-container CPU / memory / network / IO / CPU throttling (lab_container_*).
+  - job_name: docker-stats
+    static_configs:
+      - targets: ["docker-stats:9417"]
+
   # Spring Boot apps running on the host (Actuator + micrometer-registry-prometheus).
-  # Add more targets/ports per topic as needed; a down target does not affect the rest.
-  - job_name: spring-app
+  # A down target does not affect the rest.
+  - job_name: spring-host
     metrics_path: /actuator/prometheus
     static_configs:
       - targets:
@@ -17,4 +22,33 @@ scrape_configs:
           - host.docker.internal:8081
           - host.docker.internal:8082
 
-# k6 metrics arrive via remote write (/api/v1/write), not scraping.
+  # Any container on the `backend-lab` network that opts in with labels:
+  #   lab.scrape: "true"   lab.port: "<metrics port>"   lab.path: "/actuator/prometheus" (default /metrics)
+  # Used for apps running in containers and for exporters (shared/observability/exporters/*.yml).
+  - job_name: docker
+    docker_sd_configs:
+      - host: unix:///var/run/docker.sock
+        refresh_interval: 10s
+    relabel_configs:
+      - source_labels: [__meta_docker_container_label_lab_scrape]
+        regex: "true"
+        action: keep
+      - source_labels: [__meta_docker_network_name]
+        regex: backend-lab
+        action: keep
+      - source_labels: [__meta_docker_network_ip, __meta_docker_container_label_lab_port]
+        separator: ":"
+        target_label: __address__
+      - source_labels: [__meta_docker_container_label_lab_path]
+        regex: (.+)
+        target_label: __metrics_path__
+      - source_labels: [__meta_docker_container_name]
+        regex: /(.*)
+        target_label: instance
+      - source_labels: [__meta_docker_container_label_com_docker_compose_service]
+        target_label: service
+      - source_labels: [__meta_docker_container_label_com_docker_compose_project]
+        target_label: compose_project
+
+# Pushed via remote write (not scraped): k6 (k6_*), Tempo metrics-generator
+# (traces_service_graph_*, traces_spanmetrics_*), Alloy (OTLP metrics).

@@ -120,19 +120,23 @@
         <tr><td>Giới hạn tài nguyên Docker Desktop VM</td><td></td><td></td></tr>
         <tr><td>JIT / cache chưa warm</td><td></td><td></td></tr>
         <tr><td>Thermal throttling, tác vụ nền</td><td></td><td></td></tr>
+        <tr><td>Overhead của observability (tracing sampling, profiling, chính stack obs ~600 MiB RAM)</td><td></td><td><!-- giữ cấu hình obs giống nhau cho mọi ô; đo hiệu năng thuần với OBS=metrics + sampling 0 --></td></tr>
+        <tr><td>CPU throttling do giới hạn cpus của container</td><td></td><td><!-- theo dõi lab_container_cpu_throttled_* --></td></tr>
       </tbody>
     </table></div>
   </section>
 
   <section>
     <h2 id="procedure"><span class="num">9</span>Quy trình chạy &amp; lưu kết quả</h2>
-    <pre><code class="language-bash">cd experiments
+    <pre><code class="language-bash">make obs-up OBS=metrics            # or full for diagnosis runs — same mode for every cell
+cd experiments
 make up
 make run IMPL=before SCENARIO=S1   # repeat for every cell of the matrix
 make report</code></pre>
     <ul>
       <li>Raw: <code>results/raw/&lt;impl&gt;-&lt;scenario&gt;-&lt;run&gt;-&lt;timestamp&gt;.*</code> (không sửa tay)</li>
-      <li>Môi trường: <code>results/env.md</code></li>
+      <li>Số liệu Prometheus mỗi lần chạy: <code>scripts/prom_export.py --preset resources --preset jvm ... --out results/raw/...csv --meta</code></li>
+      <li>Môi trường + chế độ observability: <code>results/env.md</code></li>
       <li>Biểu đồ: <code>results/charts/</code></li>
     </ul>
   </section>

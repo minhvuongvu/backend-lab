@@ -60,6 +60,12 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Code trong 03 và 07 trích NGUYÊN VĂN từ file thật (`<figure class="code">` với caption là đường dẫn + dòng). Không có code chỉ tồn tại trong tài liệu.
 - Kiểm tra render bằng headless Chrome/Edge (`--dump-dom`, không còn "Syntax error" của mermaid) trước khi kết thúc phase.
 
+## Làm việc song song (multi-agent)
+- Việc gì tách được thành các phần độc lập thì chạy song song bằng nhiều subagent, không làm tuần tự. Đây là sở thích cố định của tôi, áp dụng cho mọi phiên.
+- Mỗi agent được giao rõ file/thư mục mình phụ trách, không sửa file của agent khác, không commit. Agent chính giữ phần tích hợp, kiểm chứng và commit.
+- Gợi ý theo phase: phase 1 mỗi agent một góc nguồn; phase 3 mỗi agent một implementation; phase 5 tách chạy thí nghiệm, vẽ biểu đồ, kiểm tra toàn vẹn, viết nháp 05; tài liệu HTML dài có thể chia theo phần.
+- Không chia nhỏ việc ngắn hoặc phụ thuộc chặt vào nhau chỉ để có nhiều agent.
+
 ## Một chủ đề, một phiên
 - Mỗi phiên chỉ làm một topic.
 - Nếu hội thoại hiện tại đã làm topic khác, nhắc tôi chạy `/clear` trước khi tiếp tục.
@@ -104,7 +110,11 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 ## Tái lập
 - Mọi thứ chạy được bằng `make` trong `experiments/` (`make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`).
 - Ghi môi trường chạy vào `results/env.md`.
-- Observability dùng chung: `make obs-up` (Prometheus với remote-write receiver, Grafana). Cổng đổi được: `PROM_PORT`, `GRAFANA_PORT`.
+- Observability dùng chung (`shared/observability/README.md`): `make obs-up` = metrics + logs + traces + profiles (Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana); `make obs-up OBS=metrics` = chỉ metrics. Cổng đổi được qua `PROM_PORT`, `GRAFANA_PORT`, `OTLP_*_PORT`, `PYROSCOPE_PORT`.
+- Topic nối vào bằng network `backend-lab`, label `lab.scrape/lab.port/lab.path` cho container cần scrape, và `include` exporter trong `shared/observability/exporters/` (postgres, redis, kafka).
+- Trong phase 5, app chạy trong container có giới hạn CPU/RAM (giống before và mọi implementation) để đo được tài nguyên bằng `lab_container_*`.
+- Cấu hình observability (sampling tracing, profiling, `OBS`) phải GIỐNG NHAU cho before và mọi implementation, ghi vào `results/env.md`. Đo hiệu năng thuần thì dùng `OBS=metrics` + sampling 0; chạy chẩn đoán thì bật full.
+- Số liệu từ Prometheus đưa vào `results/raw/` bằng `scripts/prom_export.py`; dashboard chỉ để khám phá, không phải nguồn số liệu.
 - Artifact triển khai trong `deploy/` phải được validate bằng công cụ tương ứng (`kubectl --dry-run=client`, `helm template`, `terraform validate`...), ghi lệnh vào 07.
 
 ## Git

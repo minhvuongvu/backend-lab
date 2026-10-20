@@ -1,0 +1,27 @@
+# PostgreSQL exporter for a topic stack. Include from experiments/docker-compose.yml:
+#   include:
+#     - path: ../../../shared/observability/exporters/postgres.yml
+#       env_file: .env            # optional: PG_EXPORTER_* overrides
+# Defaults assume a service named `postgres` with user/password postgres/postgres.
+# Exposes pg_* metrics (connections, transactions, cache hit, locks, deadlocks, replication...).
+# For per-query stats enable pg_stat_statements on the server and add PG_EXPORTER_EXTRA_FLAGS=--collector.stat_statements.
+services:
+  postgres-exporter:
+    image: quay.io/prometheuscommunity/postgres-exporter:v0.20.1
+    command: ${PG_EXPORTER_EXTRA_FLAGS:---collector.long_running_transactions}
+    environment:
+      DATA_SOURCE_URI: ${PG_EXPORTER_URI:-postgres:5432/postgres?sslmode=disable}
+      DATA_SOURCE_USER: ${PG_EXPORTER_USER:-postgres}
+      DATA_SOURCE_PASS: ${PG_EXPORTER_PASSWORD:-postgres}
+    labels:
+      lab.scrape: "true"
+      lab.port: "9187"
+    networks: [default, lab]
+    cpus: "0.25"
+    mem_limit: 128m
+    restart: unless-stopped
+
+networks:
+  lab:
+    name: backend-lab
+    external: true

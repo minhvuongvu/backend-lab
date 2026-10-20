@@ -1,0 +1,27 @@
+# Kafka exporter for a topic stack. Include from experiments/docker-compose.yml:
+#   include:
+#     - path: ../../../shared/observability/exporters/kafka.yml
+# Defaults assume a broker reachable at kafka:9092 (internal listener).
+# Exposes consumer-group lag and per-partition offsets (kafka_consumergroup_lag, kafka_topic_partition_current_offset...).
+# The exporter exits if the broker is not reachable yet; `restart: unless-stopped` retries until it is
+# (a few restarts right after `up` are expected and harmless).
+# Broker internals (request latency, ISR, purgatory) need the broker's JMX metrics — see README.md.
+services:
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.10.0
+    command:
+      - --kafka.server=${KAFKA_EXPORTER_BOOTSTRAP:-kafka:9092}
+      - --topic.filter=^[^_].*        # skip internal topics (__consumer_offsets...)
+      - --group.filter=.*
+    labels:
+      lab.scrape: "true"
+      lab.port: "9308"
+    networks: [default, lab]
+    cpus: "0.25"
+    mem_limit: 64m
+    restart: unless-stopped
+
+networks:
+  lab:
+    name: backend-lab
+    external: true

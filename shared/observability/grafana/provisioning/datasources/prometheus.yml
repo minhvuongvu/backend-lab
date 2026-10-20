@@ -1,5 +1,7 @@
 apiVersion: 1
 
+# Datasources are cross-linked: metric exemplar -> trace, trace -> logs / profile / service map, log -> trace.
+# Loki/Tempo/Pyroscope only answer when the stack runs with the `full` profile.
 datasources:
   - name: Prometheus
     uid: prometheus
@@ -10,3 +12,64 @@ datasources:
     editable: false
     jsonData:
       timeInterval: 5s
+      exemplarTraceIdDestinations:
+        - name: trace_id          # Micrometer exemplar label
+          datasourceUid: tempo
+        - name: traceID           # Tempo metrics-generator exemplar label
+          datasourceUid: tempo
+
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    editable: false
+    jsonData:
+      derivedFields:
+        - name: TraceID
+          matcherType: regex
+          # Spring Boot correlation pattern "[app,traceId,spanId]" and JSON "trace_id"/"traceId" fields
+          matcherRegex: '(?:trace_?[iI]d"?[:=]"?|\[[^,\]]*,)([0-9a-f]{32})'
+          datasourceUid: tempo
+          url: "$${__value.raw}"
+        - name: TraceID (OTLP)
+          matcherType: label
+          matcherRegex: trace_id
+          datasourceUid: tempo
+          url: "$${__value.raw}"
+
+  - name: Tempo
+    uid: tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    editable: false
+    jsonData:
+      serviceMap:
+        datasourceUid: prometheus
+      nodeGraph:
+        enabled: true
+      search:
+        hide: false
+      lokiSearch:
+        datasourceUid: loki
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: "-1m"
+        spanEndTimeShift: "1m"
+        filterByTraceID: true
+      tracesToMetrics:
+        datasourceUid: prometheus
+        spanStartTimeShift: "-2m"
+        spanEndTimeShift: "2m"
+      tracesToProfiles:
+        datasourceUid: pyroscope
+        profileTypeId: "process_cpu:cpu:nanoseconds:cpu:nanoseconds"
+        customQuery: false
+
+  - name: Pyroscope
+    uid: pyroscope
+    type: grafana-pyroscope-datasource
+    access: proxy
+    url: http://pyroscope:4040
+    editable: false

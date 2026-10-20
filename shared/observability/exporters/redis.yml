@@ -1,0 +1,23 @@
+# Redis exporter for a topic stack. Include from experiments/docker-compose.yml:
+#   include:
+#     - path: ../../../shared/observability/exporters/redis.yml
+# Defaults assume a service named `redis` on port 6379 without password.
+# Exposes redis_* metrics (ops, per-command latency, hits/misses, memory, evictions, clients...).
+services:
+  redis-exporter:
+    image: oliver006/redis_exporter:v1.94.0
+    environment:
+      REDIS_ADDR: ${REDIS_EXPORTER_ADDR:-redis://redis:6379}
+      REDIS_PASSWORD: ${REDIS_EXPORTER_PASSWORD:-}
+    labels:
+      lab.scrape: "true"
+      lab.port: "9121"
+    networks: [default, lab]
+    cpus: "0.25"
+    mem_limit: 64m
+    restart: unless-stopped
+
+networks:
+  lab:
+    name: backend-lab
+    external: true

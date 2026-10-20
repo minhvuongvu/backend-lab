@@ -48,13 +48,14 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
 - Domain tối giản (ánh xạ từ nghiệp vụ thật), kiến trúc before và after của từng cách (mermaid), thành phần + version pin (đã tra bản ổn định hiện tại) + giới hạn tài nguyên giống nhau.
 - Contract chung, cách mỗi implementation cắm vào (Spring profile / env).
-- Schema dữ liệu, metric cần expose cho mọi tiêu chí "có đo" ở 01 §13, cách kiểm tra đúng đắn dữ liệu, những gì cố ý bỏ qua.
+- Schema dữ liệu, metric cần expose cho mọi tiêu chí "có đo" ở 01 §13 (chọn tín hiệu: metric / log / trace / profile theo `shared/observability/README.md`), cách kiểm tra đúng đắn dữ liệu, những gì cố ý bỏ qua.
 - Điền bảng "Stack" trong README của topic.
 - Kiểm tra tài liệu → **Gate**.
 
 ## Phase 3 — Implement → `system/` + `03-implementation.html` (mục tiêu 9–11)
 
-- Code before và mọi cách implement ở 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 3.x. Expose `/actuator/prometheus`.
+- Code before và mọi cách implement ở 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 3.x. Expose `/actuator/prometheus`, bật tracing OTLP và log correlation theo `shared/observability/README.md`.
+- Nếu có từ 2 implementation trở lên, dùng subagent song song: mỗi agent một implementation (module/package riêng), agent chính giữ contract chung, tích hợp và chạy `./mvnw verify`.
 - Integration test (Testcontainers):
   - before: test tái hiện bài toán (được kỳ vọng thể hiện lỗi; ghi rõ);
   - mỗi cách: test chứng minh các invariant ở 01 §7 và failure mode chính được xử lý.
@@ -71,11 +72,14 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
 
 ## Phase 5 — Execute → `experiments/` + `results/` + `05-results.html` (mục tiêu 13)
 
-- Viết `experiments/`: `docker-compose.yml`, script k6 / chaos, `Makefile` với `make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`.
+- Viết `experiments/`: `docker-compose.yml` (join network `backend-lab`, `include` exporter cần thiết, app chạy trong container có giới hạn tài nguyên), script k6 (remote write + `--tag testid=<impl>-<scenario>-<run>`) / chaos, `Makefile` với `make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`.
+- `make obs-up` trước khi chạy; ghi chế độ observability (`OBS`, sampling, profiling) vào `results/env.md` và giữ nguyên cho mọi ô của ma trận.
 - Ghi `results/env.md` bằng output của lệnh thật trước khi chạy.
 - Chạy toàn bộ ma trận (warmup, ≥ 3 lần mỗi ô), lưu raw vào `results/raw/<impl>-<scenario>-<run>-<timestamp>.*`, không sửa tay.
+- Sau mỗi lần chạy, xuất số liệu Prometheus của khoảng thời gian chạy vào raw bằng `scripts/prom_export.py` (preset `resources`, `jvm`, `http`, `k6` và datastore liên quan) kèm `--meta`.
 - Kiểm tra toàn vẹn dữ liệu sau các kịch bản lỗi; lưu kết quả kiểm tra vào raw.
-- Vẽ biểu đồ bằng Python (pandas + matplotlib) vào `results/charts/`, ưu tiên biểu đồ before vs từng cách.
+- Bất thường: dùng trace (Tempo), log (Loki) và profile (Pyroscope) để tìm nguyên nhân; ghi lại truy vấn đã dùng.
+- Vẽ biểu đồ bằng Python (pandas + matplotlib) vào `results/charts/`, ưu tiên biểu đồ before vs từng cách. Có thể chạy song song bằng subagent: một agent vẽ biểu đồ, một agent kiểm tra toàn vẹn dữ liệu, một agent viết nháp 05.
 - Viết `05-results.html`: nhật ký chạy, bảng before vs after kèm Δ, toàn vẹn dữ liệu, độ biến thiên, bất thường & điều tra. Mọi số link tới raw.
 - Lệnh nào thất bại thì báo rõ kèm output và DỪNG; không ước lượng thay số liệu.
 

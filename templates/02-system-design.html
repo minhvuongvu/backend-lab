@@ -109,11 +109,12 @@ flowchart LR
 
   <section>
     <h2 id="observability"><span class="num">8</span>Quan sát &amp; kiểm tra đúng đắn</h2>
-    <div class="guide">Metric cần expose để đo mọi tiêu chí "có đo" ở 01 §13 (Micrometer timer/counter/gauge, HikariCP, consumer lag...).
+    <div class="guide">Với mỗi tiêu chí "có đo" ở 01 §13: tín hiệu nào (metric / log / trace / profile), lấy ở đâu (xem shared/observability/README.md),
+      exporter nào cần include (postgres / redis / kafka). Metric riêng của bài toán (Micrometer timer/counter/gauge) ghi tên cụ thể.
       Cách kiểm tra toàn vẹn dữ liệu sau kịch bản lỗi: query đối soát, checksum, đếm mất/trùng.</div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Tiêu chí (01 §13)</th><th>Metric / cách đo</th><th>Nguồn</th></tr></thead>
-      <tbody><tr><td></td><td><code></code></td><td><!-- app / k6 / docker stats / SQL --></td></tr></tbody>
+      <thead><tr><th>Tiêu chí (01 §13)</th><th>Tín hiệu</th><th>Metric / truy vấn</th><th>Nguồn</th></tr></thead>
+      <tbody><tr><td></td><td><!-- metric / log / trace / profile --></td><td><code></code></td><td><!-- app / k6 / docker-stats / exporter / Tempo / SQL --></td></tr></tbody>
     </table></div>
   </section>
 
