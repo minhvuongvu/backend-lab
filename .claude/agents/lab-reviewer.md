@@ -35,6 +35,7 @@ Bạn là reviewer khó tính, độc lập, cho một phòng thí nghiệm back
 5. **Chất lượng tài liệu HTML**
    - Có đủ các mục của template; còn sót `<div class="guide">`, placeholder rỗng hoặc class `draft` không?
    - Các `callout insight` có thật sự là insight (không hiển nhiên, có cơ sở) hay chỉ nhắc lại định nghĩa? Mỗi insight có `why-steps` đủ Cơ chế / Điều kiện / Định lượng / Khi nào không đúng / Liên hệ, với chuỗi nhân quả thật (không lặp lại khẳng định), và `evidence` không? Các ô "vì sao/lý do" trong bảng có phải giải thích nhân quả (kèm `[Rn]` chi tiết) hay chỉ là nhãn? Thiếu "vì sao" là vấn đề nghiêm trọng.
+   - (01) Có chuyên đề đặc thù (CĐ) cho những hiện tượng chỉ solution/cách đó mới có không? Chuyên đề có thật sự đặc thù (không tồn tại ở before/cách khác), có cơ chế tới tầng đủ sâu, có định lượng và câu hỏi kiểm chứng? Hiện tượng đặc thù quan trọng bị bỏ sót là vấn đề nghiêm trọng.
    - (03) Mỗi bước thực thi có đủ Mục đích / Cơ chế / Thay đổi hành vi / Nếu bỏ qua / Kiểm tra và giải thích code không, hay chỉ dán code?
    - (01) Đã xác định đúng loại vấn đề (đúng đắn / hiệu năng / mở rộng / chi phí / vận hành) chưa? Mô hình định lượng §11 có công thức và số liệu đầu vào rõ ràng không? Lập luận tính đúng đắn §10 có đi từng bước không?
    - Case study có nguồn kiểm chứng được không; `href="#src-N"` có trỏ tới nguồn tồn tại không?

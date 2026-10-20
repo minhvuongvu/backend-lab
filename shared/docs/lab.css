@@ -369,3 +369,14 @@ ol.reasons li::marker { font-weight: 700; color: var(--muted); }
 
 /* Worked examples inside author guidance render like real content, not in the guide's warning colour */
 body.draft .guide .callout, body.draft .guide .callout dd { color: var(--text); font-size: 15px; }
+
+/* ---------- Deep dives (CĐn): phenomena specific to one solution / implementation ---------- */
+.deep-dive-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.impl h4.deep-dive-title { font-size: 19px; text-transform: none; letter-spacing: 0; color: var(--text); }
+.dd-code { font-family: var(--mono); font-size: 13px; font-weight: 700; padding: 2px 9px; border-radius: 6px; background: var(--insight); color: var(--bg); letter-spacing: 0; }
+.deep-dive { border: 1px solid var(--border); border-left: 4px solid var(--insight); border-radius: 0 var(--radius) var(--radius) 0; padding: 6px 24px 18px; margin: 14px 0 28px; background: var(--surface); }
+.deep-dive-nested .deep-dive { background: var(--bg); }
+dl.dd-meta { display: grid; grid-template-columns: 150px 1fr; gap: 6px 16px; margin: 12px 0; font-size: 15.5px; }
+dl.dd-meta dt { font-size: 12.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--insight); padding-top: 3px; }
+dl.dd-meta dd { margin: 0; }
+@media (max-width: 900px) { dl.dd-meta { grid-template-columns: 1fr; } .deep-dive { padding: 6px 14px 14px; } }

@@ -42,6 +42,7 @@ Báo ngắn: topic, slug, phase sẽ chạy, rồi bắt đầu.
   - **D. Thực tế:** case study có nguồn, hiểu lầm & anti-pattern, tranh luận & câu hỏi mở;
   - **E. Hướng tới thí nghiệm:** chiến lược kiểm chứng, câu hỏi cần kiểm chứng (kèm dự đoán định lượng), tự kiểm tra kiểu phỏng vấn senior, nguồn.
 - Mỗi insight có `claim` + `why` (chuỗi nhân quả, không nhắc lại khẳng định) + `evidence`.
+- Chủ động tìm chuyên đề đặc thù (CĐn cho solution, CĐ-An cho từng cách): đọc source/issue tracker/postmortem để tìm hiện tượng chỉ cách đó mới có; agent tìm nguồn "failure mode & issue tracker" báo cáo ứng viên chuyên đề. Liệt kê ở danh mục chuyên đề, mỗi chuyên đề có câu hỏi kiểm chứng ở §25.
 - Nếu thấy topic cần thêm mục lý thuyết ngoài template (ví dụ mô hình nhất quán hình thức, thuật toán đồng thuận, cấu trúc dữ liệu đặc thù), thêm mục đó và ghi lý do vào nhật ký quyết định.
 - Tài liệu dài: có thể chia viết song song theo phần (mỗi agent một phần A–E), agent chính hợp nhất và kiểm tra tính nhất quán.
 - Điền mục "Phạm vi" và bảng "Implementations" trong README của topic.

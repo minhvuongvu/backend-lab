@@ -12,7 +12,7 @@
 <script src="../shared/docs/lab.js" defer></script>
 </head>
 <!--
-  Phase 1 — Research. Trả lời mục tiêu học 1–8 và 10 (xem CLAUDE.md § Mục tiêu học).
+  Phase 1 — Research. Có thêm phần "Chuyên đề đặc thù" (mã CĐn, CĐ-An) cho hiện tượng chỉ solution/cách implement này mới có. Trả lời mục tiêu học 1–8 và 10 (xem CLAUDE.md § Mục tiêu học).
   Quy tắc viết HTML: CLAUDE.md § Tài liệu HTML. Thay mỗi <div class="guide"> bằng nội dung thật rồi xoá; xong thì bỏ class "draft" khỏi <body>.
   ID implementation (before, A, B, C...) phải khớp bảng "Implementations" trong README của topic và dùng nhất quán ở mọi tài liệu sau.
 
@@ -415,6 +415,74 @@ sequenceDiagram
   </section>
 
   <!-- ================================================================ -->
+  <div class="part-title">Chuyên đề đặc thù của solution</div>
+
+  <section>
+    <h2 id="deep-dives">Chuyên đề đặc thù</h2>
+    <div class="guide"><strong>Mục đích:</strong> chỗ cho những hiện tượng, cơ chế hay insight CHỈ tồn tại ở solution này (hoặc ở một cách implement), quá sâu để nhét vào một ô bảng hay một insight.
+      Ví dụ: CDC giữ replication slot làm WAL tích tụ khi connector dừng; polling với <code>SKIP LOCKED</code> làm bloat index của bảng outbox; cache dễ gặp thundering herd khi key nóng hết hạn;
+      Kafka consumer group bị rebalance storm; distributed lock lệch vì clock drift / GC pause (tranh luận Redlock).
+      <br><strong>Tiêu chí tạo chuyên đề</strong> (cần đủ cả 3): (1) hiện tượng không tồn tại ở before hoặc ở cách khác; (2) không hiển nhiên — người đọc docs lướt sẽ bỏ sót; (3) ảnh hưởng đáng kể tới đúng đắn, hiệu năng, tài nguyên hoặc vận hành.
+      <br><strong>Cách đặt:</strong> chuyên đề của solution (đúng với mọi cách implement) đặt ở đây, mã <code>CĐ1, CĐ2…</code>; chuyên đề chỉ của một cách đặt trong khối của cách đó ở §17, mã <code>CĐ-A1, CĐ-B1…</code>.
+      Không đánh số lại §1–27. Thường 1–4 chuyên đề mỗi topic; không có thì ghi "Không có" kèm lý do.
+      <br>Chuyên đề nối xuống các phase sau: câu hỏi ở §25, kịch bản ở 04, lưu ý thực tế ở 03, kết luận ở 06, runbook ở 07.</div>
+
+    <h3 id="deep-dive-index">Danh mục chuyên đề</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Mã</th><th>Chuyên đề</th><th>Thuộc (solution / cách)</th><th>Vì sao đặc thù (một dòng)</th><th>Ảnh hưởng</th><th>Kiểm chứng (Q-id)</th></tr></thead>
+      <tbody>
+        <tr><td><a href="#cd-1">CĐ1</a></td><td></td><td>Solution</td><td></td><td></td><td></td></tr>
+        <tr><td><a href="#cd-a1">CĐ-A1</a></td><td></td><td>A</td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+
+    <h3 id="cd-1" class="deep-dive-title"><span class="dd-code">CĐ1</span><!-- tên chuyên đề --></h3>
+      <div class="deep-dive">
+        <dl class="dd-meta">
+          <dt>Thuộc</dt><dd>Solution (mọi cách implement)</dd>
+          <dt>Vì sao đặc thù</dt><dd><!-- vì sao hiện tượng này KHÔNG tồn tại ở before / ở cách khác: thành phần hay cơ chế nào chỉ có ở đây sinh ra nó --></dd>
+          <dt>Ảnh hưởng tới</dt><dd><!-- đúng đắn / latency / throughput / tài nguyên / vận hành / chi phí — kèm mức độ --></dd>
+        </dl>
+        <h4>Hiện tượng</h4>
+        <p><!-- mô tả điều quan sát được từ bên ngoài: triệu chứng, metric nào thay đổi, khi nào --></p>
+        <h4>Cơ chế bên trong</h4>
+        <div class="guide">Đi tới tầng thấp nhất cần thiết: cấu trúc dữ liệu, thuật toán, giao thức, trạng thái nội bộ, giá trị mặc định (kèm version). Có sơ đồ (sequence / state / flowchart) và trích source code hoặc tài liệu gốc khi có.</div>
+        <ol><li><!-- bước 1 → hệ quả trung gian --></li><li><!-- bước 2 → … --></li></ol>
+        <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    A[Trạng thái ban đầu] --> B[Cơ chế đặc thù] --> C[Hệ quả]
+</pre>
+        </figure>
+        <h4>Điều kiện kích hoạt &amp; định lượng</h4>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Điều kiện / tham số</th><th>Ngưỡng bắt đầu xảy ra</th><th>Độ lớn hệ quả (công thức + bậc độ lớn)</th><th>Căn cứ</th></tr></thead>
+          <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+        </table></div>
+        <h4>Phát hiện &amp; xử lý</h4>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tín hiệu phát hiện (metric / log / trace / profile)</th><th>Cách xử lý hoặc thiết kế tránh</th><th>Vì sao cách đó hiệu quả (cơ chế)</th><th>Cái giá của cách xử lý</th></tr></thead>
+          <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+        </table></div>
+        <h4>Kiểm chứng trong lab</h4>
+        <p><!-- câu hỏi Q-id ở §25 + kịch bản ở 04 sẽ tái hiện hiện tượng; nếu không tái hiện được trên máy local thì ghi lý do --></p>
+        <div class="callout insight"><span class="callout-title">Insight</span>
+          <p class="claim"></p>
+          <div class="why"><strong>Vì sao:</strong>
+            <dl class="why-steps">
+              <dt>Cơ chế</dt><dd><ol><li></li><li></li></ol></dd>
+              <dt>Điều kiện</dt><dd></dd>
+              <dt>Định lượng</dt><dd></dd>
+              <dt>Khi nào không đúng</dt><dd></dd>
+              <dt>Liên hệ</dt><dd></dd>
+            </dl>
+          </div>
+          <div class="evidence"><strong>Căn cứ:</strong> </div>
+        </div>
+      </div>
+  </section>
+
+  <!-- ================================================================ -->
   <div class="part-title">Phần C — Các cách implement (mục tiêu 3–8, 10)</div>
 
   <section>
@@ -514,6 +582,56 @@ sequenceDiagram
         <li id="ra-7"><strong>R7</strong> <!-- vì sao điều kiện "bỏ" làm chi phí vượt lợi ích --></li>
       </ol>
       <div class="guide">Khi lặp khối cho cách B, C…: đổi tiền tố id (rb-1, rc-1…) để link không trùng.</div>
+
+      <h4>Chuyên đề riêng của cách này</h4>
+      <div class="guide">Hiện tượng chỉ có ở cách này (tiêu chí ở mục "Chuyên đề đặc thù"). Mã CĐ-A1, CĐ-A2… (cách B: CĐ-B1…), ghi vào danh mục chuyên đề. Không có thì ghi "Không có" kèm lý do.</div>
+      <div class="deep-dive-nested">
+      <h4 id="cd-a1" class="deep-dive-title"><span class="dd-code">CĐ-A1</span><!-- tên chuyên đề --></h4>
+      <div class="deep-dive">
+        <dl class="dd-meta">
+          <dt>Thuộc</dt><dd>Cách A</dd>
+          <dt>Vì sao đặc thù</dt><dd><!-- vì sao hiện tượng này KHÔNG tồn tại ở before / ở cách khác: thành phần hay cơ chế nào chỉ có ở đây sinh ra nó --></dd>
+          <dt>Ảnh hưởng tới</dt><dd><!-- đúng đắn / latency / throughput / tài nguyên / vận hành / chi phí — kèm mức độ --></dd>
+        </dl>
+        <h4>Hiện tượng</h4>
+        <p><!-- mô tả điều quan sát được từ bên ngoài: triệu chứng, metric nào thay đổi, khi nào --></p>
+        <h4>Cơ chế bên trong</h4>
+        <div class="guide">Đi tới tầng thấp nhất cần thiết: cấu trúc dữ liệu, thuật toán, giao thức, trạng thái nội bộ, giá trị mặc định (kèm version). Có sơ đồ (sequence / state / flowchart) và trích source code hoặc tài liệu gốc khi có.</div>
+        <ol><li><!-- bước 1 → hệ quả trung gian --></li><li><!-- bước 2 → … --></li></ol>
+        <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    A[Trạng thái ban đầu] --> B[Cơ chế đặc thù] --> C[Hệ quả]
+</pre>
+        </figure>
+        <h4>Điều kiện kích hoạt &amp; định lượng</h4>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Điều kiện / tham số</th><th>Ngưỡng bắt đầu xảy ra</th><th>Độ lớn hệ quả (công thức + bậc độ lớn)</th><th>Căn cứ</th></tr></thead>
+          <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+        </table></div>
+        <h4>Phát hiện &amp; xử lý</h4>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tín hiệu phát hiện (metric / log / trace / profile)</th><th>Cách xử lý hoặc thiết kế tránh</th><th>Vì sao cách đó hiệu quả (cơ chế)</th><th>Cái giá của cách xử lý</th></tr></thead>
+          <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+        </table></div>
+        <h4>Kiểm chứng trong lab</h4>
+        <p><!-- câu hỏi Q-id ở §25 + kịch bản ở 04 sẽ tái hiện hiện tượng; nếu không tái hiện được trên máy local thì ghi lý do --></p>
+        <div class="callout insight"><span class="callout-title">Insight</span>
+          <p class="claim"></p>
+          <div class="why"><strong>Vì sao:</strong>
+            <dl class="why-steps">
+              <dt>Cơ chế</dt><dd><ol><li></li><li></li></ol></dd>
+              <dt>Điều kiện</dt><dd></dd>
+              <dt>Định lượng</dt><dd></dd>
+              <dt>Khi nào không đúng</dt><dd></dd>
+              <dt>Liên hệ</dt><dd></dd>
+            </dl>
+          </div>
+          <div class="evidence"><strong>Căn cứ:</strong> </div>
+        </div>
+      </div>
+      </div>
+
 
       <div class="callout insight"><span class="callout-title">Insight</span>
         <p class="claim"></p>
@@ -648,7 +766,7 @@ flowchart TD
 
   <section>
     <h2 id="questions"><span class="num">25</span>Câu hỏi cần kiểm chứng</h2>
-    <div class="guide">Mỗi câu đo/kiểm được và so sánh với before. Nguồn câu hỏi: dự đoán ở §11, các ô "có đo" ở §18, tranh luận ở §23, insight còn ở mức suy luận.
+    <div class="guide">Mỗi câu đo/kiểm được và so sánh với before. Nguồn câu hỏi: dự đoán ở §11, các ô "có đo" ở §18, tranh luận ở §23, insight còn ở mức suy luận, và mỗi chuyên đề đặc thù (CĐn / CĐ-An) — chuyên đề nào cũng phải có ít nhất một câu hỏi tái hiện hiện tượng đó.
       Dự đoán phải định lượng (bậc độ lớn, ngưỡng) để có thể bác bỏ.</div>
     <div class="table-wrap"><table>
       <thead><tr><th>ID</th><th>Câu hỏi</th><th>Từ mục</th><th>Áp dụng cho</th><th>Dự đoán định lượng</th><th>Đo gì</th></tr></thead>

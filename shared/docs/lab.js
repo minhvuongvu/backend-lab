@@ -66,7 +66,12 @@ async function renderMermaid() {
   const blocks = document.querySelectorAll("pre.mermaid, div.mermaid");
   const mermaid = window.mermaid;
   if (!blocks.length || !mermaid) return;
+  // Capture sources and disable auto-render BEFORE awaiting, otherwise mermaid's own
+  // startOnLoad replaces the text with SVG while we wait and we re-render garbage.
   blocks.forEach((b) => { if (!b.dataset.src) b.dataset.src = b.textContent; });
+  mermaid.initialize({ startOnLoad: false });
+  // Mermaid measures label text when it renders; wait for the web font or labels get clipped.
+  try { await document.fonts?.ready; } catch { /* Font Loading API unavailable */ }
   mermaid.initialize({ startOnLoad: false, theme: isDark() ? "dark" : "default", securityLevel: "strict", fontFamily: getComputedStyle(document.body).fontFamily });
   blocks.forEach((b) => { b.removeAttribute("data-processed"); b.innerHTML = ""; b.textContent = b.dataset.src; });
   try {
