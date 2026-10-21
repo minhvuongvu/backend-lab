@@ -73,13 +73,24 @@ async function renderMermaid() {
   // Mermaid measures label text when it renders; wait for the web font or labels get clipped.
   try { await document.fonts?.ready; } catch { /* Font Loading API unavailable */ }
   mermaid.initialize({ startOnLoad: false, theme: isDark() ? "dark" : "default", securityLevel: "strict", fontFamily: getComputedStyle(document.body).fontFamily });
-  blocks.forEach((b) => { b.removeAttribute("data-processed"); b.innerHTML = ""; b.textContent = b.dataset.src; });
-  try {
-    await mermaid.run({ nodes: blocks });
-  } catch (err) {
-    console.error("[lab] mermaid render failed", err);
+  // Render one diagram at a time with our own ids. mermaid.run() names each SVG after Date.now(),
+  // so two diagrams rendered in the same millisecond share an id and d3 draws every diagram into
+  // the first SVG (seen on ROADMAP.html with 20+ diagrams). A per-page counter makes ids unique.
+  const pass = ++renderPass;
+  for (const [i, b] of [...blocks].entries()) {
+    if (pass !== renderPass) return; // a newer pass (theme toggle) took over
+    b.removeAttribute("data-processed");
+    try {
+      const { svg, bindFunctions } = await mermaid.render(`lab-mmd-${pass}-${i}`, b.dataset.src);
+      b.innerHTML = svg;
+      bindFunctions?.(b);
+    } catch (err) {
+      console.error("[lab] mermaid render failed", err);
+      b.textContent = b.dataset.src;
+    }
   }
 }
+let renderPass = 0;
 
 function highlight() {
   if (window.hljs) document.querySelectorAll("pre code").forEach((el) => window.hljs.highlightElement(el));
