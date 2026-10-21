@@ -20,8 +20,11 @@ import re
 import sys
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import hub_path, hubify  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
-ROADMAP = ROOT / "ROADMAP.html"
+ROADMAP = hub_path("roadmap")
 
 STAGES = [
     (1, "Nền tảng một node", "Dữ liệu đúng trong một database, hệ điều hành, container, JVM, Spring và mạng: mọi topic sau đều dựng trên đây.",
@@ -227,7 +230,7 @@ def main():
     ordered = "".join(figs[t] for t in track_seq if t in figs) + "".join(v for k, v in figs.items() if k not in track_seq)
     s = s[:first] + ordered + s[last:]
 
-    ROADMAP.write_text(s, encoding="utf-8", newline="\n")
+    ROADMAP.write_text(hubify(s), encoding="utf-8", newline="\n")  # rows added with root-relative links get fixed
     print(f"ordered {len(rows)} topics in {len([t for t in track_seq if any(r['track'] == t for r in rows)])} groups / "
           f"{len(STAGES)} stages; prerequisites pointing to a later group: {len(forward)}")
 

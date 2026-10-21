@@ -1,4 +1,4 @@
-// Builds the prerequisite diagrams on ROADMAP.html from the topic table, so the table rows are the
+// Builds the prerequisite diagrams on hub/roadmap.html from the topic table, so the table rows are the
 // single source of truth (no hand-maintained mermaid source).
 // Must run BEFORE lab.js (both deferred: this script is listed first in <head>), because lab.js
 // renders every pre.mermaid on load.

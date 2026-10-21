@@ -1,4 +1,4 @@
-// Search / filter for BENCHMARKS.html. Classic deferred script; no-op on pages without the filter bar.
+// Search / filter for hub/benchmarks.html. Classic deferred script; no-op on pages without the filter bar.
 (() => {
   const bar = document.querySelector(".bench-filters");
   if (!bar) return;

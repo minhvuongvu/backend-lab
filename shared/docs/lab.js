@@ -128,27 +128,32 @@ const DOCS = [
   ["07-production.html", "7 · Production"],
 ];
 
-// Repo-level hub pages (<body data-page="hub">) link to each other instead of to phase documents.
+// Repo-level pages (<body data-page="hub">): the home page index.html at the repo root and the hub
+// pages in hub/. Paths are relative to the repo root and resolved from wherever the page lives.
 const HUB = [
-  ["LAB.html", "Tổng quan"],
-  ["ROADMAP.html", "Lộ trình"],
-  ["PROBLEMS.html", "Theo vấn đề"],
-  ["INSIGHTS.html", "Kho insight"],
-  ["BENCHMARKS.html", "Số liệu"],
-  ["GLOSSARY.html", "Thuật ngữ"],
+  ["index.html", "Trang chủ"],
+  ["hub/lab.html", "Tổng quan"],
+  ["hub/roadmap.html", "Lộ trình"],
+  ["hub/problems.html", "Theo vấn đề"],
+  ["hub/insights.html", "Kho insight"],
+  ["hub/benchmarks.html", "Số liệu"],
+  ["hub/glossary.html", "Thuật ngữ"],
+  ["hub/rules.html", "Quy tắc"],
 ];
 
 function buildDocNav() {
   const header = document.querySelector("header.doc-header");
   if (!header) return;
   if (document.body.dataset.page === "hub") {
-    const here = decodeURIComponent(location.pathname.split("/").pop());
+    const path = decodeURIComponent(location.pathname);
+    const inHub = /\/hub\/[^/]*$/.test(path);
+    const here = (inHub ? "hub/" : "") + path.split("/").pop();
     const nav = document.createElement("nav");
     nav.className = "doc-nav";
     nav.setAttribute("aria-label", "Trang tổng");
     for (const [file, label] of HUB) {
       const a = document.createElement("a");
-      a.href = file;
+      a.href = inHub ? (file.startsWith("hub/") ? file.slice(4) : "../" + file) : file;
       a.textContent = label;
       if (file === here) a.className = "current";
       nav.appendChild(a);

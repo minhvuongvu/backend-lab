@@ -1,4 +1,4 @@
-/* Roadmap page styles (ROADMAP.html). Uses the variables defined in lab.css. */
+/* Roadmap page styles (hub/roadmap.html). Uses the variables defined in lab.css. */
 
 /* Five columns fit the normal 880px reading width; status lives in the first cell. */
 table.roadmap { table-layout: fixed; }

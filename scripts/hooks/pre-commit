@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# backend-lab pre-commit hook (install: `make hooks`).
+# Runs the fast checks only when lab tooling / docs / roadmap / topics are staged:
+#   unit tests, roadmap prerequisite + learning-path check, hub linters, generated pages, py_compile, bash -n.
+# The headless render check is slow (~30 s); enable it with LAB_RENDER_CHECK=1.
+# Skip once with: git commit --no-verify
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+cd "$ROOT"
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+if ! grep -qE '^(scripts/|templates/|shared/docs/|tests/|hub/|topics/|index\.html|README\.md|CLAUDE\.md)' <<<"$staged"; then
+  exit 0
+fi
+
+PY=""
+for c in python3 python; do
+  if "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3, 11) else 1)' >/dev/null 2>&1; then PY="$c"; break; fi
+done
+if [[ -z "$PY" ]]; then
+  echo "[pre-commit] python >= 3.11 not found; skipping checks" >&2
+  exit 0
+fi
+export PYTHONIOENCODING=utf-8
+
+step() { echo "[pre-commit] $*"; }
+
+step "unit tests"
+"$PY" -m unittest discover -s tests -q
+
+step "roadmap: prerequisites, cycles, learning paths"
+out="$("$PY" scripts/roadmap_order.py --check)" || { echo "$out"; exit 1; }
+grep -q 'learning-path order problems: 0' <<<"$out" || { echo "$out"; exit 1; }
+
+step "hub linters (insights, problems/glossary, benchmarks)"
+"$PY" scripts/build_insights.py --check --no-page
+"$PY" scripts/build_knowledge.py --check --no-page
+"$PY" scripts/build_dashboard.py --check
+
+step "generated pages up to date (index.html, hub/rules.html)"
+"$PY" scripts/build_pages.py --check || { echo "[pre-commit] run: make pages (or python scripts/build_pages.py) and stage the result"; exit 1; }
+
+step "syntax: python + shell"
+"$PY" -m py_compile scripts/*.py
+for f in scripts/*.sh scripts/hooks/pre-commit; do bash -n "$f"; done
+
+if [[ "${LAB_RENDER_CHECK:-0}" == "1" ]]; then
+  step "headless render check"
+  "$PY" scripts/check_render.py
+fi
+step "ok"

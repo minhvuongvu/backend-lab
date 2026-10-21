@@ -48,6 +48,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_insights as bi  # noqa: E402  (shared minimal DOM + insight extraction)
+from _paths import hub_path, hubify  # noqa: E402
 
 ROOT = bi.ROOT
 SLUG_RE = bi.TAG_RE
@@ -262,7 +263,7 @@ def collect(only_topic=None):
     tdir_root = ROOT / "topics"
     if not tdir_root.exists():
         return data
-    for tdir in sorted(p for p in tdir_root.iterdir() if p.is_dir()):
+    for tdir in sorted(p for p in tdir_root.iterdir() if p.is_dir() and not p.name.startswith("_")):  # _* = test fixtures
         if only_topic and tdir.name != only_topic:
             continue
         pages = sorted(tdir.glob("[0-9][0-9]-*.html"))
@@ -508,8 +509,8 @@ def render_glossary(data):
 # ---------------------------------------------------------------- CLI
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--problems-out", default=str(ROOT / "PROBLEMS.html"))
-    ap.add_argument("--glossary-out", default=str(ROOT / "GLOSSARY.html"))
+    ap.add_argument("--problems-out", default=str(hub_path("problems")))
+    ap.add_argument("--glossary-out", default=str(hub_path("glossary")))
     ap.add_argument("--json", metavar="OUT", help="also write the index as JSON")
     ap.add_argument("--check", action="store_true", help="lint problem/glossary markup; exit 1 on problems")
     ap.add_argument("--topic", help="limit to one topic slug")
@@ -541,10 +542,12 @@ def main():
         out = {"topics": data["topics"], "entries": data["entries"], "terms": data["terms"]}
         Path(args.json).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     if not args.no_page:
-        Path(args.problems_out).write_text(render_problems(data), encoding="utf-8", newline="\n")
-        Path(args.glossary_out).write_text(render_glossary(data), encoding="utf-8", newline="\n")
+        Path(args.problems_out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.glossary_out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.problems_out).write_text(hubify(render_problems(data)), encoding="utf-8", newline="\n")
+        Path(args.glossary_out).write_text(hubify(render_glossary(data)), encoding="utf-8", newline="\n")
         nprob = len({s for en in data["entries"] for s in en["problems"]})
-        print(f"wrote PROBLEMS.html ({nprob} problem(s)) and GLOSSARY.html ({len({t['term'] for t in data['terms']})} term(s)) "
+        print(f"wrote hub/problems.html ({nprob} problem(s)) and hub/glossary.html ({len({t['term'] for t in data['terms']})} term(s)) "
               f"from {len(data['topics'])} topic(s)")
 
 

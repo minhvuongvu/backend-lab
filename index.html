@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>backend-lab</title>
+<link rel="stylesheet" href="shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="shared/docs/lab.js" defer></script>
+</head>
+<!-- GENERATED from README.md by scripts/build_pages.py — edit README.md, not this file. -->
+<body data-page="hub">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">backend-lab</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+  <header class="doc-header">
+    <div class="eyebrow">Trang chủ</div>
+    <h1>backend-lab</h1>
+    <div class="meta"><span>Nguồn: <code>README.md</code> (trang này tự sinh)</span></div>
+  </header>
+<p>"Phòng thí nghiệm" để nghiên cứu sâu từng công nghệ/kỹ thuật backend (Java/Spring Boot, PostgreSQL, Redis, Kafka...) theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật thay vì chỉ đọc tài liệu.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Phase</th><th>Nội dung</th><th>Nơi ghi</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Research: bối cảnh, lý thuyết, các cách implement, đánh đổi</td><td><code>01-research.html</code></td></tr>
+<tr><td>2</td><td>System design: hệ thống tối giản, before/after</td><td><code>02-system-design.html</code></td></tr>
+<tr><td>3</td><td>Implement: code + hướng dẫn từng bước</td><td><code>system/</code> + <code>03-implementation.html</code></td></tr>
+<tr><td>4</td><td>Experiment plan: thí nghiệm trước/sau</td><td><code>04-experiment-plan.html</code></td></tr>
+<tr><td>5</td><td>Execute: chạy, đo, báo cáo số liệu</td><td><code>experiments/</code> + <code>results/</code> + <code>05-results.html</code></td></tr>
+<tr><td>6</td><td>Conclusion</td><td><code>06-conclusion.html</code></td></tr>
+<tr><td>7</td><td>Production rollout</td><td><code>07-production.html</code> + <code>deploy/</code></td></tr>
+</tbody></table></div>
+<p>Mỗi topic so sánh <strong>before</strong> (hệ thống as-is) với từng cách implement. 14 mục tiêu học và nơi trả lời: xem <a href="hub/rules.html#muc-tieu-hoc-noi-tra-loi">CLAUDE.md</a>. Tài liệu là HTML: mở trực tiếp bằng trình duyệt (cần internet để tải mermaid/highlight.js).</p>
+<p>Quy tắc chung cho mọi phiên Claude Code nằm trong <a href="hub/rules.html">CLAUDE.md</a>.</p>
+<section>
+<h2 id="cach-dung">Cách dùng</h2>
+<ul><li>Mở Claude Code trong <code>backend-lab/</code>.</li><li><code>/research transactional outbox</code>: chạy phase kế tiếp, dừng ở các điểm duyệt.</li><li><code>/research transactional outbox 5</code>: chạy riêng một phase.</li><li><code>/research idempotency key all</code>: chạy một mạch, các điểm cần duyệt ghi vào README của topic.</li><li><code>/research cache stampede lite</code>: chế độ học nhanh (ít kịch bản, bỏ phase 7); nâng lên đầy đủ sau bằng <code>/research cache stampede full</code>.</li><li><code>/lab-status</code>: xem tiến độ mọi topic và gợi ý topic nên học tiếp theo lộ trình.</li><li><code>/research cdc debezium spike</code>: khám phá nhanh một hiện tượng; <code>/research redis lock vs postgres advisory lock</code>: topic so sánh hai công nghệ.</li><li><code>/research case-payment-system</code>: case study tổng hợp — ghép nhiều topic đã học thành một hệ thống và kiểm chứng end-to-end (giai đoạn 8 trong lộ trình).</li><li>Trang tổng (mở bằng trình duyệt): <a href="hub/lab.html">hub/lab.html</a> tổng quan · <a href="hub/roadmap.html">hub/roadmap.html</a> lộ trình · <a href="hub/problems.html">hub/problems.html</a> tra theo vấn đề · <a href="hub/insights.html">hub/insights.html</a> kho insight · <a href="hub/benchmarks.html">hub/benchmarks.html</a> số liệu tham chiếu · <a href="hub/glossary.html">hub/glossary.html</a> thuật ngữ.</li><li>Một chủ đề, một phiên. Dùng <code>/clear</code> khi chuyển chủ đề để context không bị lẫn.</li><li><code>make obs-up</code> trước phase 5 nếu muốn xem metric trên Grafana.</li><li>Yêu cầu: Docker, JDK 21, k6, Python 3 (và GNU make + bash; trên Windows dùng Git Bash/WSL).</li></ul>
+<h3 id="lenh-make">Lệnh make</h3>
+<div class="table-wrap"><table>
+<thead><tr><th>Lệnh</th><th>Tác dụng</th></tr></thead>
+<tbody>
+<tr><td><code>make new-topic SLUG=&lt;kebab-case&gt;</code></td><td>Tạo topic mới từ <code>templates/</code> (cách duy nhất để tạo topic)</td></tr>
+<tr><td><code>make obs-up</code></td><td>Bật observability đầy đủ: metrics, logs, traces, profiles (Grafana http://localhost:3000, admin/admin)</td></tr>
+<tr><td><code>make obs-up OBS=metrics</code></td><td>Chỉ Prometheus + Grafana + docker-stats (overhead thấp nhất, dùng khi đo hiệu năng thuần)</td></tr>
+<tr><td><code>make obs-status</code></td><td>Trạng thái container và health của các target Prometheus</td></tr>
+<tr><td><code>make obs-down</code></td><td>Tắt observability stack</td></tr>
+<tr><td><code>make insights</code></td><td>Dựng lại <code>hub/insights.html</code> từ mọi topic và kiểm tra cấu trúc insight</td></tr>
+<tr><td><code>make hubs</code></td><td>Dựng lại mọi trang tổng (LAB, INSIGHTS, PROBLEMS, GLOSSARY, BENCHMARKS) và mục Topic liên quan</td></tr>
+<tr><td><code>make roadmap</code></td><td>Đánh số thứ tự học, xếp nhóm theo giai đoạn và kiểm tra tiền đề / lộ trình trong <code>hub/roadmap.html</code></td></tr>
+<tr><td><code>make hubs-check</code></td><td>Kiểm tra markup insight / vấn đề / thuật ngữ / số liệu của mọi topic</td></tr>
+</tbody></table></div>
+<p>Cổng đổi được khi bị trùng: <code>make obs-up PROM_PORT=19090 GRAFANA_PORT=13000 OTLP_GRPC_PORT=14317 OTLP_HTTP_PORT=14318 PYROSCOPE_PORT=14040</code>. Cách nối app, exporter, k6 và xuất số liệu vào <code>results/raw</code>: <a href="shared/observability/index.html">shared/observability/README.md</a>.</p>
+</section>
+<section>
+<h2 id="cau-truc">Cấu trúc</h2>
+<pre><code>backend-lab/
+├── index.html                # trang chủ (sinh từ README.md) — mở file này trong trình duyệt
+├── README.md                 # nguồn của index.html; GitHub hiển thị file này
+├── CLAUDE.md                 # quy tắc cho mọi phiên Claude Code (nguồn của hub/rules.html)
+├── Makefile                  # make help: doctor, obs-*, new-topic, roadmap, hubs, check, hooks…
+├── hub/                      # các trang tổng, dùng chung thanh điều hướng
+│   ├── lab.html              #   tổng quan tiến độ, chờ duyệt, topic sẵn sàng học
+│   ├── roadmap.html          #   lộ trình 8 giai đoạn (bảng là nguồn dữ liệu, sơ đồ tự sinh)
+│   ├── problems.html         #   tra theo triệu chứng → nguyên nhân, lựa chọn, runbook
+│   ├── insights.html         #   kho insight + chuyên đề của mọi topic
+│   ├── benchmarks.html       #   số liệu tham chiếu đã đo
+│   ├── glossary.html         #   thuật ngữ chung
+│   └── rules.html            #   bản HTML của CLAUDE.md
+├── topics/&lt;slug&gt;/            # mỗi topic: README.html + 01…07 + system/ + experiments/ + results/ + deploy/
+├── templates/                # khung tài liệu cho mỗi topic
+├── shared/docs/              # CSS/JS dùng chung cho mọi trang HTML
+├── shared/scaffold/          # bộ khung Spring Boot + experiment kit, copy vào mỗi topic khi tạo
+├── shared/observability/     # Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana dùng chung
+├── scripts/                  # new-topic, doctor, stats, prom_export, roadmap_order, build_* (trang tổng), check_render
+├── tests/                    # unit test cho các script (make test)
+└── .claude/                  # /research, /lab-status, subagent lab-reviewer</code></pre>
+<p>Trang HTML tự sinh (<code>index.html</code>, <code>hub/*.html</code> trừ <code>roadmap.html</code>) không sửa tay: sửa nguồn rồi chạy <code>make hubs</code>.</p>
+</section>
+<section>
+<h2 id="topics">Topics</h2>
+<div class="table-wrap"><table>
+<thead><tr><th>Topic</th><th>Phase hiện tại</th><th>Link</th></tr></thead>
+<tbody>
+</tbody></table></div>
+</section>
+  </article>
+  </main>
+</div>
+</body>
+</html>

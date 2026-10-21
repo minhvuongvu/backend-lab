@@ -43,6 +43,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_insights as bi  # noqa: E402  (shared minimal DOM + insight index)
+from _paths import hub_path, hubify  # noqa: E402
 
 ROOT = bi.ROOT
 # Real topic slugs are kebab-case and never start with "_" (scripts/new-topic.sh enforces it); "_"-prefixed
@@ -81,7 +82,7 @@ def fmt(v):
 
 # ---------------------------------------------------------------- roadmap
 def read_roadmap(path=None):
-    path = Path(path) if path else ROOT / "ROADMAP.html"
+    path = Path(path) if path else hub_path("roadmap")
     rows, tracks = [], {}
     if not path.exists():
         return rows, tracks
@@ -286,7 +287,7 @@ def render_related(items):
         return '\n    <p class="empty-note">Chưa có topic liên quan.</p>\n    '
     lis = []
     for it in items:
-        href = f"../{it['slug']}/README.html" if it["exists"] else f"../../ROADMAP.html#{it['slug']}"
+        href = f"../{it['slug']}/README.html" if it["exists"] else f"../../hub/roadmap.html#{it['slug']}"
         missing = "" if it["exists"] else ' <span class="rel-missing">chưa tạo</span>'
         reasons = "".join(f'<span class="rel-reason">{e(r)}</span>' for r in it["reasons"])
         lis.append(f'      <li data-related="{e(it["slug"])}"><a href="{e(href)}">{e(it["name"])}</a>{missing} {reasons}</li>')
@@ -527,8 +528,8 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
     ap.add_argument("--check", action="store_true", help="validate [data-bench] rows; exit 1 on problems (no files written)")
     ap.add_argument("--no-related", action="store_true", help="do not rewrite the related-topics block of topic READMEs")
-    ap.add_argument("--lab-out", default=str(ROOT / "LAB.html"))
-    ap.add_argument("--bench-out", default=str(ROOT / "BENCHMARKS.html"))
+    ap.add_argument("--lab-out", default=str(hub_path("lab")))
+    ap.add_argument("--bench-out", default=str(hub_path("benchmarks")))
     ap.add_argument("--roadmap", help="roadmap page to read (default: ROADMAP.html; for testing)")
     ap.add_argument("--include-underscore", action="store_true", help="also read topics/_* test fixtures")
     args = ap.parse_args()
@@ -552,13 +553,15 @@ def main():
     insights = [i for i in idx["insights"] if keep(i["topic"])]
     dives = [d for d in idx["deep_dives"] if keep(d["topic"])]
 
-    Path(args.lab_out).write_text(render_lab(topics, roadmap, tracks, insights, dives, benches), encoding="utf-8", newline="\n")
-    Path(args.bench_out).write_text(render_benchmarks(benches, topics), encoding="utf-8", newline="\n")
+    Path(args.lab_out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.bench_out).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.lab_out).write_text(hubify(render_lab(topics, roadmap, tracks, insights, dives, benches)), encoding="utf-8", newline="\n")
+    Path(args.bench_out).write_text(hubify(render_benchmarks(benches, topics)), encoding="utf-8", newline="\n")
     changed = 0
     if not args.no_related:
         changed = write_related(topics, related_for(topics, roadmap, insights, read_problems()))
-    print(f"wrote LAB.html ({len(topics)} topic(s), {len(roadmap)} roadmap row(s)), "
-          f"BENCHMARKS.html ({len(benches)} measurement(s)); related sections updated: {changed}")
+    print(f"wrote hub/lab.html ({len(topics)} topic(s), {len(roadmap)} roadmap row(s)), "
+          f"hub/benchmarks.html ({len(benches)} measurement(s)); related sections updated: {changed}")
     if problems:
         print(f"warning: {len(problems)} benchmark problem(s); run with --check for details")
 

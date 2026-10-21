@@ -37,6 +37,9 @@ from datetime import datetime, timezone
 from html.parser import HTMLParser
 from pathlib import Path
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from _paths import hub_path, hubify  # noqa: E402
+
 ROOT = Path(__file__).resolve().parent.parent
 VOID = {"area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"}
 WHY_FIELDS = ["Cơ chế", "Điều kiện", "Định lượng", "Khi nào không đúng", "Liên hệ"]
@@ -264,7 +267,7 @@ def collect(only_topic=None):
     data = {"insights": [], "deep_dives": [], "topics": [], "problems": {}}
     if not topics_dir.exists():
         return data
-    for tdir in sorted(p for p in topics_dir.iterdir() if p.is_dir()):
+    for tdir in sorted(p for p in topics_dir.iterdir() if p.is_dir() and not p.name.startswith("_")):  # _* = test fixtures
         if only_topic and tdir.name != only_topic:
             continue
         pages = sorted(tdir.glob("[0-9][0-9]-*.html"))
@@ -427,7 +430,7 @@ def render(data):
 # ---------------------------------------------------------------- CLI
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split("\n\n")[0])
-    ap.add_argument("--out", default=str(ROOT / "INSIGHTS.html"), help="output page (default: INSIGHTS.html at repo root)")
+    ap.add_argument("--out", default=str(hub_path("insights")), help="output page (default: hub/insights.html)")
     ap.add_argument("--json", metavar="OUT", help="also write the index as JSON")
     ap.add_argument("--check", action="store_true", help="lint insight markup instead of (only) building; exit 1 on problems")
     ap.add_argument("--topic", help="limit --check (and the index) to one topic slug")
@@ -460,7 +463,8 @@ def main():
         out = {k: data[k] for k in ("topics", "insights", "deep_dives")}
         Path(args.json).write_text(json.dumps(out, ensure_ascii=False, indent=2), encoding="utf-8")
     if not args.no_page:
-        Path(args.out).write_text(render(data), encoding="utf-8", newline="\n")
+        Path(args.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(args.out).write_text(hubify(render(data)), encoding="utf-8", newline="\n")
         print(f"wrote {Path(args.out).relative_to(ROOT) if Path(args.out).is_relative_to(ROOT) else args.out}: "
               f"{len(data['topics'])} topic(s), {len(data['insights'])} insight(s), {len(data['deep_dives'])} deep dive(s)")
 

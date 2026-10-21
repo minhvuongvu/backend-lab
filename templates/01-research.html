@@ -40,20 +40,20 @@
   - Đạt: chỉ ra cơ chế → hệ quả, điều kiện kích hoạt, và bậc độ lớn nếu có. Ví dụ "p50 tăng vì mỗi request thêm 1 INSERT trong cùng transaction
     (~0,2 ms) nhưng KHÔNG thêm fsync vì commit vốn đã fsync WAL một lần".
   - Ô bảng quá nhỏ: ghi lý do ngắn + mã [Rn] trỏ tới danh sách ol.reasons ngay dưới bảng, nơi viết chuỗi nhân quả đầy đủ.
-  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → hub/insights.html):
     - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
       kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
-    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Dùng lại tag đã có ở topic khác (xem hub/insights.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
-  VẤN ĐỀ & THUẬT NGỮ CHO TRANG TỔNG (scripts/build_knowledge.py → PROBLEMS.html, GLOSSARY.html):
+  VẤN ĐỀ & THUẬT NGỮ CHO TRANG TỔNG (scripts/build_knowledge.py → hub/problems.html, hub/glossary.html):
     - Bảng được đánh chỉ mục bằng data-index trên <table>; mỗi hàng có nội dung phải có data-problem="<slug>":
       slug kebab-case chữ thường mô tả TRIỆU CHỨNG nhìn từ ngoài (không phải tên solution), ví dụ lost-events-on-deploy,
       p99-spike-under-load, lock-contention, replica-lag, duplicate-processing, pool-exhaustion.
     - Hàng mô tả triệu chứng (data-index="problem-type" | "problem-impact" | "failure-mode") và khối .deep-dive có thêm
       data-kind="correctness|performance|scalability|cost|operability" và tuỳ chọn data-symptom="câu mô tả ngắn" (mặc định lấy ô Biểu hiện / Failure mode).
     - Một hàng thuộc nhiều vấn đề: data-problem="slug-a,slug-b".
-    - DÙNG LẠI slug đã có (xem PROBLEMS.html) để cùng một triệu chứng ở nhiều topic gom về một chỗ.
+    - DÙNG LẠI slug đã có (xem hub/problems.html) để cùng một triệu chứng ở nhiều topic gom về một chỗ.
     - Thuật ngữ §6: mỗi <dt> có data-term="<slug>" (kebab-case chữ thường của thuật ngữ tiếng Anh) và id="term-<slug>"; <dd> = định nghĩa + chỗ hay hiểu nhầm.
     - Kiểm tra trước gate: python3 scripts/build_knowledge.py --check
 -->
@@ -177,7 +177,7 @@ flowchart LR
       <strong>chi phí / tài nguyên</strong> (CPU, RAM, IO, connection, tiền cloud),
       <strong>vận hành</strong> (khó debug, khó deploy, on-call nặng). Một bài toán có thể thuộc nhiều loại.
       Mỗi dòng phải có chỉ số đo được và so sánh hiện trạng với mục tiêu ở §3.</div>
-    <div class="guide">Mỗi hàng: <code>data-problem</code> (slug triệu chứng, dùng lại slug có sẵn trong PROBLEMS.html) + <code>data-kind</code>. Xem quy tắc ở comment đầu file.</div>
+    <div class="guide">Mỗi hàng: <code>data-problem</code> (slug triệu chứng, dùng lại slug có sẵn trong hub/problems.html) + <code>data-kind</code>. Xem quy tắc ở comment đầu file.</div>
     <div class="table-wrap"><table data-index="problem-type">
       <thead><tr><th>Loại vấn đề</th><th>Biểu hiện</th><th>Đo bằng chỉ số nào</th><th>Hiện tại</th><th>Mục tiêu (§3)</th></tr></thead>
       <tbody><tr data-problem="" data-kind=""><td><!-- đúng đắn / hiệu năng / mở rộng / chi phí / vận hành --></td><td></td><td></td><td></td><td></td></tr></tbody>
@@ -261,17 +261,17 @@ sequenceDiagram
   <section>
     <h2 id="prerequisites"><span class="num">6</span>Kiến thức nền &amp; thuật ngữ</h2>
     <div class="guide">Chỉ những khái niệm thực sự dùng ở dưới. Mỗi thuật ngữ: định nghĩa chính xác + chỗ hay hiểu nhầm + link gốc.</div>
-    <div class="guide">Mỗi thuật ngữ: <code>&lt;dt id="term-&lt;slug&gt;" data-term="&lt;slug&gt;"&gt;</code> (slug = kebab-case chữ thường của thuật ngữ tiếng Anh, ví dụ <code>term-at-least-once</code>), để GLOSSARY.html gom thuật ngữ của mọi topic.</div>
+    <div class="guide">Mỗi thuật ngữ: <code>&lt;dt id="term-&lt;slug&gt;" data-term="&lt;slug&gt;"&gt;</code> (slug = kebab-case chữ thường của thuật ngữ tiếng Anh, ví dụ <code>term-at-least-once</code>), để hub/glossary.html gom thuật ngữ của mọi topic.</div>
     <dl class="glossary"><dt id="term-" data-term=""></dt><dd></dd></dl>
 
     <h3 id="prereq-summary">6.1 Tóm tắt tiền đề</h3>
-    <div class="guide">Để học được topic này mà không phải học trọn các topic tiền đề trước. Lấy danh sách tiền đề từ <code>data-prereq</code> của topic trong ROADMAP.html.
+    <div class="guide">Để học được topic này mà không phải học trọn các topic tiền đề trước. Lấy danh sách tiền đề từ <code>data-prereq</code> của topic trong hub/roadmap.html.
       Tiền đề đã <code>done</code>: chỉ một dòng + link tới tài liệu của topic đó. Tiền đề chưa học: 1–3 đoạn về đúng phần cơ chế mà topic này dựa vào
       (không tóm tắt toàn bộ topic kia), kèm sơ đồ nếu cần và insight quan trọng nhất; nói rõ phần nào của topic này sẽ khó hiểu nếu bỏ qua nó.
       Không có tiền đề: ghi "—".</div>
     <div class="table-wrap"><table class="prereq-summary">
       <thead><tr><th>Tiền đề (roadmap)</th><th>Trạng thái</th><th>Topic này dựa vào cơ chế nào của nó</th><th>Dùng ở mục</th></tr></thead>
-      <tbody><tr><td><a href="../../ROADMAP.html#"></a></td><td><!-- done / chưa học --></td><td></td><td></td></tr></tbody>
+      <tbody><tr><td><a href="../../hub/roadmap.html#"></a></td><td><!-- done / chưa học --></td><td></td><td></td></tr></tbody>
     </table></div>
     <div class="prereq-brief">
       <h4><!-- tên tiền đề chưa học --></h4>
@@ -771,7 +771,7 @@ flowchart LR
     <h3 id="capstone-components">Ghép từ các topic thành phần</h3>
     <div class="table-wrap"><table class="capstone-components">
       <thead><tr><th>Thành phần / quyết định</th><th>Topic dùng lại</th><th>Lựa chọn trong case này</th><th>Vì sao chọn với quy mô này [Rn]</th></tr></thead>
-      <tbody><tr><td></td><td><a href="../../ROADMAP.html#"></a></td><td></td><td></td></tr></tbody>
+      <tbody><tr><td></td><td><a href="../../hub/roadmap.html#"></a></td><td></td><td></td></tr></tbody>
     </table></div>
     <figure class="diagram">
 <pre class="mermaid">

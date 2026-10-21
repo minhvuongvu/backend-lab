@@ -1,4 +1,4 @@
-/* Lab dashboard + benchmarks styles (LAB.html, BENCHMARKS.html, related topics in topic READMEs). */
+/* Lab dashboard + benchmarks styles (hub/lab.html, hub/benchmarks.html, related topics in topic READMEs). */
 
 /* ---------- Stats row ---------- */
 .dash-stats { display: flex; flex-wrap: wrap; gap: 10px; margin: 6px 0 14px; }

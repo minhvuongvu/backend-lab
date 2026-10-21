@@ -5,7 +5,7 @@ argument-hint: <topic | X vs Y | case …> [1-7 | next | all] [full | lite | spi
 
 Đối số: `$ARGUMENTS`
 
-Tách đối số từ cuối lên: nếu từ cuối thuộc {`full`, `lite`, `spike`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Nếu tên topic có dạng `X vs Y` (hoặc `X vs Y vs Z`) thì đây là **topic so sánh** (xem § Topic so sánh), slug `x-vs-y`. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic (topic mới: `full`).
+Tách đối số từ cuối lên: nếu từ cuối thuộc {`full`, `lite`, `spike`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Nếu tên topic có dạng `X vs Y` (hoặc `X vs Y vs Z`) thì đây là **topic so sánh** (xem § Topic so sánh), slug `x-vs-y`. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic; topic mới thì theo **chế độ mặc định**: `full` nếu topic có `data-priority="1"` trong hub/roadmap.html hoặc là case study (track `capstone`), còn lại `lite` (kể cả topic chưa có trong roadmap). Báo chế độ đã chọn và cách đổi (`/research <topic> full`).
 
 Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tài liệu HTML, trung thực, tối giản, so sánh công bằng, thí nghiệm, git.
 
@@ -17,7 +17,7 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tà
    - Không khớp:
      - topic quá rộng (ví dụ "caching", "microservices", "kafka"): đề xuất 2–4 cách thu hẹp cụ thể (mỗi cách một dòng + slug gợi ý) và hỏi tôi. DỪNG.
      - ngược lại: chạy `make new-topic SLUG=<slug>`. Đây là cách DUY NHẤT để tạo topic; không tự tạo file/thư mục bằng cách khác. Nếu `make` không có, chạy `bash scripts/new-topic.sh <slug>` (chính là thứ Makefile gọi) và báo tôi.
-3. Đối chiếu `ROADMAP.html` (hàng `tr[data-slug]`):
+3. Đối chiếu `hub/roadmap.html` (hàng `tr[data-slug]`):
    - topic có trong roadmap: nếu `data-prereq` có topic chưa `done` (theo README của topic đó, hoặc chưa tạo), báo các tiền đề còn thiếu, vì sao chúng là tiền đề, và rằng có thể học ngay — phase 1 sẽ viết "Tóm tắt tiền đề" cho phần thiếu. Thứ tự #n chỉ là gợi ý, không chặn; chỉ hỏi lại nếu thiếu từ 3 tiền đề trở lên;
    - topic chưa có trong roadmap: sau khi tạo topic, thêm một hàng vào roadmap (track, tiền đề có lý do, vì sao nên học, chế độ gợi ý), chạy `python3 scripts/roadmap_order.py` để đánh số và xếp nhóm lại, rồi báo tôi.
 4. Nếu hội thoại hiện tại đã làm một topic KHÁC: nhắc tôi chạy `/clear` rồi gọi lại lệnh. DỪNG.
@@ -149,7 +149,7 @@ Khám phá nhanh MỘT hiện tượng hoặc MỘT câu hỏi (thường là m�
 So sánh hai (hoặc nhiều) công nghệ/cách giải cùng một bài toán, ví dụ `Redis distributed lock vs PostgreSQL advisory lock`, `Kafka vs RabbitMQ cho work queue`. Ghi `data-field="type"` = `compare` trong README topic; chế độ (full/lite/spike) vẫn áp dụng như bình thường.
 
 - **Implementations:** mỗi công nghệ được so là một implementation (A = X, B = Y…); `before` vẫn là hệ thống as-is (có thể trùng với một bên nếu hệ thống đang dùng X — ghi rõ).
-- **Dùng lại topic đã có:** trước khi viết, tra `ROADMAP.html`, `INSIGHTS.html`, `GLOSSARY.html`, `PROBLEMS.html` và các topic liên quan; phần lý thuyết đã có ở topic khác thì tóm tắt 2–3 câu + link, không viết lại. Ghi nguồn dùng lại vào nhật ký quyết định.
+- **Dùng lại topic đã có:** trước khi viết, tra `hub/roadmap.html`, `hub/insights.html`, `hub/glossary.html`, `hub/problems.html` và các topic liên quan; phần lý thuyết đã có ở topic khác thì tóm tắt 2–3 câu + link, không viết lại. Ghi nguồn dùng lại vào nhật ký quyết định.
 - **Phase 1:** bắt buộc mục "So sánh trực diện" trong 01 (bảng theo chiều: mô hình & đảm bảo, kiến trúc bên trong, đặc tính hiệu năng, mô hình lỗi, vận hành, hệ sinh thái, chi phí, độ khó di chuyển X ↔ Y), mỗi ô có lý do nhân quả `[Rn]`; tập trung vào chỗ hai bên KHÁC nhau về cơ chế và vì sao khác.
 - **Phase 4:** cùng contract, cùng workload, tuning công bằng là điều kiện sống còn (so sánh công nghệ dễ thiên vị nhất ở đây); ghi quá trình tuning của từng bên.
 - **Phase 6:** decision guide "chọn X khi…, chọn Y khi…" có điều kiện định lượng; ghi rõ phạm vi kết luận (version, cấu hình, quy mô đã thử).
@@ -186,6 +186,6 @@ Topic thuộc track `capstone` trong ROADMAP (slug bắt đầu bằng `case-`) 
 
 1. Cập nhật `topics/<slug>/README.html`: phase vừa xong `data-status="done"` + `class="done"` (phase đang làm dở: `in-progress`), `data-field="current-phase"`, `data-field="updated"`, thêm dòng vào bảng nhật ký quyết định, cập nhật câu hỏi mở; phase 1 điền `data-field="scope"` và bảng Implementations, phase 2 điền bảng Stack.
 2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/7 — System design`, thêm ` (lite)` nếu chế độ lite).
-3. Cập nhật hàng của topic trong `ROADMAP.html`: `data-status` (`in-progress` khi đang làm, `done` khi xong phase 6 ở lite hoặc phase 7 ở full) và chip hiển thị.
-4. Dựng lại các trang tổng: `make hubs` (hoặc lần lượt `build_insights.py`, `build_knowledge.py`, `build_dashboard.py`): cập nhật `INSIGHTS.html`, `PROBLEMS.html`, `GLOSSARY.html`, `BENCHMARKS.html`, `LAB.html` và mục "Topic liên quan" trong README của mọi topic.
-5. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Lần commit đầu có `system/`: `git update-index --chmod=+x topics/<slug>/system/mvnw topics/<slug>/experiments/chaos/*.sh` (Windows không giữ bit thực thi). Chỉ add file trong `topics/` (README của topic khác có thể đổi ở mục Topic liên quan), `README.md` gốc, `ROADMAP.html` và các trang tổng `*.html` ở gốc.
+3. Cập nhật hàng của topic trong `hub/roadmap.html`: `data-status` (`in-progress` khi đang làm, `done` khi xong phase 6 ở lite hoặc phase 7 ở full) và chip hiển thị.
+4. Dựng lại các trang tổng: `make hubs` (hoặc lần lượt `build_insights.py`, `build_knowledge.py`, `build_dashboard.py`): cập nhật `hub/insights.html`, `hub/problems.html`, `hub/glossary.html`, `hub/benchmarks.html`, `hub/lab.html` và mục "Topic liên quan" trong README của mọi topic.
+5. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Lần commit đầu có `system/`: `git update-index --chmod=+x topics/<slug>/system/mvnw topics/<slug>/experiments/chaos/*.sh` (Windows không giữ bit thực thi). Chỉ add file trong `topics/` (README của topic khác có thể đổi ở mục Topic liên quan), `README.md` gốc, `hub/roadmap.html` và các trang tổng `*.html` ở gốc.

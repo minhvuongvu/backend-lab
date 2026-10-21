@@ -16,10 +16,10 @@
   Mọi đoạn code/config trích NGUYÊN VĂN từ file thật trong system/, caption ghi đường dẫn + dòng (link tương đối, ví dụ system/src/main/java/...#L10-L42).
   Không viết code chỉ tồn tại trong tài liệu.
   Mỗi bước thực thi phải giải thích ý nghĩa (Mục đích, Cơ chế, Thay đổi hành vi, Nếu bỏ qua / làm sai, Kiểm tra) và có code-notes giải thích code theo dòng — không chấp nhận bước chỉ có code.
-  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → hub/insights.html):
     - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
       kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
-    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Dùng lại tag đã có ở topic khác (xem hub/insights.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
 -->

@@ -15,15 +15,15 @@
   Phase 6 — Conclusion (mục tiêu 13, phần kết luận). Diễn giải kết quả ở 05-results.html bằng cơ chế ở 01.
   Mọi con số link tới results/raw/. Đánh dấu [đo được] / [theo tài liệu] / [suy luận].
   Insight: p.claim (khẳng định) + div.why (chuỗi nhân quả) + div.evidence (nguồn + cách kiểm chứng).
-  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → hub/insights.html):
     - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
       kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
-    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Dùng lại tag đã có ở topic khác (xem hub/insights.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
-  CHỈ MỤC THEO VẤN ĐỀ (scripts/build_knowledge.py → PROBLEMS.html):
+  CHỈ MỤC THEO VẤN ĐỀ (scripts/build_knowledge.py → hub/problems.html):
     - Bảng decision guide §6 có data-index="decision"; mỗi hàng có data-problem="<slug>" (slug triệu chứng như ở 01 §4/§13, dùng lại slug có sẵn
-      trong PROBLEMS.html) và data-choice="<ID implementation>" (before / A / B...). Hàng đọc thành: "gặp vấn đề X trong ngữ cảnh Y thì chọn Z vì ...".
+      trong hub/problems.html) và data-choice="<ID implementation>" (before / A / B...). Hàng đọc thành: "gặp vấn đề X trong ngữ cảnh Y thì chọn Z vì ...".
     - Kiểm tra: python3 scripts/build_knowledge.py --check
 -->
 <body class="draft">

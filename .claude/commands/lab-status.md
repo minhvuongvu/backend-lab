@@ -21,9 +21,9 @@ Chỉ đọc, không sửa file.
    - còn điểm chờ duyệt → "duyệt các mục trong `topics/<slug>/README.html` § Chờ duyệt, rồi `/research <slug>`";
    - bình thường → `/research <slug>` (phase kế tiếp);
    - phase 5 → nhắc cần Docker đang chạy và có thể `make obs-up` trước.
-6. **Học gì tiếp theo** (từ `ROADMAP.html`, các hàng `tr[data-slug]`):
+6. **Học gì tiếp theo** (từ `hub/roadmap.html`, các hàng `tr[data-slug]`):
    - topic "sẵn sàng" = chưa tạo hoặc `planned`, và mọi slug trong `data-prereq` đã `done`;
-   - gợi ý tối đa 3 topic sẵn sàng, ưu tiên `data-priority` thấp (1 = cao nhất) rồi theo thứ tự đường học đang đi; mỗi gợi ý một dòng: vì sao bây giờ (tiền đề nào vừa xong mở khoá nó) + lệnh `/research <slug> [lite]` theo `data-mode`;
+   - gợi ý tối đa 3 topic sẵn sàng, ưu tiên `data-priority` thấp (1 = cao nhất) rồi theo thứ tự đường học đang đi; mỗi gợi ý một dòng: vì sao bây giờ (tiền đề nào vừa xong mở khoá nó) + lệnh `/research <slug>` (chế độ mặc định: full nếu `data-priority="1"` hoặc case study, còn lại lite; ghi rõ chế độ sẽ dùng);
    - cảnh báo nếu roadmap và README của topic lệch trạng thái.
-7. Dòng cuối: số insight và chuyên đề trong `INSIGHTS.html` (nếu có), nhắc chạy `python3 scripts/build_insights.py` nếu file cũ hơn tài liệu topic mới nhất.
+7. Dòng cuối: số insight và chuyên đề trong `hub/insights.html` (nếu có), nhắc chạy `python3 scripts/build_insights.py` nếu file cũ hơn tài liệu topic mới nhất.
 8. Nhắc: mỗi phiên một topic, `/clear` trước khi chuyển topic.

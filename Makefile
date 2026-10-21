@@ -1,16 +1,29 @@
-SHELL := bash
+# On Windows, a bare "bash" can resolve to the WSL launcher (C:\Windows\System32\bash.exe); use Git Bash.
+ifeq ($(OS),Windows_NT)
+  GIT_BASH := $(wildcard C:/PROGRA~1/Git/bin/bash.exe)
+  SHELL := $(if $(GIT_BASH),$(GIT_BASH),bash)
+else
+  SHELL := bash
+endif
 .DEFAULT_GOAL := help
+
+# "python3" may be the Microsoft Store alias on Windows: pick the first interpreter that actually runs.
+PYTHON ?= $(shell for p in python3 python; do $$p -c "import sys" >/dev/null 2>&1 && { echo $$p; break; }; done)
 
 OBS_COMPOSE := docker compose -f shared/observability/docker-compose.yml
 LAB_NETWORK := backend-lab
 # OBS=full (metrics + logs + traces + profiles) or OBS=metrics (Prometheus + Grafana + docker-stats only)
 OBS ?= full
 
-.PHONY: help obs-up obs-down obs-status lab-network new-topic insights hubs hubs-check roadmap
+.PHONY: help doctor lab-network obs-up obs-down obs-status new-topic roadmap pages insights hubs hubs-check test check hooks
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
 
+doctor: ## Check this machine can run the lab (tools, JDK 21, Docker, ports, TLS, git remote)
+	@"$(SHELL)" scripts/doctor.sh
+
+# ---- observability ----
 lab-network: ## Create the shared docker network topics and the obs stack join
 	@docker network inspect $(LAB_NETWORK) >/dev/null 2>&1 || docker network create $(LAB_NETWORK) >/dev/null
 	@echo "network $(LAB_NETWORK) ready"
@@ -25,25 +38,48 @@ obs-down: ## Stop the whole observability stack (all profiles)
 
 obs-status: ## Show observability containers and Prometheus target health
 	$(OBS_COMPOSE) --profile '*' ps
-	@curl -s http://localhost:$${PROM_PORT:-9090}/api/v1/targets | python3 -c "import sys,json;[print(f\"{t['labels'].get('job'):14} {t['labels'].get('instance'):45} {t['health']}\") for t in json.load(sys.stdin)['data']['activeTargets']]" || true
+	@curl -s http://localhost:$${PROM_PORT:-9090}/api/v1/targets | $(PYTHON) -c "import sys,json;[print(f\"{t['labels'].get('job'):14} {t['labels'].get('instance'):45} {t['health']}\") for t in json.load(sys.stdin)['data']['activeTargets']]" || true
 
+# ---- topics & pages ----
 new-topic: ## Create a topic from templates: make new-topic SLUG=transactional-outbox
 	@test -n "$(SLUG)" || { echo "Usage: make new-topic SLUG=<kebab-case-slug>"; exit 1; }
-	@bash scripts/new-topic.sh "$(SLUG)"
+	@"$(SHELL)" scripts/new-topic.sh "$(SLUG)"
 
-insights: ## Rebuild INSIGHTS.html from every topic (and check insight structure)
-	python3 scripts/build_insights.py
-	python3 scripts/build_insights.py --check
+roadmap: ## Re-number and regroup hub/roadmap.html (learning order), validate prerequisites and learning paths
+	$(PYTHON) scripts/roadmap_order.py
 
-hubs: ## Rebuild every hub page: LAB, INSIGHTS, PROBLEMS, GLOSSARY, BENCHMARKS (+ related topics in READMEs)
-	python3 scripts/build_insights.py
-	python3 scripts/build_knowledge.py
-	python3 scripts/build_dashboard.py
+pages: ## Regenerate index.html (from README.md) and hub/rules.html (from CLAUDE.md)
+	$(PYTHON) scripts/build_pages.py
+
+insights: ## Rebuild hub/insights.html from every topic (and check insight structure)
+	$(PYTHON) scripts/build_insights.py
+	$(PYTHON) scripts/build_insights.py --check
+
+hubs: pages ## Rebuild every hub page (lab, insights, problems, glossary, benchmarks, home, rules) + related topics
+	$(PYTHON) scripts/build_insights.py
+	$(PYTHON) scripts/build_knowledge.py
+	$(PYTHON) scripts/build_dashboard.py
 
 hubs-check: ## Lint insight, problem/glossary and benchmark markup of every topic
-	python3 scripts/build_insights.py --check
-	python3 scripts/build_knowledge.py --check
-	python3 scripts/build_dashboard.py --check
+	$(PYTHON) scripts/build_insights.py --check
+	$(PYTHON) scripts/build_knowledge.py --check
+	$(PYTHON) scripts/build_dashboard.py --check
 
-roadmap: ## Re-number and regroup ROADMAP.html (learning order), validate prerequisites and learning paths
-	python3 scripts/roadmap_order.py
+# ---- quality: unit tests, linters, render check, git hook ----
+test: ## Unit tests for the lab scripts (stdlib unittest, no dependencies)
+	PYTHONIOENCODING=utf-8 $(PYTHON) -m unittest discover -s tests -v
+
+check: test ## All checks: unit tests, roadmap + hub linters, generated pages up to date, syntax, headless render check
+	@out="$$($(PYTHON) scripts/roadmap_order.py --check)"; echo "$$out"; echo "$$out" | grep -q 'learning-path order problems: 0'
+	$(PYTHON) scripts/build_insights.py --check --no-page
+	$(PYTHON) scripts/build_knowledge.py --check --no-page
+	$(PYTHON) scripts/build_dashboard.py --check
+	$(PYTHON) scripts/build_pages.py --check
+	$(PYTHON) -m py_compile scripts/*.py
+	@for f in scripts/*.sh scripts/hooks/pre-commit; do "$(SHELL)" -n "$$f" || exit 1; done; echo "shell syntax ok"
+	$(PYTHON) scripts/check_render.py
+
+hooks: ## Install the git pre-commit hook (fast checks; LAB_RENDER_CHECK=1 adds the render check)
+	cp scripts/hooks/pre-commit .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
+	@echo "pre-commit hook installed"

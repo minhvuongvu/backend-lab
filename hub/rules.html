@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>backend-lab — quy tắc cho mọi phiên</title>
+<link rel="stylesheet" href="../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../shared/docs/lab.js" defer></script>
+</head>
+<!-- GENERATED from CLAUDE.md by scripts/build_pages.py — edit CLAUDE.md, not this file. -->
+<body data-page="hub">
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">backend-lab — quy tắc cho mọi phiên</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+  <header class="doc-header">
+    <div class="eyebrow">Trang tổng · Quy tắc</div>
+    <h1>backend-lab — quy tắc cho mọi phiên</h1>
+    <div class="meta"><span>Nguồn: <code>CLAUDE.md</code> (trang này tự sinh)</span></div>
+  </header>
+<p>Repo là "phòng thí nghiệm" để nghiên cứu sâu từng công nghệ, pattern, kỹ thuật, solution trong hệ thống phân tán theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật. Lệnh chính: <code>/research &lt;topic&gt; [phase]</code>, <code>/lab-status</code>.</p>
+<section>
+<h2 id="muc-tieu">Mục tiêu</h2>
+<ul><li>Giúp tôi hiểu sâu để nâng cao năng lực, không phải làm demo.</li><li>Luôn giải thích "tại sao" và cơ chế bên trong (internals), không chỉ "làm thế nào".</li></ul>
+</section>
+<section>
+<h2 id="muc-tieu-hoc-noi-tra-loi">Mục tiêu học → nơi trả lời</h2>
+<p>Mỗi topic phải trả lời đủ 14 mục tiêu sau. <code>lab-reviewer</code> dùng bảng này để kiểm tra độ phủ.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>#</th><th>Mục tiêu</th><th>Nơi trả lời</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Bối cảnh nghiệp vụ, hệ thống đang có, mục tiêu, bài toán</td><td>01 §1–6</td></tr>
+<tr><td>2</td><td>Lý thuyết solution: cách hoạt động, mạnh/yếu, đảm bảo/không đảm bảo, failure mode, tiêu chí chọn/bỏ</td><td>01 §7–15 + chuyên đề CĐn</td></tr>
+<tr><td>3</td><td>Các cách implement</td><td>01 §16</td></tr>
+<tr><td>4</td><td>Cách hoạt động của từng cách</td><td>01 §17</td></tr>
+<tr><td>5</td><td>Mạnh/yếu, đảm bảo/không đảm bảo, failure mode của từng cách</td><td>01 §17 + chuyên đề CĐ-An</td></tr>
+<tr><td>6</td><td>Thay đổi mọi tiêu chí phi chức năng của từng cách so với before</td><td>01 §18 (dự đoán, dựa trên mô hình định lượng §11) → 06 (thực đo)</td></tr>
+<tr><td>7</td><td>Giới hạn lý thuyết &amp; đánh đổi nền tảng của từng cách</td><td>01 §11, §17</td></tr>
+<tr><td>8</td><td>Tiêu chí chọn/bỏ của từng cách</td><td>01 §17, §20 → 06 (decision guide hiệu chỉnh)</td></tr>
+<tr><td>9</td><td>Từng bước thực thi (code, cấu hình)</td><td>03</td></tr>
+<tr><td>10</td><td>Lưu ý khi implement</td><td>01 §17 (lý thuyết) + 03 (gặp thực tế)</td></tr>
+<tr><td>11</td><td>Xem code của từng cách</td><td><code>system/</code> + trích dẫn trong 03</td></tr>
+<tr><td>12</td><td>Thiết kế thí nghiệm trước/sau cho từng cách (phương pháp luận, phương pháp đo, độ phủ kịch bản)</td><td>01 §24 + 04</td></tr>
+<tr><td>13</td><td>Thực thi, so sánh trước/sau, kết luận</td><td><code>experiments/</code>, <code>results/</code>, 05, 06</td></tr>
+<tr><td>14</td><td>Triển khai lên môi trường người dùng thật</td><td>07 + <code>deploy/</code></td></tr>
+</tbody></table></div>
+</section>
+<section>
+<h2 id="ngon-ngu">Ngôn ngữ</h2>
+<ul><li>Tài liệu <code>.md</code>/<code>.html</code> viết tiếng Việt, giữ nguyên thuật ngữ tiếng Anh.</li><li>Code, comment, tên biến, commit message viết tiếng Anh.</li></ul>
+</section>
+<section>
+<h2 id="anh-xa-phase-noi-ghi-ket-qua">Ánh xạ phase → nơi ghi kết quả</h2>
+<p>File <code>0N-*.html</code> thuộc phase N.</p>
+<div class="table-wrap"><table>
+<thead><tr><th>Phase</th><th>Nội dung</th><th>Nơi ghi</th></tr></thead>
+<tbody>
+<tr><td>1</td><td>Research</td><td><code>01-research.html</code></td></tr>
+<tr><td>2</td><td>System design</td><td><code>02-system-design.html</code></td></tr>
+<tr><td>3</td><td>Implement</td><td><code>system/</code> + <code>03-implementation.html</code></td></tr>
+<tr><td>4</td><td>Experiment plan</td><td><code>04-experiment-plan.html</code></td></tr>
+<tr><td>5</td><td>Execute</td><td><code>experiments/</code> + <code>results/</code> + <code>05-results.html</code></td></tr>
+<tr><td>6</td><td>Conclusion</td><td><code>06-conclusion.html</code></td></tr>
+<tr><td>7</td><td>Production rollout</td><td><code>07-production.html</code> + <code>deploy/</code></td></tr>
+</tbody></table></div>
+<p>Topic mới chỉ được tạo bằng <code>make new-topic SLUG=&lt;slug&gt;</code> (copy <code>templates/</code>, thêm dòng vào bảng ở <code>README.md</code> gốc).</p>
+</section>
+<section>
+<h2 id="before-va-cac-implementation">before và các implementation</h2>
+<ul><li><code>before</code> là hệ thống as-is chưa có solution. Nó luôn được implement, test và đo như mọi implementation khác, làm mốc so sánh trước/sau.</li><li>ID (<code>before</code>, A, B, C...) và slug khai báo một lần trong bảng "Implementations" của README topic (<code>topics/&lt;slug&gt;/README.html</code>), dùng nhất quán ở mọi tài liệu, Spring profile và <code>make run IMPL=&lt;slug&gt;</code>.</li></ul>
+</section>
+<section>
+<h2 id="tai-lieu-html">Tài liệu HTML</h2>
+<ul><li>Mỗi tài liệu phase theo khung trong <code>templates/</code>, dùng chung <code>shared/docs/lab.css</code> + <code>lab.js</code> (mục lục, điều hướng giữa tài liệu, mermaid, highlight, dark mode). Không nhúng CSS/JS riêng vào từng trang.</li><li>Thay mọi <code>&lt;div class="guide"&gt;</code> bằng nội dung thật rồi xoá; khi xong, bỏ class <code>draft</code> khỏi <code>&lt;body&gt;</code>. Không để ô bảng hay comment placeholder rỗng: không áp dụng thì ghi "—" kèm lý do.</li><li>Nhãn: <code>&lt;span class="tag measured"&gt;</code>, <code>&lt;a class="tag doc" href="#src-N"&gt;</code>, <code>&lt;span class="tag inferred"&gt;</code>.</li><li>Mỗi phần lớn có ít nhất một <code>callout insight</code>: điều không hiển nhiên (giả định ngầm, cái giá ẩn, bậc độ lớn, chỗ docs và hiểu biết phổ biến khác nhau).</li><li>Mỗi insight PHẢI giải thích vì sao: <code>p.claim</code> (khẳng định) + <code>div.why</code> chứa <code>dl.why-steps</code> gồm <strong>Cơ chế</strong> (các bước nhân quả, mỗi bước nêu thành phần/cấu trúc dữ liệu/giao thức cụ thể), <strong>Điều kiện</strong>, <strong>Định lượng</strong>, <strong>Khi nào không đúng</strong>, <strong>Liên hệ</strong> (mục chứa cơ chế) + <code>div.evidence</code> (nhãn nguồn + cách kiểm chứng). Insight thiếu phần nào, hoặc "Vì sao" chỉ nhắc lại khẳng định, là không đạt. Chuẩn độ sâu: insight mẫu trong <code>templates/01-research.html</code>.</li><li>Mọi chỗ "vì sao / lý do" khác (ô bảng, ưu/nhược, chọn/bỏ, NFR, nhánh cây quyết định...) cũng phải là giải thích nhân quả, không phải nhãn kiểu "vì nhanh hơn", "do overhead". Mỗi "vì sao" trả lời được: cái gì xảy ra, theo thứ tự nào, ở thành phần nào, trong điều kiện nào, lớn cỡ nào, khi nào không còn đúng. Ô bảng hẹp: lý do ngắn + <code>[Rn]</code>, chi tiết ở <code>ol.reasons</code> dưới bảng.</li><li>Tài liệu 03: mỗi bước thực thi là <code>li.step</code> với <code>dl.step-meta</code> (<strong>Mục đích</strong>, <strong>Cơ chế</strong>, <strong>Thay đổi hành vi</strong>, <strong>Nếu bỏ qua / làm sai</strong>, <strong>Kiểm tra bước đã đúng</strong>), rồi mới tới code trích nguyên văn và <code>div.code-notes</code> giải thích từng khối code. Bước chỉ có code là không đạt; cấu hình giải thích từng thuộc tính (giá trị, mặc định, cơ chế, vì sao chọn, sai thì sao).</li><li><strong>Chuyên đề đặc thù (CĐ):</strong> hiện tượng/cơ chế chỉ solution hoặc một cách implement mới có (không tồn tại ở before hay cách khác, không hiển nhiên, ảnh hưởng đáng kể) được viết thành chuyên đề riêng trong 01: <code>CĐn</code> cho solution, <code>CĐ-An</code> trong khối của cách A. Mỗi chuyên đề có hiện tượng, cơ chế bên trong, điều kiện kích hoạt + định lượng, phát hiện &amp; xử lý, kiểm chứng, insight. Mã CĐ được dùng tiếp ở §25, 04, 03, 06, 07; không đánh số lại §1–27.</li><li>"Bài toán" không chỉ là hệ thống hỏng: có thể là đúng đắn, hiệu năng, khả năng mở rộng, chi phí hay vận hành. Xác định loại vấn đề trước rồi chọn chỉ số đo tương ứng.</li><li>Mermaid đặt trong <code>&lt;pre class="mermaid"&gt;</code>; escape <code>&lt;</code>, <code>&gt;</code>, <code>&amp;</code> trong code (<code>&amp;lt;</code>...).</li><li>Code trong 03 và 07 trích NGUYÊN VĂN từ file thật (<code>&lt;figure class="code"&gt;</code> với caption là đường dẫn + dòng). Không có code chỉ tồn tại trong tài liệu.</li><li>Kiểm tra render bằng headless Chrome/Edge (<code>--dump-dom</code>, không còn "Syntax error" của mermaid) trước khi kết thúc phase.</li></ul>
+</section>
+<section>
+<h2 id="lam-viec-song-song-multi-agent">Làm việc song song (multi-agent)</h2>
+<ul><li>Việc gì tách được thành các phần độc lập thì chạy song song bằng nhiều subagent, không làm tuần tự. Đây là sở thích cố định của tôi, áp dụng cho mọi phiên.</li><li>Mỗi agent được giao rõ file/thư mục mình phụ trách, không sửa file của agent khác, không commit. Agent chính giữ phần tích hợp, kiểm chứng và commit.</li><li>Gợi ý theo phase: phase 1 mỗi agent một góc nguồn; phase 3 mỗi agent một implementation; phase 5 tách chạy thí nghiệm, vẽ biểu đồ, kiểm tra toàn vẹn, viết nháp 05; tài liệu HTML dài có thể chia theo phần.</li><li>Không chia nhỏ việc ngắn hoặc phụ thuộc chặt vào nhau chỉ để có nhiều agent.</li></ul>
+</section>
+<section>
+<h2 id="trang-tong-che-do-loai-topic">Trang tổng, chế độ, loại topic</h2>
+<ul><li><strong>Bố cục trang HTML:</strong> <code>index.html</code> (trang chủ) ở gốc; mọi trang tổng nằm trong <code>hub/</code> (<code>lab</code>, <code>roadmap</code>, <code>problems</code>, <code>insights</code>, <code>benchmarks</code>, <code>glossary</code>, <code>rules</code>); tài liệu topic trong <code>topics/&lt;slug&gt;/</code>. Trang tự sinh (<code>index.html</code> ← README.md, <code>hub/rules.html</code> ← CLAUDE.md, các <code>hub/*.html</code> trừ <code>roadmap.html</code>) không sửa tay: sửa nguồn rồi <code>make hubs</code>. <code>make check</code> báo lỗi nếu trang sinh ra cũ hơn nguồn.</li><li><code>hub/roadmap.html</code>: danh sách topic có quan hệ tiền đề (<code>tr[data-slug][data-prereq][data-status][data-order]</code>), xếp theo 8 giai đoạn học (giai đoạn 8 là case study tổng hợp); số <code>#n</code> (<code>data-order</code>) là thứ tự gợi ý tính bằng sắp xếp topo. Thêm/sửa topic xong chạy <code>python3 scripts/roadmap_order.py</code> để đánh số và xếp nhóm lại. Thứ tự không bắt buộc: học topic bất kỳ được, tiền đề chưa học được tóm tắt trong 01 §6.1. <code>/research</code> cảnh báo khi tiền đề chưa xong (khuyến nghị, không chặn), thêm topic mới vào roadmap, cập nhật trạng thái; <code>/lab-status</code> gợi ý topic học tiếp. Tiền đề phải có lý do cơ chế (topic sau dựa vào cơ chế của topic trước), đồ thị không có chu trình.</li><li>Trang tổng ở gốc repo (thanh điều hướng chung): <code>hub/lab.html</code> tổng quan tiến độ, chờ duyệt, topic sẵn sàng học; <code>hub/problems.html</code> tra theo triệu chứng → nguyên nhân, lựa chọn, runbook (<code>data-problem</code>); <code>hub/glossary.html</code> thuật ngữ chung (<code>data-term</code>); <code>hub/benchmarks.html</code> số liệu tham chiếu đã đo, dùng lại cho mô hình định lượng của topic sau (<code>data-bench</code>, chỉ số [đo được]). README mỗi topic có mục "Topic liên quan" tự sinh. Dựng lại tất cả bằng <code>make hubs</code>, kiểm tra markup bằng <code>make hubs-check</code>.</li><li><code>hub/insights.html</code>: kho insight và chuyên đề của mọi topic, gom theo tag để thấy nguyên lý lặp lại giữa các topic; dựng lại bằng <code>python3 scripts/build_insights.py</code> (hoặc <code>make insights</code>) sau mỗi phase, <code>--check</code> trước gate. Mỗi insight có <code>id</code> duy nhất và <code>data-tags</code> (2–5 tag kebab-case, ưu tiên dùng lại tag đã có).</li><li><strong>Chế độ mặc định khi tạo topic:</strong> <code>full</code> cho topic ưu tiên 1 trong ROADMAP và case study; <code>lite</code> cho mọi topic khác. Đối số <code>full</code>/<code>lite</code>/<code>spike</code> ghi đè; chế độ đã lưu trong README topic được giữ ở các phiên sau.</li><li>Chế độ <code>lite</code> (<code>/research &lt;topic&gt; lite</code>): cho topic học nhanh; bảng nới lỏng trong <code>.claude/commands/research.md</code> § Chế độ lite. Kết luận ở lite ghi rõ "khám phá (lite)". Không nới quy tắc trung thực và test tính đúng đắn.</li><li>Chế độ <code>spike</code> (<code>/research &lt;topic&gt; spike</code>): khám phá nhanh một hiện tượng/câu hỏi (thường một chuyên đề), § Chế độ spike. Kết luận ghi rõ "spike".</li><li>Case study (<code>/research case-…</code>, track <code>capstone</code>, giai đoạn 8): <code>data-field="type"</code> = <code>capstone</code>; ghép nhiều topic đã học thành một hệ thống, trọng tâm là failure mode khi các cơ chế gặp nhau, kiểm chứng end-to-end; mục "Thiết kế tổng thể" trong 01; § Case study tổng hợp trong research.md.</li><li>Topic so sánh (<code>/research X vs Y</code>): <code>data-field="type"</code> = <code>compare</code>, mỗi công nghệ là một implementation, bắt buộc mục "So sánh trực diện" trong 01, dùng lại topic đã có thay vì viết lại; § Topic so sánh.</li></ul>
+</section>
+<section>
+<h2 id="mot-chu-de-mot-phien">Một chủ đề, một phiên</h2>
+<ul><li>Mỗi phiên chỉ làm một topic.</li><li>Nếu hội thoại hiện tại đã làm topic khác, nhắc tôi chạy <code>/clear</code> trước khi tiếp tục.</li><li>Trạng thái nằm trong file, không nằm trong hội thoại. Khi bắt đầu, luôn đọc <code>topics/&lt;slug&gt;/README.html</code> và các file phase trước.</li><li>README của topic là HTML (khung <code>templates/topic-README.html</code>). Trạng thái máy đọc nằm ở thuộc tính <code>data-*</code>: <code>data-field="current-phase|updated|scope|mode|type"</code> (mode: full/lite/spike; type: standard/compare/capstone), phase <code>&lt;li data-phase="N" data-status="todo|in-progress|done|skipped"&gt;</code> (class trùng với status), chờ duyệt <code>ul.approvals li[data-status=open|approved|rejected]</code>, câu hỏi <code>ul.questions li[data-status=open|answered]</code>. Khi cập nhật, sửa cả <code>data-*</code> lẫn chữ hiển thị. <code>README.md</code> gốc của repo vẫn là Markdown.</li><li>Trong cùng một topic, <code>/clear</code> giữa các phase vẫn an toàn.</li></ul>
+</section>
+<section>
+<h2 id="stack-mac-dinh">Stack mặc định</h2>
+<ul><li>Java 21, Spring Boot 4.x (bản ổn định còn hỗ trợ OSS; 3.5 hết hỗ trợ OSS từ 2026-06-30 — chỉ dùng 3.x khi topic cần giống môi trường cũ và ghi lý do), Maven wrapper (<code>./mvnw</code>), PostgreSQL, Redis, Kafka, Docker Compose.</li><li>Testcontainers cho integration test.</li><li>k6 cho load test; Python (pandas + matplotlib) để xử lý số liệu và vẽ biểu đồ.</li><li>Chỉ đổi stack khi topic đòi hỏi, và ghi lý do vào README của topic.</li><li>Tra cứu phiên bản ổn định hiện tại trước khi chọn; pin version rõ ràng (không dùng <code>latest</code>).</li></ul>
+</section>
+<section>
+<h2 id="toi-gian">Tối giản</h2>
+<ul><li>Hệ thống chỉ đủ để phơi bày vấn đề mà kỹ thuật giải quyết.</li><li>Không auth, không UI, không lớp trừu tượng thừa, trừ khi đó chính là chủ đề.</li><li>Ghi rõ những gì cố ý bỏ qua (02 §9) và cách xử lý chúng ở production (07).</li></ul>
+</section>
+<section>
+<h2 id="so-sanh-cong-bang">So sánh công bằng</h2>
+<ul><li>before và mọi implementation dùng chung một contract (interface/API), cùng workload, cùng giới hạn tài nguyên.</li><li>Chọn implementation bằng Spring profile hoặc biến môi trường.</li></ul>
+</section>
+<section>
+<h2 id="trung-thuc">Trung thực</h2>
+<ul><li>Không bịa số liệu.</li><li>Mọi con số trong 05 và 06 phải trỏ tới file trong <code>results/raw/</code>.</li><li>Thí nghiệm lỗi hoặc không chạy được (ví dụ thiếu Docker) thì báo rõ và dừng, không ước lượng thay.</li><li>Đánh dấu rõ 3 loại thông tin: <strong>[đo được]</strong> / <strong>[theo tài liệu + link]</strong> / <strong>[suy luận]</strong>.</li><li>Phần production (07) chưa kiểm chứng trong lab phải đánh dấu là tài liệu hoặc suy luận.</li></ul>
+</section>
+<section>
+<h2 id="nguon">Nguồn</h2>
+<ul><li>Ưu tiên tài liệu chính thức, paper gốc, source code, engineering blog của công ty vận hành thật.</li><li>Ghi link ở cuối mỗi tài liệu.</li></ul>
+</section>
+<section>
+<h2 id="thi-nghiem-phuong-phap-luan">Thí nghiệm (phương pháp luận)</h2>
+<p>Chi tiết trong <code>templates/04-experiment-plan.html</code>; công cụ thống kê <code>scripts/stats.py</code>.</p>
+<ul><li><strong>Thiết kế trước, chạy sau:</strong> giả thuyết có hướng + độ lớn dự đoán (từ mô hình định lượng 01 §11), ngưỡng hiệu ứng có ý nghĩa thực tế, tiêu chí bác bỏ, quy tắc loại bỏ outlier và số lần lặp — chốt trước khi chạy. Sau khi chạy không sửa giả thuyết.</li><li><strong>Đối chứng:</strong> before là nhóm đối chứng; mọi implementation so với before (và với nhau khi cần) trên cùng contract, workload, giới hạn tài nguyên.</li><li><strong>Biến:</strong> so sánh chính đổi một yếu tố mỗi lần (OFAT); chỉ dùng thiết kế giai thừa nhỏ khi giả thuyết có tương tác giữa các tham số. Liệt kê biến gây nhiễu đã biết và cách kiểm soát.</li><li><strong>Tuning công bằng:</strong> mỗi implementation được chỉnh tới cấu hình hợp lý tốt nhất trong cùng ngân sách tài nguyên, ghi lại quá trình tuning; không so default với đã tune.</li><li><strong>Thứ tự chạy ngẫu nhiên, xen kẽ theo block</strong> (<code>stats.py plan-order</code>) để trải đều drift, nhiệt độ, tác vụ nền; không chạy hết A rồi mới tới B.</li><li><strong>Số lần lặp:</strong> chạy pilot để ước lượng độ biến thiên rồi chốt số lần; mặc định ≥ 5 lần cho latency đuôi (3 lần quá ít để ước lượng p99 và khoảng tin cậy).</li><li><strong>Workload:</strong> mô hình mở (constant-arrival-rate) để tránh coordinated omission; ghi rõ phân phối arrival, phân phối key (uniform/Zipf/hot key), payload, kích thước dữ liệu so với bộ nhớ (working set vừa/vượt cache), seed.</li><li><strong>Đo:</strong> warmup đến khi đạt steady state theo tiêu chí định trước (<code>stats.py steady-state</code>); percentile tính từ mẫu thô (k6 <code>--out csv</code>), không lấy trung bình percentile giữa các lần chạy; ghi điểm đo (client/server/DB); hiệu chuẩn công cụ đo bằng độ trễ biết trước; theo dõi sức khoẻ load generator (CPU, dropped iterations); USE cho tài nguyên, RED cho service.</li><li><strong>Độ phủ kịch bản:</strong> xét đủ danh mục trong 04 (bình thường, quét tải tới bão hoà, spike, soak, quá tải/backpressure, tiêm lỗi gồm cả gray failure, phục hồi, nhiều instance/đồng thời, hot key, cold start, dữ liệu tăng trưởng); kịch bản nào không áp dụng phải ghi lý do. Kỹ thuật reliability/consistency bắt buộc có tiêm lỗi + kiểm tra toàn vẹn dữ liệu (id duy nhất, invariant checker, lưu lịch sử thao tác).</li><li><strong>Thống kê:</strong> báo median + IQR và khoảng tin cậy 95% bằng bootstrap theo lần chạy; Δ so với before kèm CI, Mann–Whitney U và effect size (Cliff's delta); phân biệt "có ý nghĩa thống kê" với "có ý nghĩa thực tế".</li><li><strong>Tính hợp lệ:</strong> ghi các đe doạ internal/external/construct/statistical-conclusion và cách giảm thiểu; lần chạy không hợp lệ được ghi lại kèm lý do, không xoá im lặng.</li><li><strong>Báo cáo:</strong> throughput, p50/p95/p99/p99.9, error rate, tài nguyên (CPU/RAM/connection), kèm Δ so với before; biểu đồ phân phối (CDF/HDR), đường throughput–latency khi quét tải, chuỗi thời gian để thấy độ ổn định.</li><li>Dữ liệu thô trong <code>results/raw/</code> đặt tên <code>&lt;impl&gt;-&lt;scenario&gt;-&lt;run&gt;-&lt;timestamp&gt;</code>, không sửa tay; thứ tự chạy lưu ở <code>results/raw/run-order.csv</code>.</li></ul>
+</section>
+<section>
+<h2 id="tai-lap">Tái lập</h2>
+<ul><li>Bộ khung dùng lại <code>shared/scaffold/</code> (Spring Boot system + experiment kit) được <code>make new-topic</code> copy vào <code>system/</code> và <code>experiments/</code> của mỗi topic; topic chỉ viết phần khác biệt. Cải tiến chung thì sửa ở <code>shared/scaffold/</code>, không sửa riêng lẻ trong từng topic.</li><li>Mọi thứ chạy được bằng <code>make</code> trong <code>experiments/</code> (<code>make up</code>, <code>make run IMPL=x SCENARIO=y</code>, <code>make report</code>, <code>make down</code>).</li><li>Ghi môi trường chạy vào <code>results/env.md</code>.</li><li>Observability dùng chung (<code>shared/observability/README.md</code>): <code>make obs-up</code> = metrics + logs + traces + profiles (Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana); <code>make obs-up OBS=metrics</code> = chỉ metrics. Cổng đổi được qua <code>PROM_PORT</code>, <code>GRAFANA_PORT</code>, <code>OTLP_*_PORT</code>, <code>PYROSCOPE_PORT</code>.</li><li>Topic nối vào bằng network <code>backend-lab</code>, label <code>lab.scrape/lab.port/lab.path</code> cho container cần scrape, và <code>include</code> exporter trong <code>shared/observability/exporters/</code> (postgres, redis, kafka).</li><li>Trong phase 5, app chạy trong container có giới hạn CPU/RAM (giống before và mọi implementation) để đo được tài nguyên bằng <code>lab_container_*</code>.</li><li>Cấu hình observability (sampling tracing, profiling, <code>OBS</code>) phải GIỐNG NHAU cho before và mọi implementation, ghi vào <code>results/env.md</code>. Đo hiệu năng thuần thì dùng <code>OBS=metrics</code> + sampling 0; chạy chẩn đoán thì bật full.</li><li>Số liệu từ Prometheus đưa vào <code>results/raw/</code> bằng <code>scripts/prom_export.py</code>; dashboard chỉ để khám phá, không phải nguồn số liệu.</li><li>Artifact triển khai trong <code>deploy/</code> phải được validate bằng công cụ tương ứng (<code>kubectl --dry-run=client</code>, <code>helm template</code>, <code>terraform validate</code>...), ghi lệnh vào 07.</li></ul>
+</section>
+<section>
+<h2 id="git">Git</h2>
+<ul><li>Commit sau mỗi phase: <code>topic(&lt;slug&gt;): phase N - &lt;tóm tắt&gt;</code>.</li></ul>
+</section>
+  </article>
+  </main>
+</div>
+</body>
+</html>

@@ -15,17 +15,17 @@
   Phase 5 — Results (mục tiêu 13, phần dữ liệu). Báo cáo QUAN SÁT theo đúng kế hoạch ở 04; diễn giải sâu để dành cho 06-conclusion.html.
   Mọi con số là [đo được] và link tới file trong results/raw/. Thí nghiệm nào không chạy được: ghi rõ, không ước lượng.
   Số liệu thống kê lấy từ scripts/stats.py summarize / compare, không tính tay.
-  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → INSIGHTS.html):
+  TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → hub/insights.html):
     - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
       kebab-case chữ thường, phân tách bằng dấu phẩy: công nghệ + nguyên lý chung, ví dụ "at-least-once,kafka,graceful-shutdown".
-    - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
+    - Dùng lại tag đã có ở topic khác (xem hub/insights.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
-  SỐ LIỆU THAM CHIẾU (scripts/build_dashboard.py → BENCHMARKS.html), §8:
+  SỐ LIỆU THAM CHIẾU (scripts/build_dashboard.py → hub/benchmarks.html), §8:
     - Chỉ số đo được dùng lại được ngoài topic này (chi phí một thao tác, overhead một cấu hình, độ trễ một thành phần) được ghi thành
       một <tr data-bench="..."> trong table.benchmarks, các thuộc tính:
         data-bench       slug kebab-case của ĐẠI LƯỢNG, ví dụ pg-insert-in-tx-cost, kafka-acks-all-vs-1-latency, pg-fsync-commit-latency,
-                         redis-rtt, otel-tracing-overhead. Dùng lại slug đã có ở BENCHMARKS.html để cùng đại lượng đo ở topic/môi trường
+                         redis-rtt, otel-tracing-overhead. Dùng lại slug đã có ở hub/benchmarks.html để cùng đại lượng đo ở topic/môi trường
                          khác đứng cạnh nhau.
         data-value       số (dấu chấm thập phân, không đơn vị)      data-unit     ms | µs | req/s | MB/s | % | ...
         data-ci-low / data-ci-high   khoảng tin cậy 95% (bỏ trống nếu không có)
@@ -164,8 +164,8 @@
     <h2 id="benchmarks"><span class="num">8</span>Số liệu tham chiếu</h2>
     <div class="guide">Những con số đo được ở trên mà dùng lại được ngoài topic này, ví dụ: chi phí thêm một INSERT trong cùng transaction, chênh p99 giữa
       <code>acks=all</code> và <code>acks=1</code>, độ trễ fsync khi COMMIT, RTT tới Redis, overhead của tracing. Mỗi đại lượng một hàng với thuộc tính
-      <code>data-*</code> theo hợp đồng ở comment đầu file; trang <code>BENCHMARKS.html</code> gom các hàng này từ mọi topic.
-      Trước khi đặt slug mới, xem BENCHMARKS.html: cùng đại lượng thì dùng lại slug. Không có đại lượng nào dùng lại được thì ghi "—" kèm lý do.</div>
+      <code>data-*</code> theo hợp đồng ở comment đầu file; trang <code>hub/benchmarks.html</code> gom các hàng này từ mọi topic.
+      Trước khi đặt slug mới, xem hub/benchmarks.html: cùng đại lượng thì dùng lại slug. Không có đại lượng nào dùng lại được thì ghi "—" kèm lý do.</div>
     <div class="table-wrap"><table class="benchmarks">
       <thead><tr><th>Đại lượng (slug)</th><th>Giá trị [95% CI]</th><th>Metric</th><th>Điều kiện</th><th>Raw</th></tr></thead>
       <tbody>
