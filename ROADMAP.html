@@ -16,7 +16,7 @@
   LỘ TRÌNH TOPIC — trang tổng, Claude đọc và cập nhật.
   Hợp đồng dữ liệu (máy đọc), mỗi topic là một <tr> trong table.roadmap:
     data-slug      slug kebab-case, trùng thư mục topics/<slug>/ và id của <tr>
-    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd | mongodb
+    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd | mongodb | containers | kubernetes | rabbitmq
     data-prereq    danh sách slug tiền đề, phân tách bằng dấu phẩy (rỗng nếu không có); đồ thị phải là DAG
     data-mode      full | lite — chế độ gợi ý cho /research
     data-priority  1 (cao) – 3 (thấp)
@@ -166,6 +166,34 @@
         <li><a href="#mongodb-sharding-shard-key">MongoDB sharding: shard key, chunk &amp; balancer</a> — chọn shard key</li>
         <li><a href="#mongodb-vs-postgresql-jsonb">MongoDB vs PostgreSQL JSONB (topic so sánh)</a> — khi nào vẫn dùng PostgreSQL</li>
     </ol>
+    <h3 id="path-9">Container &amp; Kubernetes</h3>
+    <p>Từ cách container giới hạn tài nguyên và nhận tín hiệu, tới cách Kubernetes xếp lịch, kiểm tra sức khoẻ, mở rộng và định tuyến.</p>
+    <ol class="learning-path">
+        <li><a href="#docker-image-layers-build-cache">Docker image: layer, build cache, multi-stage &amp; PID 1</a> — layer và PID 1</li>
+        <li><a href="#container-resource-limits-jvm">Giới hạn CPU/RAM của container &amp; JVM ergonomics</a> — throttle và JVM trong cgroup</li>
+        <li><a href="#docker-networking">Docker networking: bridge, NAT, DNS nội bộ &amp; cổng publish</a> — đường đi của gói tin</li>
+        <li><a href="#k8s-pod-lifecycle-graceful-shutdown">Kubernetes: vòng đời pod &amp; graceful shutdown khi rolling update</a> — 502 khi rolling update</li>
+        <li><a href="#k8s-requests-limits-qos">Kubernetes: requests, limits, QoS class &amp; eviction</a> — requests, limits và eviction</li>
+        <li><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a> — nền cho probe và discovery</li>
+        <li><a href="#k8s-probes-readiness-liveness">Kubernetes probes: readiness, liveness &amp; startup</a> — restart dây chuyền</li>
+        <li><a href="#k8s-hpa-autoscaling">Kubernetes HPA: độ trễ scale, metric &amp; JVM warmup</a> — scale chậm hơn spike</li>
+        <li><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a> — registry và cache</li>
+        <li><a href="#k8s-service-networking">Kubernetes Service: kube-proxy, load balancing theo connection &amp; DNS</a> — cân bằng theo connection</li>
+    </ol>
+    <h3 id="path-10">RabbitMQ</h3>
+    <p>Mô hình broker định tuyến, đảm bảo giao nhận và độ bền của RabbitMQ, rồi đối chiếu với Kafka.</p>
+    <ol class="learning-path">
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — tiền đề của idempotency</li>
+        <li><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a> — tiền đề của idempotency</li>
+        <li><a href="#idempotency-key">Idempotency key cho API</a> — xử lý message giao lại</li>
+        <li><a href="#rabbitmq-exchanges-routing">RabbitMQ: exchange, binding &amp; mô hình AMQP</a> — mô hình AMQP</li>
+        <li><a href="#rabbitmq-acks-prefetch-redelivery">RabbitMQ: publisher confirm, consumer ack, prefetch &amp; redelivery</a> — mất, trùng và prefetch</li>
+        <li><a href="#rabbitmq-quorum-queues">RabbitMQ quorum queue: Raft, độ bền &amp; failover</a> — độ bền bằng Raft</li>
+        <li><a href="#rabbitmq-dlx-retry-delay">RabbitMQ: dead letter exchange, retry trễ &amp; poison message</a> — retry và poison message</li>
+        <li><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a> — nền để so sánh</li>
+        <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — giao nhận ở Kafka</li>
+        <li><a href="#rabbitmq-vs-kafka">RabbitMQ vs Kafka (topic so sánh)</a> — khi nào chọn bên nào</li>
+    </ol>
   </section>
 
   <section>
@@ -216,6 +244,12 @@
     <figure class="diagram" data-roadmap="cicd" data-track-name="CI/CD &amp; triển khai"></figure>
     <h3 id="graph-mongodb">MongoDB</h3>
     <figure class="diagram" data-roadmap="mongodb" data-track-name="MongoDB"></figure>
+    <h3 id="graph-containers">Docker &amp; container</h3>
+    <figure class="diagram" data-roadmap="containers" data-track-name="Docker &amp; container"></figure>
+    <h3 id="graph-kubernetes">Kubernetes</h3>
+    <figure class="diagram" data-roadmap="kubernetes" data-track-name="Kubernetes"></figure>
+    <h3 id="graph-rabbitmq">RabbitMQ</h3>
+    <figure class="diagram" data-roadmap="rabbitmq" data-track-name="RabbitMQ"></figure>
   </section>
 
   <section>
@@ -594,11 +628,11 @@
           <td>Integration test dùng Testcontainers cần Docker trong agent: mount Docker socket nhanh và giữ được image cache nhưng agent điều khiển được Docker của host, Docker-in-Docker cách ly hơn nhưng mỗi build kéo lại image. Cache .m2 và chạy stage song song quyết định phần lớn thời gian build.</td>
           <td><span class="mode-chip mode-lite">lite</span> Lite: đo thời gian build theo chiến lược cache và cách chạy Docker trong agent.</td>
         </tr>
-        <tr id="blue-green-canary-deploy" data-slug="blue-green-canary-deploy" data-track="cicd" data-prereq="jenkins-pipeline-testcontainers,spring-cloud-gateway-reactive" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+        <tr id="blue-green-canary-deploy" data-slug="blue-green-canary-deploy" data-track="cicd" data-prereq="jenkins-pipeline-testcontainers,spring-cloud-gateway-reactive,k8s-pod-lifecycle-graceful-shutdown" data-mode="full" data-priority="2" data-status="planned" data-created="false">
           <td><strong>Triển khai blue-green &amp; canary không downtime</strong><br><code>blue-green-canary-deploy</code><br><a class="topic-link" href="topics/blue-green-canary-deploy/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
           <td><span class="track-chip track-cicd">CI/CD &amp; triển khai</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
-          <td><a href="#jenkins-pipeline-testcontainers">Jenkins pipeline: agent, cache &amp; Testcontainers trong CI</a>, <a href="#spring-cloud-gateway-reactive">Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</a></td>
-          <td>Chuyển traffic giữa hai phiên bản qua trọng số ở gateway; request đang xử lý trên bản cũ chỉ không lỗi nếu có graceful shutdown và connection draining. Hai phiên bản chạy song song nên schema DB phải tương thích hai chiều (expand/contract). Cần pipeline để triển khai và gateway để điều phối traffic.</td>
+          <td><a href="#jenkins-pipeline-testcontainers">Jenkins pipeline: agent, cache &amp; Testcontainers trong CI</a>, <a href="#spring-cloud-gateway-reactive">Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</a>, <a href="#k8s-pod-lifecycle-graceful-shutdown">Kubernetes: vòng đời pod &amp; graceful shutdown khi rolling update</a></td>
+          <td>Chuyển traffic giữa hai phiên bản qua trọng số ở gateway; request đang xử lý trên bản cũ chỉ không lỗi nếu có graceful shutdown và connection draining. Hai phiên bản chạy song song nên schema DB phải tương thích hai chiều (expand/contract). Cần pipeline để triển khai, gateway để điều phối traffic, và hiểu vòng đời pod trên Kubernetes (SIGTERM, gỡ endpoint, preStop) vì đó là nơi request bị rơi khi đổi phiên bản.</td>
           <td><span class="mode-chip mode-full">full</span> Full: đo số request lỗi trong lúc chuyển traffic, có và không có graceful shutdown.</td>
         </tr>
         <tr id="saga-orchestrator-durable-execution" data-slug="saga-orchestrator-durable-execution" data-track="distributed" data-prereq="saga-orchestration-vs-choreography" data-mode="full" data-priority="2" data-status="planned" data-created="false">
@@ -656,6 +690,111 @@
           <td><a href="#mongodb-document-modeling">MongoDB: mô hình hoá document — embed vs reference</a>, <a href="#mongodb-multi-document-transactions">MongoDB multi-document transaction</a>, <a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a></td>
           <td>Cả hai lưu được dữ liệu dạng document, nhưng khác nhau ở cách cập nhật (JSONB ghi lại cả tuple mới theo MVCC, MongoDB cập nhật tại chỗ trong WiredTiger), index (GIN vs B-tree theo đường dẫn trường), transaction và mở rộng ngang. Trả lời câu hỏi thực tế: khi nào dữ liệu document vẫn nên nằm trong PostgreSQL.</td>
           <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng workload đọc/ghi document, đo latency, kích thước lưu trữ và chi phí cập nhật một phần.</td>
+        </tr>
+        <tr id="docker-image-layers-build-cache" data-slug="docker-image-layers-build-cache" data-track="containers" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Docker image: layer, build cache, multi-stage &amp; PID 1</strong><br><code>docker-image-layers-build-cache</code><br><a class="topic-link" href="topics/docker-image-layers-build-cache/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-containers">Docker &amp; container</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Mỗi lệnh trong Dockerfile là một layer; đổi một layer thì mọi layer sau phải build lại, nên copy source trước khi tải dependency làm mỗi lần sửa code tải lại toàn bộ thư viện. Layered jar của Spring Boot tách dependency khỏi code để image mới chỉ đẩy vài MB. ENTRYPOINT dạng shell chạy app dưới /bin/sh làm PID 1, không chuyển SIGTERM, nên app bị kill cứng thay vì shutdown êm.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: đo thời gian build và kích thước layer thay đổi theo thứ tự lệnh; kiểm tra SIGTERM với exec form vs shell form.</td>
+        </tr>
+        <tr id="container-resource-limits-jvm" data-slug="container-resource-limits-jvm" data-track="containers" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Giới hạn CPU/RAM của container &amp; JVM ergonomics</strong><br><code>container-resource-limits-jvm</code><br><a class="topic-link" href="topics/container-resource-limits-jvm/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-containers">Docker &amp; container</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Giới hạn CPU là CFS quota: dùng hết quota trong một chu kỳ 100 ms thì container bị dừng tới chu kỳ sau, nên p99 tăng vọt dù CPU trung bình thấp. JVM đọc giới hạn cgroup để tính heap (MaxRAMPercentage) và số thread GC/JIT; cấu hình sai thì bị OOMKilled hoặc GC chạy quá nhiều thread so với CPU được cấp.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: quét giới hạn CPU/RAM, đo p99, tỉ lệ throttle và OOM theo cấu hình JVM.</td>
+        </tr>
+        <tr id="docker-networking" data-slug="docker-networking" data-track="containers" data-prereq="" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Docker networking: bridge, NAT, DNS nội bộ &amp; cổng publish</strong><br><code>docker-networking</code><br><a class="topic-link" href="topics/docker-networking/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-containers">Docker &amp; container</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td>—</td>
+          <td>Container trong bridge network nói chuyện qua veth + NAT; cổng publish đi qua iptables (hoặc docker-proxy) nên thêm độ trễ và tốn conntrack; DNS nội bộ của Docker phân giải tên service. Hiểu đường đi của gói tin giải thích vì sao đo latency qua localhost khác đo trong cùng network.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: so sánh RTT giữa container cùng network, qua cổng publish và host network.</td>
+        </tr>
+        <tr id="docker-storage-volumes" data-slug="docker-storage-volumes" data-track="containers" data-prereq="" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Docker storage: overlayfs, volume, bind mount &amp; fsync</strong><br><code>docker-storage-volumes</code><br><a class="topic-link" href="topics/docker-storage-volumes/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-containers">Docker &amp; container</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td>—</td>
+          <td>Ghi vào file của image phải copy-up cả file lên layer ghi được; dữ liệu database phải nằm trên volume. Trên Docker Desktop, bind mount đi qua lớp chia sẻ file giữa máy thật và VM nên fsync chậm hơn nhiều so với named volume, làm benchmark database sai lệch.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: đo throughput commit của PostgreSQL trên named volume vs bind mount.</td>
+        </tr>
+        <tr id="k8s-pod-lifecycle-graceful-shutdown" data-slug="k8s-pod-lifecycle-graceful-shutdown" data-track="kubernetes" data-prereq="docker-image-layers-build-cache" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Kubernetes: vòng đời pod &amp; graceful shutdown khi rolling update</strong><br><code>k8s-pod-lifecycle-graceful-shutdown</code><br><a class="topic-link" href="topics/k8s-pod-lifecycle-graceful-shutdown/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kubernetes">Kubernetes</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#docker-image-layers-build-cache">Docker image: layer, build cache, multi-stage &amp; PID 1</a></td>
+          <td>Khi xoá pod, kubelet gửi SIGTERM và control plane gỡ pod khỏi endpoint gần như đồng thời; kube-proxy và load balancer cập nhật chậm hơn, nên request vẫn đi vào pod đang tắt và nhận 502. preStop sleep + graceful shutdown của Spring giữ pod phục vụ tới khi traffic ngừng. Phải nhận được SIGTERM (PID 1 đúng) thì cơ chế này mới chạy.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: rolling update dưới tải, đếm lỗi theo cấu hình preStop/terminationGracePeriod/graceful shutdown.</td>
+        </tr>
+        <tr id="k8s-requests-limits-qos" data-slug="k8s-requests-limits-qos" data-track="kubernetes" data-prereq="container-resource-limits-jvm" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Kubernetes: requests, limits, QoS class &amp; eviction</strong><br><code>k8s-requests-limits-qos</code><br><a class="topic-link" href="topics/k8s-requests-limits-qos/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kubernetes">Kubernetes</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#container-resource-limits-jvm">Giới hạn CPU/RAM của container &amp; JVM ergonomics</a></td>
+          <td>Scheduler xếp pod theo requests, còn limits được áp thành cgroup lúc chạy; QoS class (Guaranteed / Burstable / BestEffort) quyết định pod nào bị evict trước khi node thiếu RAM. Đặt CPU limit sinh throttle giống topic trước; không đặt thì pod tranh CPU với hàng xóm. Đây là chỗ cấu hình JVM gặp cấu hình cluster.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tạo áp lực tài nguyên trên node, quan sát throttle, eviction và latency theo QoS.</td>
+        </tr>
+        <tr id="k8s-probes-readiness-liveness" data-slug="k8s-probes-readiness-liveness" data-track="kubernetes" data-prereq="k8s-pod-lifecycle-graceful-shutdown,timeout-retry-backoff" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Kubernetes probes: readiness, liveness &amp; startup</strong><br><code>k8s-probes-readiness-liveness</code><br><a class="topic-link" href="topics/k8s-probes-readiness-liveness/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kubernetes">Kubernetes</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#k8s-pod-lifecycle-graceful-shutdown">Kubernetes: vòng đời pod &amp; graceful shutdown khi rolling update</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Readiness rút pod khỏi traffic, liveness restart pod. Liveness kiểm tra phụ thuộc bên ngoài (DB) hoặc timeout quá ngắn thì khi tải cao hoặc DB chậm, mọi pod bị restart cùng lúc và hệ thống sập dây chuyền. Startup probe tránh việc JVM khởi động chậm bị kill trước khi sẵn sàng.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: làm chậm DB và tăng tải, so sánh số restart và lỗi theo cấu hình probe.</td>
+        </tr>
+        <tr id="k8s-hpa-autoscaling" data-slug="k8s-hpa-autoscaling" data-track="kubernetes" data-prereq="k8s-requests-limits-qos" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Kubernetes HPA: độ trễ scale, metric &amp; JVM warmup</strong><br><code>k8s-hpa-autoscaling</code><br><a class="topic-link" href="topics/k8s-hpa-autoscaling/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kubernetes">Kubernetes</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#k8s-requests-limits-qos">Kubernetes: requests, limits, QoS class &amp; eviction</a></td>
+          <td>HPA tính CPU theo phần trăm của requests, metric tới chậm vài chục giây, cộng thời gian tạo pod và JVM warmup, nên pod mới thường lên sau khi spike đã gây lỗi. Stabilization window tránh dao động nhưng làm scale chậm hơn. Requests đặt sai thì HPA scale theo con số sai.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tạo spike tải, đo thời gian tới khi đủ pod và số lỗi trong khoảng đó theo cấu hình HPA.</td>
+        </tr>
+        <tr id="k8s-service-networking" data-slug="k8s-service-networking" data-track="kubernetes" data-prereq="service-discovery-patterns,docker-networking" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Kubernetes Service: kube-proxy, load balancing theo connection &amp; DNS</strong><br><code>k8s-service-networking</code><br><a class="topic-link" href="topics/k8s-service-networking/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kubernetes">Kubernetes</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a>, <a href="#docker-networking">Docker networking: bridge, NAT, DNS nội bộ &amp; cổng publish</a></td>
+          <td>ClusterIP được kube-proxy hiện thực bằng iptables/IPVS, cân bằng theo connection chứ không theo request: connection sống lâu (HTTP keep-alive, HTTP/2, gRPC) dính vào một pod nên pod mới gần như không nhận tải. DNS với ndots:5 làm mỗi lần phân giải tên ngoài cluster thử nhiều domain trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: scale thêm pod khi client dùng connection sống lâu, đo phân bố request trên từng pod.</td>
+        </tr>
+        <tr id="k8s-statefulset-persistent-volumes" data-slug="k8s-statefulset-persistent-volumes" data-track="kubernetes" data-prereq="k8s-pod-lifecycle-graceful-shutdown" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Kubernetes StatefulSet &amp; persistent volume</strong><br><code>k8s-statefulset-persistent-volumes</code><br><a class="topic-link" href="topics/k8s-statefulset-persistent-volumes/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-kubernetes">Kubernetes</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#k8s-pod-lifecycle-graceful-shutdown">Kubernetes: vòng đời pod &amp; graceful shutdown khi rolling update</a></td>
+          <td>StatefulSet cho pod tên và volume ổn định, rollout theo thứ tự; volume gắn với zone nên pod không chuyển sang zone khác được. Chạy database trên Kubernetes đòi hỏi xử lý failover, backup và quorum mà Deployment không lo, nên thường dùng operator hoặc managed service.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: kill pod của StatefulSet chạy PostgreSQL, quan sát thời gian phục hồi và dữ liệu trên volume.</td>
+        </tr>
+        <tr id="rabbitmq-exchanges-routing" data-slug="rabbitmq-exchanges-routing" data-track="rabbitmq" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>RabbitMQ: exchange, binding &amp; mô hình AMQP</strong><br><code>rabbitmq-exchanges-routing</code><br><a class="topic-link" href="topics/rabbitmq-exchanges-routing/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-rabbitmq">RabbitMQ</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Producer gửi vào exchange, broker định tuyến theo binding (direct / topic / fanout / headers) vào các queue, và message bị xoá khỏi queue khi được ack: broker thông minh, consumer đơn giản. Ngược với Kafka, nơi log được giữ lại và consumer tự quản lý vị trí đọc. Khác biệt này quyết định replay, fan-out và thứ tự.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: dựng các kiểu exchange và kiểm tra định tuyến; không cần quét tải.</td>
+        </tr>
+        <tr id="rabbitmq-acks-prefetch-redelivery" data-slug="rabbitmq-acks-prefetch-redelivery" data-track="rabbitmq" data-prereq="rabbitmq-exchanges-routing,idempotency-key" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>RabbitMQ: publisher confirm, consumer ack, prefetch &amp; redelivery</strong><br><code>rabbitmq-acks-prefetch-redelivery</code><br><a class="topic-link" href="topics/rabbitmq-acks-prefetch-redelivery/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-rabbitmq">RabbitMQ</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#rabbitmq-exchanges-routing">RabbitMQ: exchange, binding &amp; mô hình AMQP</a>, <a href="#idempotency-key">Idempotency key cho API</a></td>
+          <td>Không có publisher confirm thì message có thể mất khi broker chết trước khi ghi; consumer ack thủ công mà connection đứt trước khi ack thì message được giao lại (trùng), nên consumer phải idempotent. Prefetch giới hạn số message chưa ack trên mỗi consumer: nhỏ thì công bằng nhưng chậm, lớn thì nhanh nhưng consumer chậm giữ nhiều message.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: kill broker/consumer giữa chừng, đếm mất/trùng; quét prefetch để đo throughput và độ lệch tải.</td>
+        </tr>
+        <tr id="rabbitmq-quorum-queues" data-slug="rabbitmq-quorum-queues" data-track="rabbitmq" data-prereq="rabbitmq-acks-prefetch-redelivery" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>RabbitMQ quorum queue: Raft, độ bền &amp; failover</strong><br><code>rabbitmq-quorum-queues</code><br><a class="topic-link" href="topics/rabbitmq-quorum-queues/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-rabbitmq">RabbitMQ</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#rabbitmq-acks-prefetch-redelivery">RabbitMQ: publisher confirm, consumer ack, prefetch &amp; redelivery</a></td>
+          <td>Quorum queue nhân bản bằng Raft: publisher confirm chỉ trả về khi đa số node đã ghi, nên mất leader không làm mất message đã confirm nhưng latency ghi tăng. Classic mirrored queue đã bị loại bỏ ở RabbitMQ 4.0. Mất quorum thì queue không nhận ghi.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: kill leader dưới tải, đo thời gian gián đoạn và xác minh không mất message đã confirm.</td>
+        </tr>
+        <tr id="rabbitmq-dlx-retry-delay" data-slug="rabbitmq-dlx-retry-delay" data-track="rabbitmq" data-prereq="rabbitmq-quorum-queues" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>RabbitMQ: dead letter exchange, retry trễ &amp; poison message</strong><br><code>rabbitmq-dlx-retry-delay</code><br><a class="topic-link" href="topics/rabbitmq-dlx-retry-delay/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-rabbitmq">RabbitMQ</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#rabbitmq-quorum-queues">RabbitMQ quorum queue: Raft, độ bền &amp; failover</a></td>
+          <td>Message bị reject, hết TTL hoặc vượt delivery-limit (quorum queue) được chuyển sang dead letter exchange; ghép TTL + DLX tạo retry có độ trễ. Không giới hạn số lần giao lại thì một poison message bị giao lại mãi và chặn queue.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: một kịch bản poison message, so sánh có và không có delivery-limit + DLX.</td>
+        </tr>
+        <tr id="rabbitmq-vs-kafka" data-slug="rabbitmq-vs-kafka" data-track="rabbitmq" data-prereq="rabbitmq-quorum-queues,kafka-delivery-semantics" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>RabbitMQ vs Kafka (topic so sánh)</strong><br><code>rabbitmq-vs-kafka</code><br><a class="topic-link" href="topics/rabbitmq-vs-kafka/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-rabbitmq">RabbitMQ</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#rabbitmq-quorum-queues">RabbitMQ quorum queue: Raft, độ bền &amp; failover</a>, <a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a></td>
+          <td>Hai mô hình ngược nhau: RabbitMQ đẩy message tới consumer và xoá sau khi ack (hợp với work queue, định tuyến linh hoạt), Kafka giữ log để consumer kéo theo offset (hợp với replay, thông lượng cao, thứ tự theo partition). Cơ chế khác nhau dẫn tới khác về thứ tự, replay, mở rộng consumer và chi phí vận hành.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng workload work-queue và một kịch bản crash cho cả hai, đo throughput, latency và mất/trùng.</td>
         </tr>
       </tbody>
     </table></div>
