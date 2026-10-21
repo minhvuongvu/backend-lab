@@ -16,7 +16,7 @@
   LỘ TRÌNH TOPIC — trang tổng, Claude đọc và cập nhật.
   Hợp đồng dữ liệu (máy đọc), mỗi topic là một <tr> trong table.roadmap:
     data-slug      slug kebab-case, trùng thư mục topics/<slug>/ và id của <tr>
-    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd | mongodb | containers | kubernetes | rabbitmq
+    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd | mongodb | containers | kubernetes | rabbitmq | foundations | jvm | networking | api | sre
     data-prereq    danh sách slug tiền đề, phân tách bằng dấu phẩy (rỗng nếu không có); đồ thị phải là DAG
     data-mode      full | lite — chế độ gợi ý cho /research
     data-priority  1 (cao) – 3 (thấp)
@@ -194,6 +194,54 @@
         <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — giao nhận ở Kafka</li>
         <li><a href="#rabbitmq-vs-kafka">RabbitMQ vs Kafka (topic so sánh)</a> — khi nào chọn bên nào</li>
     </ol>
+    <h3 id="path-11">Lý thuyết hệ phân tán cho senior</h3>
+    <p>Từ vựng và cơ chế chung nằm dưới mọi hệ thống lưu trữ và messaging: nhất quán, đồng thuận, thứ tự, phân mảnh.</p>
+    <ol class="learning-path">
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — anomaly trong một node</li>
+        <li><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a> — snapshot và phiên bản</li>
+        <li><a href="#read-replica-lag">Read replica &amp; replication lag</a> — ví dụ đầu tiên về đọc dữ liệu cũ</li>
+        <li><a href="#consistency-models">Consistency model: linearizability, causal &amp; session guarantees</a> — đặt tên chính xác cho mức nhất quán</li>
+        <li><a href="#raft-consensus-leader-election">Raft: bầu leader, nhân bản log &amp; quorum</a> — đồng thuận và quorum</li>
+        <li><a href="#clocks-ordering-hlc">Đồng hồ &amp; thứ tự: clock skew, Lamport, vector clock &amp; HLC</a> — vì sao không tin timestamp</li>
+        <li><a href="#consistent-hashing-rebalancing">Consistent hashing &amp; lượng dữ liệu phải di chuyển khi thêm node</a> — phân mảnh và di chuyển dữ liệu</li>
+        <li><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a> — nền cho idempotency</li>
+        <li><a href="#idempotency-key">Idempotency key cho API</a> — nền cho outbox và inbox</li>
+        <li><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a> — thứ tự trong log</li>
+        <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — mất và trùng</li>
+        <li><a href="#transactional-outbox">Transactional outbox</a> — gửi event đáng tin</li>
+        <li><a href="#inbox-dedup">Inbox pattern / deduplication phía consumer</a> — nhận event không trùng</li>
+        <li><a href="#saga-orchestration-vs-choreography">Saga: orchestration vs choreography</a> — giao dịch nhiều service</li>
+        <li><a href="#two-phase-commit-vs-saga">2PC/XA vs saga (topic so sánh)</a> — vì sao không dùng 2PC</li>
+    </ol>
+    <h3 id="path-12">Hiệu năng JVM &amp; capacity</h3>
+    <p>Chẩn đoán và dự đoán hiệu năng của service Java: GC, mô hình thread, profiling, tail latency, ước lượng tài nguyên.</p>
+    <ol class="learning-path">
+        <li><a href="#container-resource-limits-jvm">Giới hạn CPU/RAM của container &amp; JVM ergonomics</a> — JVM trong cgroup</li>
+        <li><a href="#jvm-gc-g1-vs-zgc">JVM GC: allocation rate, G1 vs ZGC &amp; kích thước heap</a> — GC và tail latency</li>
+        <li><a href="#jvm-warmup-jit-startup">JVM warmup, JIT &amp; thời gian khởi động (CDS, AOT cache, CRaC)</a> — JIT và khởi động</li>
+        <li><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a> — nút thắt connection</li>
+        <li><a href="#virtual-threads-vs-platform-threads">Java 21 virtual thread vs thread pool</a> — mô hình thread của Java 21</li>
+        <li><a href="#reactive-vs-blocking-io">WebFlux (reactive) vs Spring MVC + virtual thread (topic so sánh)</a> — còn cần reactive không</li>
+        <li><a href="#profiling-flame-graphs">Profiling: async-profiler, JFR &amp; flame graph</a> — tìm điểm nóng thật</li>
+        <li><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a> — ngân sách timeout</li>
+        <li><a href="#tail-latency-fanout-hedging">Tail latency khi fan-out &amp; hedged request</a> — đuôi latency khi fan-out</li>
+        <li><a href="#capacity-planning-usl">Capacity planning: Little's law, USL &amp; điểm gãy</a> — dự đoán số instance cần</li>
+    </ol>
+    <h3 id="path-13">API, dữ liệu &amp; tiến hoá hệ thống</h3>
+    <p>Thay đổi hệ thống đang chạy mà không phá client, consumer hay dữ liệu.</p>
+    <ol class="learning-path">
+        <li><a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a> — nền cho phân trang</li>
+        <li><a href="#api-pagination-keyset-vs-offset">Phân trang: OFFSET vs keyset (cursor)</a> — phân trang ổn định</li>
+        <li><a href="#api-versioning-backward-compat">API versioning &amp; tương thích ngược</a> — thay đổi API an toàn</li>
+        <li><a href="#contract-testing-consumer-driven">Contract testing (consumer-driven)</a> — bắt thay đổi phá vỡ ở CI</li>
+        <li><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a> — nền cho event</li>
+        <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — nền cho event</li>
+        <li><a href="#event-schema-evolution-registry">Tiến hoá schema của event: Avro/Protobuf &amp; schema registry</a> — thay đổi schema event</li>
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — nền cho MVCC</li>
+        <li><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a> — backfill sinh dead tuple</li>
+        <li><a href="#zero-downtime-schema-migration">Migration schema không downtime trên PostgreSQL</a> — migration không chặn request</li>
+        <li><a href="#modular-monolith-boundaries">Modular monolith, bounded context &amp; khi nào tách service</a> — ranh giới trước khi tách service</li>
+    </ol>
   </section>
 
   <section>
@@ -250,6 +298,16 @@
     <figure class="diagram" data-roadmap="kubernetes" data-track-name="Kubernetes"></figure>
     <h3 id="graph-rabbitmq">RabbitMQ</h3>
     <figure class="diagram" data-roadmap="rabbitmq" data-track-name="RabbitMQ"></figure>
+    <h3 id="graph-foundations">Lý thuyết hệ phân tán</h3>
+    <figure class="diagram" data-roadmap="foundations" data-track-name="Lý thuyết hệ phân tán"></figure>
+    <h3 id="graph-jvm">JVM &amp; hiệu năng</h3>
+    <figure class="diagram" data-roadmap="jvm" data-track-name="JVM &amp; hiệu năng"></figure>
+    <h3 id="graph-networking">Mạng &amp; giao thức</h3>
+    <figure class="diagram" data-roadmap="networking" data-track-name="Mạng &amp; giao thức"></figure>
+    <h3 id="graph-api">API &amp; tiến hoá hệ thống</h3>
+    <figure class="diagram" data-roadmap="api" data-track-name="API &amp; tiến hoá hệ thống"></figure>
+    <h3 id="graph-sre">Observability &amp; SRE</h3>
+    <figure class="diagram" data-roadmap="sre" data-track-name="Observability &amp; SRE"></figure>
   </section>
 
   <section>
@@ -795,6 +853,209 @@
           <td><a href="#rabbitmq-quorum-queues">RabbitMQ quorum queue: Raft, độ bền &amp; failover</a>, <a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a></td>
           <td>Hai mô hình ngược nhau: RabbitMQ đẩy message tới consumer và xoá sau khi ack (hợp với work queue, định tuyến linh hoạt), Kafka giữ log để consumer kéo theo offset (hợp với replay, thông lượng cao, thứ tự theo partition). Cơ chế khác nhau dẫn tới khác về thứ tự, replay, mở rộng consumer và chi phí vận hành.</td>
           <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng workload work-queue và một kịch bản crash cho cả hai, đo throughput, latency và mất/trùng.</td>
+        </tr>
+        <tr id="consistency-models" data-slug="consistency-models" data-track="foundations" data-prereq="read-replica-lag" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Consistency model: linearizability, causal &amp; session guarantees</strong><br><code>consistency-models</code><br><a class="topic-link" href="topics/consistency-models/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-foundations">Lý thuyết hệ phân tán</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#read-replica-lag">Read replica &amp; replication lag</a></td>
+          <td>Mỗi hệ thống lưu trữ hứa một mức nhất quán khác nhau, và bug "vừa ghi xong đọc không thấy" hay "thấy câu trả lời trước câu hỏi" chính là vi phạm một mức cụ thể (read-your-writes, monotonic reads, causal). Có từ vựng chính xác thì đọc được đảm bảo thật của PostgreSQL replica, Kafka, MongoDB, Redis thay vì tin chữ "consistent". Replica lag là ví dụ đầu tiên đã gặp.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: ghi lịch sử thao tác trên một store nhân bản rồi kiểm tra bằng checker (kiểu Jepsen/Porcupine) mức nào bị vi phạm.</td>
+        </tr>
+        <tr id="raft-consensus-leader-election" data-slug="raft-consensus-leader-election" data-track="foundations" data-prereq="consistency-models" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Raft: bầu leader, nhân bản log &amp; quorum</strong><br><code>raft-consensus-leader-election</code><br><a class="topic-link" href="topics/raft-consensus-leader-election/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-foundations">Lý thuyết hệ phân tán</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#consistency-models">Consistency model: linearizability, causal &amp; session guarantees</a></td>
+          <td>Raft là cơ chế dưới etcd (Kubernetes), Consul, quorum queue của RabbitMQ và KRaft của Kafka: một leader nhận ghi, commit khi đa số node đã có log, bầu lại khi mất heartbeat. Hiểu term, commit index và vì sao leader cũ bị cô lập không được phục vụ đọc mạnh giải thích hành vi của tất cả các hệ thống đó khi mạng chập chờn.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: chạy cụm etcd 3 node, tiêm partition cô lập leader, đo thời gian bầu lại và kiểm tra không mất ghi đã commit.</td>
+        </tr>
+        <tr id="clocks-ordering-hlc" data-slug="clocks-ordering-hlc" data-track="foundations" data-prereq="consistency-models" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Đồng hồ &amp; thứ tự: clock skew, Lamport, vector clock &amp; HLC</strong><br><code>clocks-ordering-hlc</code><br><a class="topic-link" href="topics/clocks-ordering-hlc/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-foundations">Lý thuyết hệ phân tán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#consistency-models">Consistency model: linearizability, causal &amp; session guarantees</a></td>
+          <td>Đồng hồ các máy lệch nhau (NTP chỉnh từng bước, VM bị pause), nên dùng timestamp để quyết định thứ tự (last-write-wins, TTL lock, sắp xếp event) có thể làm bản ghi mới bị bản cũ ghi đè. Lamport/vector clock cho thứ tự nhân quả không cần đồng hồ chung; hybrid logical clock kết hợp cả hai.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tiêm clock skew giữa hai node dùng last-write-wins, đếm số cập nhật bị mất.</td>
+        </tr>
+        <tr id="consistent-hashing-rebalancing" data-slug="consistent-hashing-rebalancing" data-track="foundations" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Consistent hashing &amp; lượng dữ liệu phải di chuyển khi thêm node</strong><br><code>consistent-hashing-rebalancing</code><br><a class="topic-link" href="topics/consistent-hashing-rebalancing/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-foundations">Lý thuyết hệ phân tán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Chia dữ liệu theo hash mod N thì thêm một node làm gần như mọi key đổi chỗ (cache trống, dữ liệu phải chuyển hàng loạt); consistent hashing với virtual node chỉ di chuyển khoảng 1/N số key. Cùng ý tưởng xuất hiện trong Redis Cluster (hash slot), Kafka partition, sharding của MongoDB và load balancing có sticky.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: mô phỏng thêm/bớt node, đo tỉ lệ key phải di chuyển và độ lệch tải theo số virtual node.</td>
+        </tr>
+        <tr id="two-phase-commit-vs-saga" data-slug="two-phase-commit-vs-saga" data-track="distributed" data-prereq="saga-orchestration-vs-choreography" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>2PC/XA vs saga (topic so sánh)</strong><br><code>two-phase-commit-vs-saga</code><br><a class="topic-link" href="topics/two-phase-commit-vs-saga/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-distributed">Phân tán &amp; nhất quán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#saga-orchestration-vs-choreography">Saga: orchestration vs choreography</a></td>
+          <td>2PC cho atomicity thật giữa nhiều tài nguyên nhưng coordinator chết sau phase prepare làm participant giữ lock vô thời hạn (in-doubt), và mọi participant phải hỗ trợ XA. Saga bỏ atomicity lấy tính sẵn sàng, đổi bằng compensation và trạng thái trung gian nhìn thấy được. Senior cần giải thích được vì sao microservices hầu như không dùng 2PC.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): kill coordinator giữa hai phase, so sánh thời gian giữ lock và trạng thái dữ liệu với saga.</td>
+        </tr>
+        <tr id="jvm-gc-g1-vs-zgc" data-slug="jvm-gc-g1-vs-zgc" data-track="jvm" data-prereq="container-resource-limits-jvm" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>JVM GC: allocation rate, G1 vs ZGC &amp; kích thước heap</strong><br><code>jvm-gc-g1-vs-zgc</code><br><a class="topic-link" href="topics/jvm-gc-g1-vs-zgc/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#container-resource-limits-jvm">Giới hạn CPU/RAM của container &amp; JVM ergonomics</a></td>
+          <td>Tốc độ cấp phát object quyết định GC chạy thường xuyên tới đâu; G1 có pause tỉ lệ với vùng phải dọn, ZGC giữ pause dưới mili-giây đổi lấy CPU và bộ nhớ thêm. Heap quá nhỏ làm GC liên tục, quá lớn trong container gần giới hạn thì bị OOMKilled. Tail latency của service Java thường đến từ đây.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: cùng workload, so sánh p99/p99.9, throughput và CPU giữa G1 và ZGC theo kích thước heap.</td>
+        </tr>
+        <tr id="virtual-threads-vs-platform-threads" data-slug="virtual-threads-vs-platform-threads" data-track="jvm" data-prereq="connection-pooling-hikari-pgbouncer" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Java 21 virtual thread vs thread pool</strong><br><code>virtual-threads-vs-platform-threads</code><br><a class="topic-link" href="topics/virtual-threads-vs-platform-threads/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a></td>
+          <td>Virtual thread làm việc chờ IO gần như miễn phí nên service nhận được nhiều request đồng thời hơn hẳn thread pool, nhưng nút thắt chuyển sang tài nguyên giới hạn phía sau (pool JDBC, rate limit của downstream). Thread bị pin vào carrier khi chờ trong vùng native hoặc synchronized (tuỳ phiên bản JDK) làm mất lợi ích. Hiểu connection pool là điều kiện để không biến virtual thread thành bão chờ connection.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: quét concurrency với workload IO-bound, so sánh throughput, p99 và hàng đợi chờ connection DB.</td>
+        </tr>
+        <tr id="reactive-vs-blocking-io" data-slug="reactive-vs-blocking-io" data-track="jvm" data-prereq="virtual-threads-vs-platform-threads" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>WebFlux (reactive) vs Spring MVC + virtual thread (topic so sánh)</strong><br><code>reactive-vs-blocking-io</code><br><a class="topic-link" href="topics/reactive-vs-blocking-io/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#virtual-threads-vs-platform-threads">Java 21 virtual thread vs thread pool</a></td>
+          <td>Reactive đạt concurrency cao bằng event loop và backpressure nhưng mọi thư viện phải non-blocking, và stack trace, debug, transaction trở nên khó. Virtual thread đạt concurrency tương tự với code blocking thông thường. Câu hỏi senior: còn lý do gì để chọn reactive (streaming, backpressure end-to-end) khi đã có virtual thread.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng endpoint gọi DB và HTTP downstream, đo throughput, p99 và CPU.</td>
+        </tr>
+        <tr id="profiling-flame-graphs" data-slug="profiling-flame-graphs" data-track="jvm" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Profiling: async-profiler, JFR &amp; flame graph</strong><br><code>profiling-flame-graphs</code><br><a class="topic-link" href="topics/profiling-flame-graphs/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Đoán điểm nóng hiệu năng thường sai; flame graph cho thấy thời gian thật sự nằm ở đâu. CPU profile chỉ thấy code đang chạy, wall-clock thấy cả thời gian chờ, allocation profile giải thích áp lực GC, lock profile thấy tranh chấp. Profiler dựa trên safepoint cho kết quả lệch, nên chọn đúng công cụ quan trọng.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: tìm một điểm nóng cố ý cài vào bằng CPU, wall-clock và allocation profile (dùng Pyroscope của lab).</td>
+        </tr>
+        <tr id="tail-latency-fanout-hedging" data-slug="tail-latency-fanout-hedging" data-track="jvm" data-prereq="timeout-retry-backoff" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Tail latency khi fan-out &amp; hedged request</strong><br><code>tail-latency-fanout-hedging</code><br><a class="topic-link" href="topics/tail-latency-fanout-hedging/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Request gọi song song N dịch vụ phải chờ dịch vụ chậm nhất: xác suất ít nhất một lời gọi rơi vào p99 là 1 − 0.99^N, nên với N = 100 gần như mọi request đều chậm. Hedged request (gửi bản sao sau một ngưỡng) cắt đuôi latency đổi lấy tải thêm. Ngân sách timeout phải chia theo chuỗi gọi.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo p99 theo số lời gọi fan-out, có và không có hedged request, kèm tải phát sinh.</td>
+        </tr>
+        <tr id="capacity-planning-usl" data-slug="capacity-planning-usl" data-track="jvm" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Capacity planning: Little's law, USL &amp; điểm gãy</strong><br><code>capacity-planning-usl</code><br><a class="topic-link" href="topics/capacity-planning-usl/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Little's law (L = λW) nối concurrency, throughput và latency; Universal Scalability Law mô hình hoá vì sao thêm tài nguyên đến một mức thì throughput giảm (tranh chấp và chi phí đồng bộ). Khớp USL với kết quả quét tải cho biết điểm gãy và số instance cần cho tải mục tiêu, thay vì đoán.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: quét tải tới bão hoà, khớp USL, rồi kiểm chứng dự đoán ở một mức tải chưa đo.</td>
+        </tr>
+        <tr id="jvm-warmup-jit-startup" data-slug="jvm-warmup-jit-startup" data-track="jvm" data-prereq="container-resource-limits-jvm" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>JVM warmup, JIT &amp; thời gian khởi động (CDS, AOT cache, CRaC)</strong><br><code>jvm-warmup-jit-startup</code><br><a class="topic-link" href="topics/jvm-warmup-jit-startup/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-jvm">JVM &amp; hiệu năng</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#container-resource-limits-jvm">Giới hạn CPU/RAM của container &amp; JVM ergonomics</a></td>
+          <td>JVM mới khởi động chạy code thông dịch rồi mới JIT dần, nên vài chục giây đầu latency cao; pod mới do autoscaling nhận traffic ngay sẽ chậm. Class data sharing, AOT cache và CRaC rút ngắn thời gian khởi động và warmup với các đánh đổi khác nhau. CPU limit thấp làm JIT càng chậm.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: đo latency theo thời gian từ lúc khởi động, có và không có CDS/AOT cache.</td>
+        </tr>
+        <tr id="tcp-connection-lifecycle" data-slug="tcp-connection-lifecycle" data-track="networking" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>TCP: handshake, TIME_WAIT, keep-alive &amp; cạn ephemeral port</strong><br><code>tcp-connection-lifecycle</code><br><a class="topic-link" href="topics/tcp-connection-lifecycle/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-networking">Mạng &amp; giao thức</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Mỗi connection mới tốn một vòng handshake (thêm TLS thì nhiều hơn) và khi đóng để lại socket TIME_WAIT khoảng 60 giây; client mở connection mới cho mỗi request ở tải cao sẽ cạn ephemeral port và lỗi "cannot assign requested address". Keep-alive tái dùng connection; Nagle + delayed ACK gây trễ khoảng 40 ms với request nhỏ.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tải cao không keep-alive tới khi cạn port, so sánh latency và lỗi với keep-alive.</td>
+        </tr>
+        <tr id="http-client-connection-pooling" data-slug="http-client-connection-pooling" data-track="networking" data-prereq="tcp-connection-lifecycle,timeout-retry-backoff" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>HTTP client connection pool, timeout &amp; connection bị LB đóng</strong><br><code>http-client-connection-pooling</code><br><a class="topic-link" href="topics/http-client-connection-pooling/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-networking">Mạng &amp; giao thức</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#tcp-connection-lifecycle">TCP: handshake, TIME_WAIT, keep-alive &amp; cạn ephemeral port</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Pool HTTP client nhỏ hơn concurrency làm request xếp hàng chờ connection (latency tăng mà downstream vẫn nhanh); thiếu connect/read timeout thì một downstream treo làm cạn thread. Load balancer đóng connection rảnh sau một khoảng (thường 60–350 giây) mà client không biết, request tiếp theo trên connection đó nhận reset — lỗi lác đác khó tái hiện.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: quét kích thước pool và timeout, tái hiện lỗi reset do idle timeout của proxy ngắn hơn của client.</td>
+        </tr>
+        <tr id="tls-handshake-mtls" data-slug="tls-handshake-mtls" data-track="networking" data-prereq="tcp-connection-lifecycle" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>TLS 1.3 handshake, session resumption &amp; mTLS giữa service</strong><br><code>tls-handshake-mtls</code><br><a class="topic-link" href="topics/tls-handshake-mtls/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-networking">Mạng &amp; giao thức</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#tcp-connection-lifecycle">TCP: handshake, TIME_WAIT, keep-alive &amp; cạn ephemeral port</a></td>
+          <td>TLS 1.3 cần thêm một vòng mạng và phép tính khoá cho mỗi connection mới; session resumption và keep-alive làm chi phí này gần như biến mất. mTLS cho mỗi service một danh tính bằng certificate, nhưng xoay vòng certificate sai cách gây mất kết nối hàng loạt.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: đo chi phí handshake với connection mới vs tái dùng, và một lần xoay vòng certificate.</td>
+        </tr>
+        <tr id="api-pagination-keyset-vs-offset" data-slug="api-pagination-keyset-vs-offset" data-track="api" data-prereq="index-strategies" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Phân trang: OFFSET vs keyset (cursor)</strong><br><code>api-pagination-keyset-vs-offset</code><br><a class="topic-link" href="topics/api-pagination-keyset-vs-offset/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-api">API &amp; tiến hoá hệ thống</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a></td>
+          <td>OFFSET n buộc database đọc rồi bỏ n dòng, nên trang càng sâu càng chậm, và dữ liệu chèn thêm giữa hai lần gọi làm trùng hoặc sót dòng. Keyset dùng điều kiện trên cột có index (WHERE id &gt; last_id) nên mỗi trang có chi phí như nhau và ổn định khi dữ liệu thay đổi.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo latency theo độ sâu trang và đếm dòng trùng/sót khi có ghi đồng thời.</td>
+        </tr>
+        <tr id="api-versioning-backward-compat" data-slug="api-versioning-backward-compat" data-track="api" data-prereq="" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>API versioning &amp; tương thích ngược</strong><br><code>api-versioning-backward-compat</code><br><a class="topic-link" href="topics/api-versioning-backward-compat/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-api">API &amp; tiến hoá hệ thống</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td>—</td>
+          <td>Client cũ vẫn chạy sau khi server đổi API: thêm trường là an toàn nếu client đọc khoan dung, đổi nghĩa hay xoá trường thì phá client. Expand/contract cho API giống schema DB: thêm cái mới, chuyển client, rồi mới bỏ cái cũ. Versioning theo URL, header hay media type đánh đổi ở cache, routing và chi phí duy trì.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: một thay đổi phá vỡ và một thay đổi an toàn, kiểm tra với client cũ.</td>
+        </tr>
+        <tr id="contract-testing-consumer-driven" data-slug="contract-testing-consumer-driven" data-track="api" data-prereq="api-versioning-backward-compat" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Contract testing (consumer-driven)</strong><br><code>contract-testing-consumer-driven</code><br><a class="topic-link" href="topics/contract-testing-consumer-driven/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-api">API &amp; tiến hoá hệ thống</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#api-versioning-backward-compat">API versioning &amp; tương thích ngược</a></td>
+          <td>Integration test toàn hệ thống chậm và giòn; consumer-driven contract cho mỗi consumer khai báo nó dùng gì của API, provider kiểm tra không phá các contract đó trước khi deploy. Bắt được thay đổi phá vỡ ở CI thay vì production.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: một thay đổi phá contract bị bắt ở CI của provider.</td>
+        </tr>
+        <tr id="event-schema-evolution-registry" data-slug="event-schema-evolution-registry" data-track="api" data-prereq="kafka-delivery-semantics" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Tiến hoá schema của event: Avro/Protobuf &amp; schema registry</strong><br><code>event-schema-evolution-registry</code><br><a class="topic-link" href="topics/event-schema-evolution-registry/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-api">API &amp; tiến hoá hệ thống</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a></td>
+          <td>Event trong Kafka sống lâu hơn code sinh ra nó; producer đổi schema mà consumer cũ không đọc được thì consumer dừng hoặc xử lý sai. Schema registry kiểm tra tương thích (backward / forward / full) trước khi cho producer ghi; replay dữ liệu cũ đòi hỏi tương thích lâu dài.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: chuỗi thay đổi schema theo từng chế độ tương thích, kiểm tra consumer cũ/mới và replay.</td>
+        </tr>
+        <tr id="webhook-delivery-reliability" data-slug="webhook-delivery-reliability" data-track="api" data-prereq="idempotency-key,timeout-retry-backoff" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Gửi webhook đáng tin: retry, chữ ký &amp; thứ tự</strong><br><code>webhook-delivery-reliability</code><br><a class="topic-link" href="topics/webhook-delivery-reliability/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-api">API &amp; tiến hoá hệ thống</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#idempotency-key">Idempotency key cho API</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Gửi webhook ra hệ thống khác là giao nhận at-least-once qua mạng không tin cậy: phải retry có backoff, ký nội dung để bên nhận xác thực, và bên nhận phải idempotent vì sẽ nhận trùng. Endpoint chậm của một khách hàng không được làm chậm việc gửi cho khách hàng khác.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: một endpoint lỗi/chậm, kiểm tra retry, cách ly và trùng lặp ở bên nhận.</td>
+        </tr>
+        <tr id="grpc-vs-rest-json" data-slug="grpc-vs-rest-json" data-track="api" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>gRPC (HTTP/2 + Protobuf) vs REST/JSON (topic so sánh)</strong><br><code>grpc-vs-rest-json</code><br><a class="topic-link" href="topics/grpc-vs-rest-json/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-api">API &amp; tiến hoá hệ thống</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>gRPC dùng Protobuf (nhỏ, parse nhanh) và HTTP/2 multiplex nhiều request trên một connection, hỗ trợ streaming; đổi lại khó debug bằng công cụ thông thường, và connection sống lâu làm load balancing theo connection bị lệch. REST/JSON đơn giản, cache được, phổ biến cho API công khai.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng payload, đo kích thước, CPU serialize và latency.</td>
+        </tr>
+        <tr id="zero-downtime-schema-migration" data-slug="zero-downtime-schema-migration" data-track="postgres" data-prereq="mvcc-vacuum-bloat,index-strategies" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Migration schema không downtime trên PostgreSQL</strong><br><code>zero-downtime-schema-migration</code><br><a class="topic-link" href="topics/zero-downtime-schema-migration/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-postgres">PostgreSQL</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a>, <a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a></td>
+          <td>ALTER TABLE lấy lock ACCESS EXCLUSIVE; nếu nó phải chờ một transaction dài, mọi câu SELECT xếp hàng sau nó và service đứng hình dù migration "chỉ mất vài mili-giây". lock_timeout, CREATE INDEX CONCURRENTLY, thêm cột rồi backfill theo lô và expand/contract giữa hai phiên bản code là cách tránh. Backfill sinh dead tuple nên cần hiểu MVCC.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: chạy migration dưới tải có transaction dài, đo thời gian request bị chặn theo từng cách.</td>
+        </tr>
+        <tr id="multi-tenancy-isolation" data-slug="multi-tenancy-isolation" data-track="architecture" data-prereq="connection-pooling-hikari-pgbouncer,index-strategies" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Multi-tenancy: chung bảng + RLS vs schema/DB riêng</strong><br><code>multi-tenancy-isolation</code><br><a class="topic-link" href="topics/multi-tenancy-isolation/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-architecture">Kiến trúc</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a>, <a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a></td>
+          <td>Chung bảng (tenant_id + row-level security) rẻ và dễ vận hành nhưng một tenant lớn làm chậm tenant khác (noisy neighbor) và sai một điều kiện là lộ dữ liệu; schema hoặc DB riêng cách ly tốt hơn nhưng số connection và chi phí migration tăng theo số tenant.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: một tenant tải nặng, đo ảnh hưởng tới latency tenant khác và chi phí connection theo từng mô hình.</td>
+        </tr>
+        <tr id="distributed-job-scheduling" data-slug="distributed-job-scheduling" data-track="distributed" data-prereq="optimistic-vs-pessimistic-locking" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Job định kỳ trên nhiều instance: chạy trùng, lock &amp; leader</strong><br><code>distributed-job-scheduling</code><br><a class="topic-link" href="topics/distributed-job-scheduling/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-distributed">Phân tán &amp; nhất quán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a></td>
+          <td>@Scheduled chạy trên mọi instance, nên scale lên 3 pod thì job gửi email chạy 3 lần. Lock trong DB (kiểu ShedLock) hoặc bầu leader chỉ cho một instance chạy, nhưng instance giữ lock chết giữa chừng thì job bị bỏ lỡ hoặc chạy dở. Job phải idempotent và có cơ chế bắt kịp lần chạy bị lỡ.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: nhiều instance, kill instance đang chạy job, đếm lần chạy trùng và bị lỡ.</td>
+        </tr>
+        <tr id="batch-processing-chunking" data-slug="batch-processing-chunking" data-track="architecture" data-prereq="api-pagination-keyset-vs-offset,idempotency-key" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Batch processing: chunk, restart &amp; xử lý bảng lớn</strong><br><code>batch-processing-chunking</code><br><a class="topic-link" href="topics/batch-processing-chunking/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-architecture">Kiến trúc</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#api-pagination-keyset-vs-offset">Phân trang: OFFSET vs keyset (cursor)</a>, <a href="#idempotency-key">Idempotency key cho API</a></td>
+          <td>Xử lý hàng triệu dòng trong một transaction giữ lock và làm phình WAL; chia chunk với commit theo lô và lưu vị trí cho phép chạy tiếp sau khi lỗi thay vì làm lại từ đầu. Đọc theo keyset tránh OFFSET ngày càng chậm; ghi idempotent để chạy lại chunk không gây trùng.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: kill job giữa chừng, kiểm tra chạy tiếp đúng chỗ và không trùng dữ liệu.</td>
+        </tr>
+        <tr id="modular-monolith-boundaries" data-slug="modular-monolith-boundaries" data-track="architecture" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Modular monolith, bounded context &amp; khi nào tách service</strong><br><code>modular-monolith-boundaries</code><br><a class="topic-link" href="topics/modular-monolith-boundaries/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-architecture">Kiến trúc</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Tách microservices quá sớm biến lời gọi hàm thành lời gọi mạng (thêm latency, lỗi một phần, transaction phân tán) mà vẫn phải deploy cùng nhau: distributed monolith. Bounded context của DDD và module được ép ranh giới (ví dụ Spring Modulith) cho phép tách sau khi thật sự cần. Đây là quyết định kiến trúc senior hay phải bảo vệ.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: cùng luồng nghiệp vụ dạng module trong process vs hai service, so sánh latency và hành vi khi một phần lỗi.</td>
+        </tr>
+        <tr id="slo-error-budget-burn-rate" data-slug="slo-error-budget-burn-rate" data-track="sre" data-prereq="" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>SLO, error budget &amp; cảnh báo theo burn rate</strong><br><code>slo-error-budget-burn-rate</code><br><a class="topic-link" href="topics/slo-error-budget-burn-rate/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-sre">Observability &amp; SRE</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Cảnh báo theo ngưỡng tĩnh (CPU &gt; 80%, p99 &gt; 500 ms) vừa báo nhầm vừa bỏ sót sự cố thật; SLO định nghĩa mức tin cậy người dùng cần, error budget là phần được phép hỏng, và cảnh báo theo tốc độ đốt budget trên nhiều cửa sổ thời gian vừa nhanh vừa ít báo nhầm.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: tiêm lỗi với các cường độ khác nhau, so sánh thời gian phát hiện và số báo nhầm giữa ngưỡng tĩnh và burn rate.</td>
+        </tr>
+        <tr id="tracing-sampling-context-propagation" data-slug="tracing-sampling-context-propagation" data-track="sre" data-prereq="kafka-partitioning-ordering" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Distributed tracing: lan truyền context &amp; sampling</strong><br><code>tracing-sampling-context-propagation</code><br><a class="topic-link" href="topics/tracing-sampling-context-propagation/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-sre">Observability &amp; SRE</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a></td>
+          <td>Trace chỉ liền mạch khi context đi theo request qua HTTP header, header của message Kafka và cả khi đổi thread (executor, virtual thread); thiếu một chỗ là trace đứt. Lấy mẫu 100% tốn CPU, mạng và lưu trữ; head sampling quyết định sớm nên dễ bỏ sót request lỗi, tail sampling giữ request lỗi/chậm nhưng cần bộ đệm ở collector.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo overhead theo tỉ lệ sampling, và tỉ lệ trace lỗi được giữ lại giữa head và tail sampling.</td>
+        </tr>
+        <tr id="api-security-owasp-bola" data-slug="api-security-owasp-bola" data-track="security" data-prereq="keycloak-oidc-token-flows" data-mode="lite" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Bảo mật API: BOLA/IDOR, mass assignment &amp; SSRF</strong><br><code>api-security-owasp-bola</code><br><a class="topic-link" href="topics/api-security-owasp-bola/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-security">Bảo mật &amp; danh tính</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#keycloak-oidc-token-flows">Keycloak: OIDC flow, JWT &amp; thu hồi token</a></td>
+          <td>Lỗ hổng phổ biến nhất của API là thiếu kiểm tra quyền trên từng object: token hợp lệ nhưng đổi id trong URL là đọc được dữ liệu người khác. Bind thẳng request vào entity cho phép sửa trường không được phép (mass assignment); gọi URL do người dùng cung cấp mở đường vào mạng nội bộ (SSRF). Xác thực đúng (Keycloak) không thay cho phân quyền theo object.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: tái hiện từng lỗ hổng trên một API mẫu, sửa và viết test chặn hồi quy.</td>
         </tr>
       </tbody>
     </table></div>
