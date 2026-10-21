@@ -42,12 +42,13 @@ Usage examples
   python3 scripts/stats.py steady-state --input rps.csv --time-col unix_ts --value-col value \\
       --window 6 --cov 0.05 --consecutive 3
 
-  # 3. Summarise k6 raw output (k6 run --out csv=... --tag testid=<impl>-<scenario>-<run>)
-  python3 scripts/stats.py summarize --input topics/<slug>/results/raw/k6-all.csv --format k6 \\
-      --metric http_req_duration --skip-seconds 30 --out topics/<slug>/results/summary/runs.csv
+  # 3. Summarise k6 raw samples (k6 run --out csv=... --tag testid=<impl>-<scenario>-<run>), one gzip per run,
+  #    no merge step needed: every --input file is streamed in turn.
+  python3 scripts/stats.py summarize --input topics/<slug>/results/raw-samples/*.k6.csv.gz --format k6 \\
+      --metric http_req_duration --skip-seconds 30 --out topics/<slug>/results/analysis/runs.csv
 
   # 4. Compare every impl with before on run-level p99 (lower is better), 5% practical threshold
-  python3 scripts/stats.py compare --summary topics/<slug>/results/summary/runs.csv \\
+  python3 scripts/stats.py compare --summary topics/<slug>/results/analysis/runs.csv \\
       --baseline before --metric p99 --min-effect 0.05
 """
 
@@ -55,6 +56,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import itertools
 import json
 import math
@@ -64,6 +66,13 @@ import sys
 import time
 from collections import defaultdict
 from pathlib import Path
+
+
+def open_text(path):
+    """Open a CSV for streaming text reads; *.gz (results/raw-samples/*.csv.gz) is decompressed on the fly."""
+    if str(path).endswith(".gz"):
+        return gzip.open(path, "rt", newline="", encoding="utf-8")
+    return open(path, newline="", encoding="utf-8")
 
 PERCENTILES = [("p50", 50.0), ("p90", 90.0), ("p95", 95.0), ("p99", 99.0), ("p99_9", 99.9)]
 
@@ -158,7 +167,7 @@ def cmd_plan_order(args):
 
 def cmd_steady_state(args):
     times, values = [], []
-    with open(args.input, newline="", encoding="utf-8") as fh:
+    with open_text(args.input) as fh:
         for row in csv.DictReader(fh):
             try:
                 v = float(row[args.value_col])
@@ -238,12 +247,24 @@ def parse_extra_tags(extra: str) -> dict:
 
 
 def read_samples(args):
-    """Stream the input; return {(impl, scenario, run): ([values], min_ts, max_ts)}."""
+    """Stream every input file; return {(impl, scenario, run): ([values], [ts], min_ts, max_ts)}."""
     data: dict[tuple, list] = {}
     skipped = 0
-    with open(args.input, newline="", encoding="utf-8") as fh:
+    for path in args.input:
+        skipped += _read_sample_file(path, args, data)
+    if skipped:
+        print(f"note: skipped {skipped} rows without a parsable testid/value", file=sys.stderr)
+    return data
+
+
+def _read_sample_file(path, args, data):
+    skipped = 0
+    with open_text(path) as fh:
         reader = csv.reader(fh)
-        header = next(reader)
+        header = next(reader, None)
+        if header is None:
+            print(f"note: {path} is empty", file=sys.stderr)
+            return 0
         idx = {name: i for i, name in enumerate(header)}
 
         def col(row, name):
@@ -254,7 +275,7 @@ def read_samples(args):
         if args.format == "k6":
             for need in ("metric_name", "metric_value"):
                 if need not in idx:
-                    sys.exit(f"error: {args.input} has no '{need}' column — is it `k6 run --out csv=...` output?")
+                    sys.exit(f"error: {path} has no '{need}' column — is it `k6 run --out csv=...` output?")
         else:
             if not explicit or "value" not in idx:
                 sys.exit("error: long format needs columns impl,scenario,run,value (optional: timestamp)")
@@ -296,16 +317,14 @@ def read_samples(args):
                     entry[2] = ts
                 if ts > entry[3]:
                     entry[3] = ts
-    if skipped:
-        print(f"note: skipped {skipped} rows without a parsable testid/value", file=sys.stderr)
-    return data
+    return skipped
 
 
 def cmd_summarize(args):
     started = time.perf_counter()
     data = read_samples(args)
     if not data:
-        sys.exit(f"error: no samples for metric '{args.metric}' in {args.input}")
+        sys.exit(f"error: no samples for metric '{args.metric}' in {', '.join(map(str, args.input))}")
 
     run_rows = []
     pooled: dict[tuple, list[float]] = defaultdict(list)
@@ -442,7 +461,7 @@ def cliffs_label(d: float) -> str:
 
 def cmd_compare(args):
     groups: dict[tuple, list[float]] = defaultdict(list)
-    with open(args.summary, newline="", encoding="utf-8") as fh:
+    with open_text(args.summary) as fh:
         reader = csv.DictReader(fh)
         if args.metric not in (reader.fieldnames or []):
             sys.exit(f"error: column '{args.metric}' not in {args.summary}; available: {reader.fieldnames}")
@@ -533,7 +552,7 @@ def main(argv=None):
     a.set_defaults(func=cmd_plan_order)
 
     b = sub.add_parser("steady-state", help="end of warmup: MSER-5 truncation + rolling CoV check")
-    b.add_argument("--input", required=True)
+    b.add_argument("--input", required=True, help="CSV file, plain or .gz")
     b.add_argument("--time-col", required=True)
     b.add_argument("--value-col", required=True)
     b.add_argument("--window", type=int, default=6, help="points per window")
@@ -544,7 +563,8 @@ def main(argv=None):
     b.set_defaults(func=cmd_steady_state)
 
     c = sub.add_parser("summarize", help="per-run and per-group latency statistics")
-    c.add_argument("--input", required=True)
+    c.add_argument("--input", required=True, nargs="+",
+                   help="one or more CSV files, plain or .gz (e.g. results/raw-samples/*.k6.csv.gz)")
     c.add_argument("--format", choices=["k6", "long"], default="k6")
     c.add_argument("--metric", default="http_req_duration", help="k6 metric_name to use (k6 format)")
     c.add_argument("--group", default="impl,scenario,run",

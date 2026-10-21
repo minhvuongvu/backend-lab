@@ -40,6 +40,16 @@ Xem [README](README.md) và [đồ thị](CLAUDE.md#Đồ-thị), tài liệu [n
 2. hai
 """
 
+RULE = """---
+paths:
+  - "topics/**/*.html"
+---
+
+## Quy tắc chi tiết
+
+- chỉ nạp khi cần
+"""
+
 
 class BuildPagesTest(unittest.TestCase):
     @classmethod
@@ -47,6 +57,7 @@ class BuildPagesTest(unittest.TestCase):
         cls.repo = TempRepo(scripts=["build_pages.py"])
         cls.repo.write("README.md", README)
         cls.repo.write("CLAUDE.md", CLAUDE)
+        cls.repo.write(".claude/rules/detail.md", RULE)
         r = cls.repo.py("build_pages.py")
         assert r.returncode == 0, r.stdout + r.stderr
         cls.index = cls.repo.path("index.html").read_text(encoding="utf-8")
@@ -98,6 +109,12 @@ class BuildPagesTest(unittest.TestCase):
             self.assertEqual(self.repo.path("index.html").read_text(encoding="utf-8"), self.index)
         finally:
             self.repo.write("README.md", README)
+
+    def test_rules_files_appended_to_rules_page_without_front_matter(self):
+        self.assertIn('<h2 id="quy-tac-chi-tiet">Quy tắc chi tiết</h2>', self.rules)
+        self.assertIn("chỉ nạp khi cần", self.rules)
+        self.assertNotIn("paths:", self.rules)
+        self.assertNotIn("Quy tắc chi tiết", self.index)
 
 
 if __name__ == "__main__":

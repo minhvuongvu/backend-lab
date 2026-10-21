@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # backend-lab pre-commit hook (install: `make hooks`).
-# Runs the fast checks only when lab tooling / docs / roadmap / topics are staged:
+# Always: size guard (no staged file over LAB_MAX_FILE_MB, default 10 MB, unless tracked by Git LFS;
+#   nothing from topics/*/results/raw-samples/ except MANIFEST.json).
+# Then the fast checks, only when lab tooling / docs / roadmap / topics are staged:
 #   unit tests, roadmap prerequisite + learning-path check, hub linters, generated pages, py_compile, bash -n.
 # The headless render check is slow (~30 s); enable it with LAB_RENDER_CHECK=1.
 # Skip once with: git commit --no-verify
@@ -9,8 +11,41 @@ set -euo pipefail
 ROOT="$(git rev-parse --show-toplevel)"
 cd "$ROOT"
 
+step() { echo "[pre-commit] $*"; }
+
+# ---- size guard: runs for every commit, before the path filter below ----
+# GitHub rejects files > 100 MB and warns > 50 MB; one k6 `--out csv` run is easily ~95 MB.
+max_mb="${LAB_MAX_FILE_MB:-10}"
+max_bytes=$((max_mb * 1024 * 1024))
+too_big=()
+while IFS= read -r -d '' f; do
+  if [[ "$f" == topics/*/results/raw-samples/* && "$f" != */MANIFEST.json ]]; then
+    too_big+=("$f (raw-samples/ is local only)")
+    continue
+  fi
+  size="$(git cat-file -s ":$f" 2>/dev/null || echo 0)"   # staged blob, not the working-tree file
+  (( size > max_bytes )) || continue
+  [[ "$(git check-attr filter -- "$f")" == *": filter: lfs" ]] && continue
+  too_big+=("$f ($((size / 1024 / 1024)) MB)")
+done < <(git diff --cached --name-only -z --diff-filter=ACMR)
+if (( ${#too_big[@]} )); then
+  step "size guard: FAILED (limit ${max_mb} MB per file, LAB_MAX_FILE_MB to change)"
+  printf '  %s\n' "${too_big[@]}"
+  cat <<'MSG'
+  Full per-request samples (k6 --out csv) belong in topics/<slug>/results/raw-samples/ as *.csv.gz:
+  that folder is gitignored, only its MANIFEST.json (name, bytes, sha256, rows, command, testid) is
+  committed. Move the file there, then:
+    git rm --cached <file>
+    python3 scripts/raw_manifest.py update topics/<slug>/results/raw-samples
+    git add topics/<slug>/results/raw-samples/MANIFEST.json
+  results/raw/ keeps only small, analysis-ready files (k6 summary JSON, prom_export CSV, integrity
+  JSON, run-order.csv, stats.py output). A file that must be versioned anyway: track it with Git LFS.
+MSG
+  exit 1
+fi
+
 staged="$(git diff --cached --name-only --diff-filter=ACMR)"
-if ! grep -qE '^(scripts/|templates/|shared/docs/|tests/|hub/|topics/|index\.html|README\.md|CLAUDE\.md)' <<<"$staged"; then
+if ! grep -qE '^(scripts/|templates/|shared/docs/|tests/|hub/|topics/|index\.html|README\.md|CLAUDE\.md|\.claude/rules/)' <<<"$staged"; then
   exit 0
 fi
 
@@ -23,8 +58,6 @@ if [[ -z "$PY" ]]; then
   exit 0
 fi
 export PYTHONIOENCODING=utf-8
-
-step() { echo "[pre-commit] $*"; }
 
 step "unit tests"
 "$PY" -m unittest discover -s tests -q

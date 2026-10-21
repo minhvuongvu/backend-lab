@@ -56,15 +56,20 @@
 <tr><td><code>make hubs</code></td><td>Dựng lại mọi trang tổng (LAB, INSIGHTS, PROBLEMS, GLOSSARY, BENCHMARKS) và mục Topic liên quan</td></tr>
 <tr><td><code>make roadmap</code></td><td>Đánh số thứ tự học, xếp nhóm theo giai đoạn và kiểm tra tiền đề / lộ trình trong <code>hub/roadmap.html</code></td></tr>
 <tr><td><code>make hubs-check</code></td><td>Kiểm tra markup insight / vấn đề / thuật ngữ / số liệu của mọi topic</td></tr>
+<tr><td><code>make doctor</code></td><td>Kiểm tra máy: công cụ, JDK 21, Docker, cổng (theo <code>lab.env</code>), TLS, git remote</td></tr>
+<tr><td><code>make analysis-image</code></td><td>Build image phân tích pin version (pandas + matplotlib) ở <code>shared/analysis/</code></td></tr>
+<tr><td><code>make analysis CMD="python scripts/stats.py ..."</code></td><td>Chạy lệnh Python trong image phân tích, repo mount tại <code>/lab</code> (không cần pip trên máy)</td></tr>
+<tr><td><code>make check</code></td><td>Mọi kiểm tra: unit test, linter roadmap/trang tổng, trang sinh ra còn mới, cú pháp, render</td></tr>
 </tbody></table></div>
-<p>Cổng đổi được khi bị trùng: <code>make obs-up PROM_PORT=19090 GRAFANA_PORT=13000 OTLP_GRPC_PORT=14317 OTLP_HTTP_PORT=14318 PYROSCOPE_PORT=14040</code>. Cách nối app, exporter, k6 và xuất số liệu vào <code>results/raw</code>: <a href="shared/observability/index.html">shared/observability/README.md</a>.</p>
+<p>Cổng riêng của máy (khi 9090/3000/4317… bị chiếm): <code>cp lab.env.example lab.env</code> rồi sửa. File <code>lab.env</code> không commit; Makefile gốc và <code>experiments/Makefile</code> của mọi topic tự nạp, nên <code>make obs-up</code>, thí nghiệm và k6 dùng cùng cổng. Ghi đè tạm một lần vẫn được: <code>make obs-up GRAFANA_PORT=13001</code>. Cách nối app, exporter, k6 và xuất số liệu vào <code>results/raw</code>: <a href="shared/observability/index.html">shared/observability/README.md</a>.</p>
 </section>
 <section>
 <h2 id="cau-truc">Cấu trúc</h2>
 <pre><code>backend-lab/
 ├── index.html                # trang chủ (sinh từ README.md) — mở file này trong trình duyệt
 ├── README.md                 # nguồn của index.html; GitHub hiển thị file này
-├── CLAUDE.md                 # quy tắc cho mọi phiên Claude Code (nguồn của hub/rules.html)
+├── CLAUDE.md                 # nguyên tắc cốt lõi cho mọi phiên (cùng .claude/rules/ là nguồn của hub/rules.html)
+├── lab.env.example           # mẫu cổng riêng của máy → copy thành lab.env (không commit)
 ├── Makefile                  # make help: doctor, obs-*, new-topic, roadmap, hubs, check, hooks…
 ├── hub/                      # các trang tổng, dùng chung thanh điều hướng
 │   ├── lab.html              #   tổng quan tiến độ, chờ duyệt, topic sẵn sàng học
@@ -73,15 +78,16 @@
 │   ├── insights.html         #   kho insight + chuyên đề của mọi topic
 │   ├── benchmarks.html       #   số liệu tham chiếu đã đo
 │   ├── glossary.html         #   thuật ngữ chung
-│   └── rules.html            #   bản HTML của CLAUDE.md
+│   └── rules.html            #   bản HTML của CLAUDE.md + .claude/rules/
 ├── topics/&lt;slug&gt;/            # mỗi topic: README.html + 01…07 + system/ + experiments/ + results/ + deploy/
 ├── templates/                # khung tài liệu cho mỗi topic
 ├── shared/docs/              # CSS/JS dùng chung cho mọi trang HTML
 ├── shared/scaffold/          # bộ khung Spring Boot + experiment kit, copy vào mỗi topic khi tạo
 ├── shared/observability/     # Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana dùng chung
+├── shared/analysis/          # image Python pin version để xử lý số liệu, vẽ biểu đồ
 ├── scripts/                  # new-topic, doctor, stats, prom_export, roadmap_order, build_* (trang tổng), check_render
 ├── tests/                    # unit test cho các script (make test)
-└── .claude/                  # /research, /lab-status, subagent lab-reviewer</code></pre>
+└── .claude/                  # /research, /lab-status, subagent lab-reviewer, rules/ (quy tắc chi tiết theo loại file)</code></pre>
 <p>Trang HTML tự sinh (<code>index.html</code>, <code>hub/*.html</code> trừ <code>roadmap.html</code>) không sửa tay: sửa nguồn rồi chạy <code>make hubs</code>.</p>
 </section>
 <section>

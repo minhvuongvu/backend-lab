@@ -1,18 +1,37 @@
 # Experiment runner for topic {{SLUG}} (run from topics/{{SLUG}}/experiments).
-# Every number in 05/06 must come from files these targets write into ../results/raw/ (never edited by hand).
+# Every number in 05/06 must come from files these targets write (never edited by hand):
+#   ../results/raw/          small, analysis-ready, committed (k6 summary JSON, prom_export CSV, integrity JSON,
+#                            run-order.csv); no file over 10 MB (the pre-commit hook enforces it)
+#   ../results/raw-samples/  full per-request k6 samples, *.k6.csv.gz, NOT committed (gitignored);
+#                            only MANIFEST.json (bytes, sha256, rows, command, testid) is committed
 SHELL := bash
 .DEFAULT_GOAL := help
 
 ROOT      := ../../..
+# Machine-specific port overrides (PROM_PORT, GRAFANA_PORT, TOXIPROXY_API_PORT...): repo-root lab.env,
+# gitignored, copied from lab.env.example. Optional: defaults below apply without it. `export` passes
+# them on to docker compose (port mappings) and to chaos/toxiproxy.py.
+-include $(ROOT)/lab.env
+export
+# Git Bash on Windows rewrites "/lab/..." arguments of docker.exe into Windows paths; keep them as written.
+MSYS_NO_PATHCONV := 1
+
 RAW       := ../results/raw
+SAMPLES   := ../results/raw-samples
 ANALYSIS  := ../results/analysis
 CHARTS    := ../results/charts
-PY        := python3
+# "python3" may be the Microsoft Store alias on Windows: pick the first interpreter that actually runs.
+PY        ?= $(shell for p in python3 python; do $$p -c "import sys" >/dev/null 2>&1 && { echo $$p; break; }; done)
 K6_IMAGE  := grafana/k6:1.3.0
 LAB_NET   := backend-lab
 APP_URL   := http://{{SLUG}}-app:8080
-PROM_URL  ?= http://localhost:$${PROM_PORT:-9090}
+PROM_PORT ?= 9090
+PROM_URL  ?= http://localhost:$(PROM_PORT)
 PROM_RW   := http://prometheus:9090/api/v1/write
+# pandas + matplotlib live in the shared analysis image (build once: make -C ../../.. analysis-image),
+# so charts never depend on pip on the host. The repo is mounted at /lab.
+ANALYSIS_IMAGE ?= backend-lab/analysis:1
+DOCKER_PY := docker run --rm -v "$(abspath $(ROOT)):/lab" -w /lab/topics/{{SLUG}}/experiments $(ANALYSIS_IMAGE) python
 
 # Run parameters (override on the command line). Keep them identical for before and every IMPL.
 IMPL      ?= before
@@ -31,8 +50,10 @@ SEED      ?= 42
 TS        := $(shell date -u +%Y%m%dT%H%M%SZ)
 TESTID    := $(IMPL)-$(SCENARIO)-$(RUN)
 ID        := $(TESTID)-$(TS)
+# Per-run sample files used by `report` (pilot runs excluded: they only size RUNS).
+K6_SAMPLES = $(foreach f,$(sort $(wildcard $(SAMPLES)/*.k6.csv.gz)),$(if $(findstring -pilot-,$(notdir $(f))),,$(f)))
 
-.PHONY: help up down build reset run run-matrix pilot plan-order integrity report env \
+.PHONY: help up down build reset run run-matrix pilot plan-order integrity report samples-verify env \
         chaos-kill chaos-stop chaos-pause chaos-latency chaos-stall chaos-partition chaos-clear
 
 help: ## Show targets
@@ -56,21 +77,24 @@ plan-order: ## Randomized blocked run order -> results/raw/run-order.csv (IMPLS,
 	  --seed $(SEED) --out $(RAW)/run-order.csv
 
 run: ## One run: make run IMPL=before SCENARIO=S1 RUN=1 [SCRIPT=constant-rate RATE=200 ...]
-	@mkdir -p $(RAW)
+	@mkdir -p $(RAW) $(SAMPLES)
 	IMPL=$(IMPL) docker compose up -d --wait --force-recreate app
 	$(MAKE) --no-print-directory reset
 	@start=$$(date -u +%s); \
 	docker run --rm --network $(LAB_NET) \
-	  -v "$(CURDIR)/k6:/scripts:ro" -v "$(abspath $(RAW)):/out" \
+	  -v "$(CURDIR)/k6:/scripts:ro" -v "$(abspath $(RAW)):/out" -v "$(abspath $(SAMPLES)):/samples" \
 	  -e BASE_URL=$(APP_URL) -e TESTID=$(TESTID) -e RATE=$(RATE) -e WARMUP=$(WARMUP) -e DURATION=$(DURATION) \
 	  -e SUMMARY_OUT=/out/$(ID).summary.json \
 	  -e K6_PROMETHEUS_RW_SERVER_URL=$(PROM_RW) \
 	  -e K6_PROMETHEUS_RW_TREND_STATS="p(50),p(95),p(99),avg,max" \
-	  $(K6_IMAGE) run -q -o experimental-prometheus-rw --out csv=/out/$(ID).k6.csv \
+	  $(K6_IMAGE) run -q -o experimental-prometheus-rw --out csv=/samples/$(ID).k6.csv.gz \
 	  --tag testid=$(TESTID) /scripts/$(SCRIPT).js; \
 	status=$$?; end=$$(date -u +%s); \
 	echo "{\"testid\":\"$(TESTID)\",\"id\":\"$(ID)\",\"script\":\"$(SCRIPT)\",\"rate\":$(RATE),\"start\":$$start,\"end\":$$end,\"k6_exit\":$$status}" \
 	  > $(RAW)/$(ID).run.json; \
+	$(PY) $(ROOT)/scripts/raw_manifest.py update $(SAMPLES) --testid $(TESTID) \
+	  --cmd "make run IMPL=$(IMPL) SCENARIO=$(SCENARIO) RUN=$(RUN) SCRIPT=$(SCRIPT) RATE=$(RATE) WARMUP=$(WARMUP) DURATION=$(DURATION)" \
+	  || echo "WARN: raw-samples manifest not updated"; \
 	$(PY) $(ROOT)/scripts/prom_export.py --prom $(PROM_URL) --start $$start --end $$end --step 5s \
 	  --preset resources --preset jvm --preset http --label compose_project={{SLUG}} \
 	  --out $(RAW)/$(ID)-prom.csv --meta || echo "WARN: Prometheus export failed (is make obs-up running?)"; \
@@ -92,23 +116,28 @@ pilot: ## Pilot: 3 runs per impl at S1 to estimate variance before fixing RUNS (
 	  $(MAKE) --no-print-directory run IMPL=$$impl SCENARIO=pilot RUN=$$run; \
 	done
 
-integrity: ## Check invariants for one run: make integrity TESTID_RUN=before-F1-1 K6_CSV=../results/raw/<id>.k6.csv
+integrity: ## Check invariants for one run: make integrity TESTID_RUN=before-F1-1 K6_CSV=../results/raw-samples/<id>.k6.csv.gz
 	$(PY) checker/integrity_check.py --testid $(TESTID_RUN) --k6-csv $(K6_CSV) \
-	  --out $(basename $(basename $(K6_CSV)))-integrity.json
+	  --out $(RAW)/$(notdir $(K6_CSV:.k6.csv.gz=))-integrity.json
 
-report: ## Merge raw k6 CSVs, summarize per run, compare vs before, draw charts (derived data -> results/analysis)
+samples-verify: ## Check local raw-samples/*.csv.gz against the committed MANIFEST.json (STRICT=1: all must be present)
+	$(PY) $(ROOT)/scripts/raw_manifest.py verify $(SAMPLES) $(if $(STRICT),--strict)
+
+report: ## Summarize raw-samples/*.k6.csv.gz per run, compare vs before (-> results/analysis), charts via the analysis image
 	@mkdir -p $(ANALYSIS) $(CHARTS)
-	$(PY) charts/merge_k6.py --glob "$(RAW)/*.k6.csv" --exclude pilot --out $(ANALYSIS)/k6-all.csv
-	$(PY) $(ROOT)/scripts/stats.py summarize --input $(ANALYSIS)/k6-all.csv --format k6 --metric http_req_duration \
+	@test -n "$(K6_SAMPLES)" || { echo "no $(SAMPLES)/*.k6.csv.gz (outside pilot): run the matrix first"; exit 1; }
+	$(PY) $(ROOT)/scripts/raw_manifest.py verify $(SAMPLES)
+	$(PY) $(ROOT)/scripts/stats.py summarize --input $(K6_SAMPLES) --format k6 --metric http_req_duration \
 	  --skip-seconds $(WARMUP_S) --out $(ANALYSIS)/runs.csv
 	for m in p50 p95 p99; do \
 	  $(PY) $(ROOT)/scripts/stats.py compare --summary $(ANALYSIS)/runs.csv --baseline before --metric $$m \
 	    --out $(ANALYSIS)/compare-$$m.csv; done
-	$(PY) $(ROOT)/scripts/stats.py compare --summary $(ANALYSIS)/runs.csv --baseline before --metric throughput \
+	$(PY) $(ROOT)/scripts/stats.py compare --summary $(ANALYSIS)/runs.csv --baseline before --metric throughput_per_s \
 	  --higher-is-better --out $(ANALYSIS)/compare-throughput.csv
-	$(PY) charts/plot.py ci-bar --groups $(ANALYSIS)/runs.groups.csv --metric p99 --out $(CHARTS)/p99-ci.png
+	@docker image inspect $(ANALYSIS_IMAGE) >/dev/null 2>&1 || { echo "missing $(ANALYSIS_IMAGE): make -C $(ROOT) analysis-image"; exit 1; }
+	$(DOCKER_PY) charts/plot.py ci-bar --groups $(ANALYSIS)/runs.groups.csv --metric p99 --out $(CHARTS)/p99-ci.png
 	for s in $$(echo "$(SCENARIOS)" | tr ',' ' '); do \
-	  $(PY) charts/plot.py cdf --k6 $(ANALYSIS)/k6-all.csv --scenario $$s --out $(CHARTS)/$$s-latency-cdf.png; done
+	  $(DOCKER_PY) charts/plot.py cdf --k6 $(K6_SAMPLES) --scenario $$s --out $(CHARTS)/$$s-latency-cdf.png; done
 
 env: ## Write results/env.md from real commands (run before the matrix)
 	@{ echo "# Môi trường chạy thí nghiệm — {{TOPIC}}"; echo; echo "Sinh tự động bởi \`make env\` lúc $$(date -u +%Y-%m-%dT%H:%M:%SZ)."; echo; \

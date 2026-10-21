@@ -1,6 +1,6 @@
 """Charts for 05-results.html from stats.py output and raw k6 samples (pandas + matplotlib).
 
-  python3 charts/plot.py cdf    --k6 ../results/analysis/k6-all.csv --scenario S1 --out ../results/charts/S1-latency-cdf.png
+  python3 charts/plot.py cdf    --k6 ../results/raw-samples/*.k6.csv.gz --scenario S1 --out ../results/charts/S1-latency-cdf.png
   python3 charts/plot.py ci-bar --groups ../results/analysis/runs.groups.csv --metric p99 --out ../results/charts/p99-ci.png
   python3 charts/plot.py sweep  --runs ../results/analysis/sweep-steps.csv --out ../results/charts/throughput-latency.png
 
@@ -28,7 +28,8 @@ def cdf(args):
     # k6 CSV: built-in tags are columns (`scenario` = k6 scenario name: warmup/measure/...); custom tags such
     # as testid live in `extra_tags` ("testid=before-S1-1&phase=measure").
     wanted = {"metric_name", "metric_value", "scenario", "extra_tags", "testid"}
-    df = pd.read_csv(args.k6, usecols=lambda c: c in wanted, dtype=str)
+    # One file per run (plain or .gz: pandas decompresses by extension); keep only the columns needed.
+    df = pd.concat((pd.read_csv(f, usecols=lambda c: c in wanted, dtype=str) for f in args.k6), ignore_index=True)
     df = df[df.metric_name == "http_req_duration"]
     df["metric_value"] = df.metric_value.astype(float)
     if "scenario" in df.columns:
@@ -89,7 +90,7 @@ def main():
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = p.add_subparsers(dest="cmd", required=True)
     s = sub.add_parser("cdf")
-    s.add_argument("--k6", required=True)
+    s.add_argument("--k6", required=True, nargs="+", help="k6 --out csv files (.csv or .csv.gz)")
     s.add_argument("--scenario", required=True)
     s.add_argument("--out", required=True)
     s = sub.add_parser("ci-bar")

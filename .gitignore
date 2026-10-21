@@ -16,4 +16,11 @@ __pycache__/
 # Claude Code local (per-user) settings
 .claude/settings.local.json
 
+# Machine-specific ports (copy of lab.env.example)
+lab.env
+
 # NOTE: results/ is intentionally NOT ignored — raw data is part of the research record.
+# Exception: full per-request samples (k6 --out csv, ~95 MB per run) stay local in results/raw-samples/ as
+# *.csv.gz; only their MANIFEST.json (name, bytes, sha256, rows, command, testid) is committed.
+topics/*/results/raw-samples/*
+!topics/*/results/raw-samples/MANIFEST.json

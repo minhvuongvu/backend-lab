@@ -1,14 +1,22 @@
-"""Concatenate per-run k6 CSV files (same header) into one file for `stats.py summarize`.
+"""Concatenate per-run k6 CSV files (same header, plain or .gz) into one file, for ad-hoc analysis.
 
-Usage: python3 charts/merge_k6.py --glob "../results/raw/*.k6.csv" --exclude pilot --out ../results/analysis/k6-all.csv
-Streams line by line, so multi-GB inputs are fine. Output goes to results/analysis/ (derived data),
-never into results/raw/ (raw data is not edited or regenerated).
+`make report` does not need it: `stats.py summarize --input` and `plot.py cdf --k6` take many files.
+Usage: python3 charts/merge_k6.py --glob "../results/raw-samples/*.k6.csv.gz" --exclude pilot            --out ../results/raw-samples/merged-all.csv.gz
+Streams line by line, so multi-GB inputs are fine. A merged file is as large as all runs together: write it
+gzipped into raw-samples/ (gitignored), never into results/raw/ or another committed folder.
 """
 
 import argparse
 import glob
+import gzip
 import os
 import sys
+
+
+def open_text(path, mode):
+    if path.endswith(".gz"):
+        return gzip.open(path, mode + "t", encoding="utf-8", newline="")
+    return open(path, mode, encoding="utf-8", newline="")
 
 
 def main():
@@ -22,9 +30,9 @@ def main():
         sys.exit(f"no files match {a.glob}")
     os.makedirs(os.path.dirname(os.path.abspath(a.out)), exist_ok=True)
     header = None
-    with open(a.out, "w", encoding="utf-8", newline="") as out:
+    with open_text(a.out, "w") as out:
         for path in files:
-            with open(path, encoding="utf-8", newline="") as f:
+            with open_text(path, "r") as f:
                 first = f.readline()
                 if header is None:
                     header = first

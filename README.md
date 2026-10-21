@@ -44,8 +44,12 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 | `make hubs` | Dựng lại mọi trang tổng (LAB, INSIGHTS, PROBLEMS, GLOSSARY, BENCHMARKS) và mục Topic liên quan |
 | `make roadmap` | Đánh số thứ tự học, xếp nhóm theo giai đoạn và kiểm tra tiền đề / lộ trình trong `hub/roadmap.html` |
 | `make hubs-check` | Kiểm tra markup insight / vấn đề / thuật ngữ / số liệu của mọi topic |
+| `make doctor` | Kiểm tra máy: công cụ, JDK 21, Docker, cổng (theo `lab.env`), TLS, git remote |
+| `make analysis-image` | Build image phân tích pin version (pandas + matplotlib) ở `shared/analysis/` |
+| `make analysis CMD="python scripts/stats.py ..."` | Chạy lệnh Python trong image phân tích, repo mount tại `/lab` (không cần pip trên máy) |
+| `make check` | Mọi kiểm tra: unit test, linter roadmap/trang tổng, trang sinh ra còn mới, cú pháp, render |
 
-Cổng đổi được khi bị trùng: `make obs-up PROM_PORT=19090 GRAFANA_PORT=13000 OTLP_GRPC_PORT=14317 OTLP_HTTP_PORT=14318 PYROSCOPE_PORT=14040`.
+Cổng riêng của máy (khi 9090/3000/4317… bị chiếm): `cp lab.env.example lab.env` rồi sửa. File `lab.env` không commit; Makefile gốc và `experiments/Makefile` của mọi topic tự nạp, nên `make obs-up`, thí nghiệm và k6 dùng cùng cổng. Ghi đè tạm một lần vẫn được: `make obs-up GRAFANA_PORT=13001`.
 Cách nối app, exporter, k6 và xuất số liệu vào `results/raw`: [shared/observability/README.md](shared/observability/README.md).
 
 ## Cấu trúc
@@ -54,7 +58,8 @@ Cách nối app, exporter, k6 và xuất số liệu vào `results/raw`: [shared
 backend-lab/
 ├── index.html                # trang chủ (sinh từ README.md) — mở file này trong trình duyệt
 ├── README.md                 # nguồn của index.html; GitHub hiển thị file này
-├── CLAUDE.md                 # quy tắc cho mọi phiên Claude Code (nguồn của hub/rules.html)
+├── CLAUDE.md                 # nguyên tắc cốt lõi cho mọi phiên (cùng .claude/rules/ là nguồn của hub/rules.html)
+├── lab.env.example           # mẫu cổng riêng của máy → copy thành lab.env (không commit)
 ├── Makefile                  # make help: doctor, obs-*, new-topic, roadmap, hubs, check, hooks…
 ├── hub/                      # các trang tổng, dùng chung thanh điều hướng
 │   ├── lab.html              #   tổng quan tiến độ, chờ duyệt, topic sẵn sàng học
@@ -63,15 +68,16 @@ backend-lab/
 │   ├── insights.html         #   kho insight + chuyên đề của mọi topic
 │   ├── benchmarks.html       #   số liệu tham chiếu đã đo
 │   ├── glossary.html         #   thuật ngữ chung
-│   └── rules.html            #   bản HTML của CLAUDE.md
+│   └── rules.html            #   bản HTML của CLAUDE.md + .claude/rules/
 ├── topics/<slug>/            # mỗi topic: README.html + 01…07 + system/ + experiments/ + results/ + deploy/
 ├── templates/                # khung tài liệu cho mỗi topic
 ├── shared/docs/              # CSS/JS dùng chung cho mọi trang HTML
 ├── shared/scaffold/          # bộ khung Spring Boot + experiment kit, copy vào mỗi topic khi tạo
 ├── shared/observability/     # Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana dùng chung
+├── shared/analysis/          # image Python pin version để xử lý số liệu, vẽ biểu đồ
 ├── scripts/                  # new-topic, doctor, stats, prom_export, roadmap_order, build_* (trang tổng), check_render
 ├── tests/                    # unit test cho các script (make test)
-└── .claude/                  # /research, /lab-status, subagent lab-reviewer
+└── .claude/                  # /research, /lab-status, subagent lab-reviewer, rules/ (quy tắc chi tiết theo loại file)
 ```
 
 Trang HTML tự sinh (`index.html`, `hub/*.html` trừ `roadmap.html`) không sửa tay: sửa nguồn rồi chạy `make hubs`.

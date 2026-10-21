@@ -14,6 +14,9 @@
 <!--
   Phase 5 — Results (mục tiêu 13, phần dữ liệu). Báo cáo QUAN SÁT theo đúng kế hoạch ở 04; diễn giải sâu để dành cho 06-conclusion.html.
   Mọi con số là [đo được] và link tới file trong results/raw/. Thí nghiệm nào không chạy được: ghi rõ, không ước lượng.
+  Link tới file CÓ trong git: results/raw/ (summary JSON, prom CSV, integrity JSON) hoặc results/analysis/ (runs.csv, compare-*.csv).
+  Mẫu từng request results/raw-samples/*.k6.csv.gz không commit (gitignore); nhắc tới chúng qua tên file + sha256 trong
+  results/raw-samples/MANIFEST.json, không link trực tiếp.
   Số liệu thống kê lấy từ scripts/stats.py summarize / compare, không tính tay.
   TAG & ID CHO KHO INSIGHT (scripts/build_insights.py → hub/insights.html):
     - Mỗi callout.insight có id duy nhất trong trang, dạng ins-<id mục>-<n> (ví dụ ins-quant-model-1), và data-tags="..." gồm 2–5 tag
@@ -31,7 +34,7 @@
         data-ci-low / data-ci-high   khoảng tin cậy 95% (bỏ trống nếu không có)
         data-metric      p50 | p95 | p99 | mean | throughput | delta-p99 | ...
         data-conditions  điều kiện ngắn: tải, payload, cấu hình (ví dụ "500 req/s, 1 KiB, acks=all, 3 lần chạy")
-        data-raw         đường dẫn tương đối tới file trong results/raw/ (phải tồn tại)
+        data-raw         đường dẫn tương đối tới file đã commit trong results/raw/ hoặc results/analysis/ (phải tồn tại; không trỏ vào raw-samples/)
         data-env         đường dẫn tới results/env.md
     - Chỉ số [đo được]; không đưa số theo tài liệu hay suy luận vào bảng này. Kiểm tra: python3 scripts/build_dashboard.py --check
 -->

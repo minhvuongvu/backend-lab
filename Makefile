@@ -7,6 +7,13 @@ else
 endif
 .DEFAULT_GOAL := help
 
+# Machine-specific port overrides (PROM_PORT, GRAFANA_PORT, OTLP_*_PORT, ...): see lab.env.example.
+-include lab.env
+export
+
+ROOT := $(CURDIR)
+ANALYSIS_IMAGE := backend-lab/analysis:1
+
 # "python3" may be the Microsoft Store alias on Windows: pick the first interpreter that actually runs.
 PYTHON ?= $(shell for p in python3 python; do $$p -c "import sys" >/dev/null 2>&1 && { echo $$p; break; }; done)
 
@@ -15,13 +22,21 @@ LAB_NETWORK := backend-lab
 # OBS=full (metrics + logs + traces + profiles) or OBS=metrics (Prometheus + Grafana + docker-stats only)
 OBS ?= full
 
-.PHONY: help doctor lab-network obs-up obs-down obs-status new-topic roadmap pages insights hubs hubs-check test check hooks
+.PHONY: help doctor analysis-image analysis lab-network obs-up obs-down obs-status new-topic roadmap pages insights hubs hubs-check test check hooks
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
 
 doctor: ## Check this machine can run the lab (tools, JDK 21, Docker, ports, TLS, git remote)
 	@"$(SHELL)" scripts/doctor.sh
+
+analysis-image: ## Build the pinned pandas/matplotlib image used for experiment analysis and charts
+	docker build -t $(ANALYSIS_IMAGE) shared/analysis
+
+analysis: ## Run a command in the analysis image with the repo at /lab: make analysis CMD="python scripts/stats.py ..."
+	$(if $(CMD),,$(error Usage: make analysis CMD="python <script> ..."))
+	@docker image inspect $(ANALYSIS_IMAGE) >/dev/null 2>&1 || $(MAKE) analysis-image
+	MSYS_NO_PATHCONV=1 docker run --rm -v "$(ROOT):/lab" -w /lab $(ANALYSIS_IMAGE) $(CMD)
 
 # ---- observability ----
 lab-network: ## Create the shared docker network topics and the obs stack join

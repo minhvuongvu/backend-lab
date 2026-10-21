@@ -1,3 +1,4 @@
+import gzip
 import random
 import statistics
 import unittest
@@ -104,6 +105,51 @@ class CliTest(unittest.TestCase):
         self.assertAlmostEqual(float(g["p99_median"]), statistics.median(run_p99), places=3)
         self.assertAlmostEqual(float(g["pooled_p99"]), pooled, places=3)
         self.assertNotAlmostEqual(float(g["p99_median"]), statistics.mean(run_p99), places=1)
+
+    def _write_k6(self, rel, testid, values, t0=1700000000, compress=False):
+        # Minimal `k6 run --out csv` shape: testid is a custom tag, so it sits in extra_tags.
+        lines = ["metric_name,timestamp,metric_value,expected_response,extra_tags"]
+        for i, v in enumerate(values):
+            lines.append(f"http_req_duration,{t0 + i},{v},true,testid={testid}")
+            lines.append(f"http_reqs,{t0 + i},1,true,testid={testid}")
+        data = ("\n".join(lines) + "\n").encode("utf-8")
+        p = self.repo.path(rel)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(gzip.compress(data) if compress else data)
+
+    def test_summarize_reads_gzip_and_many_inputs(self):
+        # One gzip per run (results/raw-samples/*.k6.csv.gz) must give the same answer as plain CSV.
+        runs = {f"before-S1-{r}": [float(10 * r + i) for i in range(50)] for r in (1, 2, 3)}
+        for tid, vals in runs.items():
+            self._write_k6(f"gz/{tid}.k6.csv.gz", tid, vals, compress=True)
+            self._write_k6(f"plain/{tid}.k6.csv", tid, vals)
+        gz = self.repo.py("stats.py", "summarize", "--input", *[f"gz/{t}.k6.csv.gz" for t in runs],
+                          "--resamples", "200", "--out", "gz-runs.csv")
+        self.assertEqual(gz.returncode, 0, gz.stderr)
+        plain = self.repo.py("stats.py", "summarize", "--input", *[f"plain/{t}.k6.csv" for t in runs],
+                             "--resamples", "200", "--out", "plain-runs.csv")
+        self.assertEqual(plain.returncode, 0, plain.stderr)
+        self.assertEqual(self.repo.path("gz-runs.csv").read_bytes(), self.repo.path("plain-runs.csv").read_bytes())
+        rows = {r["run"]: r for r in self.repo.csv("gz-runs.csv")}
+        self.assertEqual(sorted(rows), ["1", "2", "3"])
+        self.assertEqual(int(rows["2"]["n"]), 50)  # http_reqs rows are filtered out by --metric
+        self.assertAlmostEqual(float(rows["2"]["p50"]), stats.percentile(runs["before-S1-2"], 50))
+
+    def test_steady_state_and_compare_read_gzip(self):
+        rows = ["unix_ts,value"] + [f"{i},{100 if i >= 10 else 10 * i}" for i in range(60)]
+        self.repo.path("rps.csv.gz").write_bytes(gzip.compress(("\n".join(rows) + "\n").encode()))
+        r = self.repo.py("stats.py", "steady-state", "--input", "rps.csv.gz", "--time-col", "unix_ts",
+                         "--value-col", "value", "--json", "ss.json")
+        self.assertEqual(r.returncode, 0, r.stderr)
+        self._write_long({"before": 1.0, "A": 1.0}, runs=3, n=50)
+        s = self.repo.py("stats.py", "summarize", "--input", "long.csv", "--format", "long", "--resamples", "200",
+                         "--out", "runs.csv")
+        self.assertEqual(s.returncode, 0, s.stderr)
+        self.repo.path("runs.csv.gz").write_bytes(gzip.compress(self.repo.path("runs.csv").read_bytes()))
+        c = self.repo.py("stats.py", "compare", "--summary", "runs.csv.gz", "--metric", "p50", "--resamples", "200",
+                         "--out", "cmp.csv")
+        self.assertEqual(c.returncode, 0, c.stderr)
+        self.assertEqual([row["impl"] for row in self.repo.csv("cmp.csv")], ["A"])
 
 
 if __name__ == "__main__":

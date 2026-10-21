@@ -3,7 +3,7 @@
 The Markdown files stay the source of truth: Claude Code only loads rules from CLAUDE.md, and GitHub
 shows README.md on the repository page. This script regenerates:
   index.html       ← README.md   (lab home page)
-  hub/rules.html   ← CLAUDE.md   (rules for every session)
+  hub/rules.html   ← CLAUDE.md + .claude/rules/*.md   (core rules + detailed, path-scoped rules)
 
 Supports the Markdown subset used in those files: headings, paragraphs, lists (nested by indent),
 tables, fenced code, inline code, bold/italic, links. Standard library only.
@@ -21,6 +21,18 @@ PAGES = [
     ("README.md", "index.html", "backend-lab", "Trang chủ", ""),
     ("CLAUDE.md", "hub/rules.html", "Quy tắc của lab", "Trang tổng · Quy tắc", "../"),
 ]
+# Detailed rules appended to a page, in file-name order (YAML front matter stripped).
+APPENDIX = {"CLAUDE.md": ".claude/rules/*.md"}
+
+
+def read_source(src):
+    md = (ROOT / src).read_text(encoding="utf-8")
+    if src not in APPENDIX:
+        return md
+    for f in sorted(ROOT.glob(APPENDIX[src])):
+        part = re.sub(r"\A---\n.*?\n---\n", "", f.read_text(encoding="utf-8"), flags=re.S)
+        md = md.rstrip() + "\n\n" + part.strip() + "\n"
+    return md
 
 
 def slug(text):
@@ -206,7 +218,7 @@ def main():
     args = ap.parse_args()
     stale = []
     for src, dst, default_title, eyebrow, prefix in PAGES:
-        md = (ROOT / src).read_text(encoding="utf-8")
+        md = read_source(src)
         title, body = convert(md, prefix)
         out = page(title or default_title, eyebrow, body, prefix, src)
         target = ROOT / dst

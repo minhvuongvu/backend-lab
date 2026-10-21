@@ -30,7 +30,12 @@ done
 if [[ -n "$PY" ]]; then
   $PY -c 'import pandas, matplotlib' >/dev/null 2>&1 \
     && ok "pandas + matplotlib installed" \
-    || warn "pandas/matplotlib missing locally — charts run in a python container (see shared/scaffold/README.md)"
+    || warn "pandas/matplotlib missing locally — charts run in the analysis image (make analysis CMD=...)"
+fi
+if have docker; then
+  docker image inspect backend-lab/analysis:1 >/dev/null 2>&1 \
+    && ok "analysis image backend-lab/analysis:1 built" \
+    || warn "analysis image not built yet — make analysis-image (also built on first make analysis)"
 fi
 
 JDK21=""
@@ -53,15 +58,22 @@ for b in "/c/Program Files/Google/Chrome/Application/chrome.exe" "/c/Program Fil
 done
 [[ -n "$browser" ]] && ok "headless browser for render checks: $browser" || warn "no Chrome/Edge — make check skips render checks"
 
-echo "Ports (lab defaults; override with *_PORT variables)"
+if [[ -f lab.env ]]; then
+  set -a; . ./lab.env; set +a
+  echo "Ports (lab.env loaded; edit it to move a port)"
+else
+  echo "Ports (lab defaults; to move one: cp lab.env.example lab.env and edit)"
+fi
 for spec in 9090:PROM_PORT 3000:GRAFANA_PORT 4317:OTLP_GRPC_PORT 4318:OTLP_HTTP_PORT 4040:PYROSCOPE_PORT 12345:ALLOY_PORT 8474:TOXIPROXY_API_PORT 5432:- 6379:- 9092:- 8080:-; do
   port=${spec%%:*}; var=${spec##*:}
+  [[ "$var" != - && -n "${!var:-}" ]] && port=${!var}
+  [[ "$var" == - ]] && var=""
   holder=""
   if have docker; then holder=$(docker ps --format '{{.Names}} {{.Ports}}' 2>/dev/null | grep -E "(:|\])$port->" | awk '{print $1}' | head -1); fi
   if [[ -n "$holder" ]]; then
-    [[ "$holder" == backend-lab-obs-* ]] && ok "$port used by lab container $holder" || warn "$port taken by container '$holder'${var:+ — use $var=<free port>}"
+    [[ "$holder" == backend-lab-obs-* ]] && ok "$port used by lab container $holder" || warn "$port taken by container '$holder'${var:+ — set $var=<free port> in lab.env}"
   elif (exec 3<>"/dev/tcp/127.0.0.1/$port") 2>/dev/null; then
-    warn "$port taken by a non-docker process${var:+ — use $var=<free port>}"
+    warn "$port taken by a non-docker process${var:+ — set $var=<free port> in lab.env}"
   else
     ok "$port free"
   fi

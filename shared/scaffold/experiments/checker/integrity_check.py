@@ -13,7 +13,7 @@ Count-based on purpose: per-id tags in k6 would explode metric cardinality in Pr
 needs per-id detail, have the app log acknowledged ids, or record ids through a dedicated endpoint.
 
 Usage (from experiments/):
-  python3 checker/integrity_check.py --testid before-F1-1 --k6-csv ../results/raw/before-F1-1-<ts>.k6.csv \
+  python3 checker/integrity_check.py --testid before-F1-1 --k6-csv ../results/raw-samples/before-F1-1-<ts>.k6.csv.gz \
       --out ../results/raw/before-F1-1-<ts>-integrity.json
 Exit code 0 = invariant holds, 1 = violated (the JSON says how), 2 = could not check.
 REPLACE the SQL and the invariant with the topic's own (01-research.html §10, 04 §4.7) and test the
@@ -22,6 +22,7 @@ checker first on deliberately broken data.
 
 import argparse
 import csv
+import gzip
 import json
 import re
 import subprocess
@@ -31,7 +32,8 @@ from datetime import datetime, timezone
 
 def acknowledged_from_k6(path, name):
     ok = 0
-    with open(path, newline="", encoding="utf-8") as f:
+    opener = gzip.open if str(path).endswith(".gz") else open  # raw-samples are *.k6.csv.gz
+    with opener(path, "rt", newline="", encoding="utf-8") as f:
         for row in csv.DictReader(f):
             if row.get("metric_name") != "http_reqs" or row.get("name") != name:
                 continue

@@ -7,7 +7,10 @@ argument-hint: <topic | X vs Y | case …> [1-7 | next | all] [full | lite | spi
 
 Tách đối số từ cuối lên: nếu từ cuối thuộc {`full`, `lite`, `spike`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Nếu tên topic có dạng `X vs Y` (hoặc `X vs Y vs Z`) thì đây là **topic so sánh** (xem § Topic so sánh), slug `x-vs-y`. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic; topic mới thì theo **chế độ mặc định**: `full` nếu topic có `data-priority="1"` trong hub/roadmap.html hoặc là case study (track `capstone`), còn lại `lite` (kể cả topic chưa có trong roadmap). Báo chế độ đã chọn và cách đổi (`/research <topic> full`).
 
-Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tài liệu HTML, trung thực, tối giản, so sánh công bằng, thí nghiệm, git.
+Tuân thủ mọi quy tắc trong `CLAUDE.md` (14 mục tiêu học, before, trung thực, tối giản, so sánh công bằng, git) và các file quy tắc chi tiết. Đọc chúng ở đầu phase tương ứng, kể cả khi chưa được tự nạp:
+- `.claude/rules/html-docs.md`: mọi phase có tài liệu HTML (1–7).
+- `.claude/rules/experiments.md`: phase 3 (phần `experiments/`), 4, 5, 6.
+- `.claude/rules/hub-and-topics.md`: Phase 0 và § Kết thúc mỗi phase.
 
 ## Phase 0 — Định vị topic
 
@@ -75,7 +78,7 @@ Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 
 ## Phase 4 — Experiment plan → `04-experiment-plan.html` (mục tiêu 12)
 
-- Theo phương pháp luận trong `CLAUDE.md` § Thí nghiệm và khung 04: giả thuyết có hướng + độ lớn dự đoán (01 §11, §25) + ngưỡng thực tế + tiêu chí bác bỏ; thiết kế đối chứng với before; biến và biến gây nhiễu; tuning công bằng; thứ tự chạy ngẫu nhiên theo block; số lần lặp từ pilot.
+- Theo phương pháp luận trong `.claude/rules/experiments.md` và khung 04: giả thuyết có hướng + độ lớn dự đoán (01 §11, §25) + ngưỡng thực tế + tiêu chí bác bỏ; thiết kế đối chứng với before; biến và biến gây nhiễu; tuning công bằng; thứ tự chạy ngẫu nhiên theo block; số lần lặp từ pilot.
 - Mô hình workload (open model, phân phối arrival/key, dữ liệu so với bộ nhớ), phương pháp đo (điểm đo, percentile từ mẫu thô, steady state, hiệu chuẩn, sức khoẻ load generator, USE/RED, đo tính đúng đắn).
 - Đi hết danh mục kịch bản (bình thường, quét tải, spike, soak, quá tải, tiêm lỗi gồm gray failure, phục hồi, nhiều instance, hot key, cold start, tăng trưởng dữ liệu); không áp dụng phải ghi lý do. before cũng chạy mọi kịch bản liên quan.
 - Tiêu chí hợp lệ của một lần chạy, quy tắc loại bỏ, kế hoạch phân tích thống kê, đe doạ tính hợp lệ (internal/external/construct/statistical) và cách giảm thiểu.
@@ -88,12 +91,13 @@ Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 - `make obs-up` trước khi chạy; ghi chế độ observability (`OBS`, sampling, profiling) vào `results/env.md` và giữ nguyên cho mọi ô của ma trận.
 - Ghi `results/env.md` bằng output của lệnh thật trước khi chạy.
 - Chạy pilot → chốt số lần lặp và thời gian warmup (`scripts/stats.py steady-state`); hiệu chuẩn công cụ đo bằng độ trễ biết trước.
-- Sinh thứ tự chạy `scripts/stats.py plan-order` → `results/raw/run-order.csv`; chạy toàn bộ ma trận theo đúng thứ tự đó; lưu raw (k6 summary + mẫu thô `--out csv`) vào `results/raw/<impl>-<scenario>-<run>-<timestamp>.*`, không sửa tay; ghi lần chạy không hợp lệ kèm lý do.
+- Sinh thứ tự chạy `scripts/stats.py plan-order` → `results/raw/run-order.csv`; chạy toàn bộ ma trận theo đúng thứ tự đó; lưu raw (k6 summary) vào `results/raw/<impl>-<scenario>-<run>-<timestamp>.*` và mẫu thô `--out csv` (gzip) vào `results/raw-samples/` (`make run` tự làm và cập nhật `MANIFEST.json`), không sửa tay; ghi lần chạy không hợp lệ kèm lý do.
+- Sau ma trận chạy: `make samples-verify` (0 mismatched), `MANIFEST.json` đã staged, không file nào trong `results/raw/` > 10 MB; link trong 05 chỉ trỏ tới file đã commit (không trỏ vào `raw-samples/`).
 - Phân tích bằng `scripts/stats.py summarize` và `compare --baseline before` (CI bootstrap theo lần chạy, Mann–Whitney, Cliff's delta, ngưỡng thực tế).
 - Sau mỗi lần chạy, xuất số liệu Prometheus của khoảng thời gian chạy vào raw bằng `scripts/prom_export.py` (preset `resources`, `jvm`, `http`, `k6` và datastore liên quan) kèm `--meta`.
 - Kiểm tra toàn vẹn dữ liệu sau các kịch bản lỗi; lưu kết quả kiểm tra vào raw.
 - Bất thường: dùng trace (Tempo), log (Loki) và profile (Pyroscope) để tìm nguyên nhân; ghi lại truy vấn đã dùng.
-- Vẽ biểu đồ bằng Python (pandas + matplotlib) vào `results/charts/`, ưu tiên biểu đồ before vs từng cách. Có thể chạy song song bằng subagent: một agent vẽ biểu đồ, một agent kiểm tra toàn vẹn dữ liệu, một agent viết nháp 05.
+- Vẽ biểu đồ bằng Python (pandas + matplotlib, chạy trong image `backend-lab/analysis:1` qua `make report` / `make analysis`) vào `results/charts/`, ưu tiên biểu đồ before vs từng cách. Có thể chạy song song bằng subagent: một agent vẽ biểu đồ, một agent kiểm tra toàn vẹn dữ liệu, một agent viết nháp 05.
 - Viết `05-results.html`: nhật ký chạy, bảng before vs after kèm Δ, toàn vẹn dữ liệu, độ biến thiên, bất thường & điều tra. Mọi số link tới raw.
 - Lệnh nào thất bại thì báo rõ kèm output và DỪNG; không ước lượng thay số liệu.
 

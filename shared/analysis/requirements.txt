@@ -1,0 +1,4 @@
+# Pinned for reproducible charts and numbers (changing a version is a methodology change: note it in results/env.md).
+pandas==2.3.3
+numpy==2.3.4
+matplotlib==3.10.7
