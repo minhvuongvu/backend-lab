@@ -1,6 +1,6 @@
 ---
 description: Nghiên cứu một topic backend theo quy trình 7 phase (research → design → implement → plan → execute → conclusion → production)
-argument-hint: <topic | X vs Y> [1-7 | next | all] [full | lite | spike]
+argument-hint: <topic | X vs Y | case …> [1-7 | next | all] [full | lite | spike]
 ---
 
 Đối số: `$ARGUMENTS`
@@ -154,6 +154,18 @@ So sánh hai (hoặc nhiều) công nghệ/cách giải cùng một bài toán, 
 - **Phase 4:** cùng contract, cùng workload, tuning công bằng là điều kiện sống còn (so sánh công nghệ dễ thiên vị nhất ở đây); ghi quá trình tuning của từng bên.
 - **Phase 6:** decision guide "chọn X khi…, chọn Y khi…" có điều kiện định lượng; ghi rõ phạm vi kết luận (version, cấu hình, quy mô đã thử).
 - **Roadmap:** topic so sánh nhận các topic về X và Y (nếu có) làm tiền đề.
+
+## Case study tổng hợp (`case-…`)
+
+Topic thuộc track `capstone` trong ROADMAP (slug bắt đầu bằng `case-`) là case study: thiết kế và kiểm chứng end-to-end một hệ thống hoàn chỉnh (ví dụ hệ thống thanh toán, chat real-time, flash sale) bằng cách ghép các topic thành phần. Ghi `data-field="type"` = `capstone`.
+
+- **Tiền đề là topic thành phần.** Topic thành phần đã `done`: dùng lại kết luận và code của nó (06, `system/`); chưa học: tóm tắt ở 01 §6.1. Không viết lại lý thuyết từng kỹ thuật.
+- **Phase 1:** bắt buộc mục "Thiết kế tổng thể" trong 01: yêu cầu & ước lượng quy mô (back-of-the-envelope có công thức), bảng ghép từ topic thành phần, sơ đồ kiến trúc, và bảng **tương tác giữa các cơ chế & failure mode khi ghép** — đây là trọng tâm. §16–17 so sánh các phương án kiến trúc tổng thể (ví dụ fan-out on write vs on read); `before` là phiên bản đơn giản nhất chạy được.
+- **Phase 2–3:** hệ thống nhiều service nhưng vẫn tối giản: chỉ các thành phần cần để các cơ chế gặp nhau. Dùng lại module từ `system/` của topic thành phần khi có.
+- **Phase 4–5:** kịch bản end-to-end: tải theo mục tiêu quy mô + tiêm lỗi ở chỗ các cơ chế giao nhau + kiểm tra bất biến nghiệp vụ toàn hệ thống (không trùng thanh toán, không bán vượt, không mất tin nhắn…).
+- **Phase 6:** kết luận gồm bảng "dự đoán từ topic thành phần vs hành vi khi ghép": chỗ nào hệ thống ghép khác tổng các phần.
+- **Phase 7:** bắt buộc với case study chế độ full: đây là chỗ luyện thiết kế triển khai thực tế.
+- Có thể dùng subagent theo từng service / thành phần ở phase 3 và 5.
 
 ## Kiểm tra tài liệu (trước gate / trước khi kết thúc phase có tài liệu HTML)
 

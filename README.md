@@ -25,6 +25,7 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 - `/research cache stampede lite`: chế độ học nhanh (ít kịch bản, bỏ phase 7); nâng lên đầy đủ sau bằng `/research cache stampede full`.
 - `/lab-status`: xem tiến độ mọi topic và gợi ý topic nên học tiếp theo lộ trình.
 - `/research cdc debezium spike`: khám phá nhanh một hiện tượng; `/research redis lock vs postgres advisory lock`: topic so sánh hai công nghệ.
+- `/research case-payment-system`: case study tổng hợp — ghép nhiều topic đã học thành một hệ thống và kiểm chứng end-to-end (giai đoạn 8 trong lộ trình).
 - Trang tổng (mở bằng trình duyệt): [LAB.html](LAB.html) tổng quan · [ROADMAP.html](ROADMAP.html) lộ trình · [PROBLEMS.html](PROBLEMS.html) tra theo vấn đề · [INSIGHTS.html](INSIGHTS.html) kho insight · [BENCHMARKS.html](BENCHMARKS.html) số liệu tham chiếu · [GLOSSARY.html](GLOSSARY.html) thuật ngữ.
 - Một chủ đề, một phiên. Dùng `/clear` khi chuyển chủ đề để context không bị lẫn.
 - `make obs-up` trước phase 5 nếu muốn xem metric trên Grafana.

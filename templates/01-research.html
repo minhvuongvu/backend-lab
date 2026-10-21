@@ -754,6 +754,58 @@ flowchart LR
     </div>
   </section>
 
+  <section class="capstone-only">
+    <h2 id="capstone-design">Thiết kế tổng thể (case study)</h2>
+    <p><span class="badge">chỉ topic case study</span></p>
+    <div class="guide"><strong>Chỉ dùng cho case study</strong> (<code>data-field="type"</code> = <code>capstone</code>); topic thường thì XOÁ cả section này.
+      Case study ghép nhiều topic thành phần (tiền đề trong ROADMAP) thành một hệ thống. Không giải thích lại từng kỹ thuật: tóm tắt 1–2 câu + link tới topic
+      thành phần (hoặc §6.1 nếu chưa học). Trọng tâm là chỗ các cơ chế TƯƠNG TÁC với nhau và hỏng theo cách không topic đơn lẻ nào cho thấy.
+      Ở case study, §1–4 là yêu cầu và quy mô của hệ thống; §16–17 là các phương án kiến trúc tổng thể (ví dụ fan-out on write vs on read), không phải từng kỹ thuật.</div>
+
+    <h3 id="capstone-requirements">Yêu cầu & ước lượng quy mô</h3>
+    <div class="table-wrap"><table class="capstone-requirements">
+      <thead><tr><th>Yêu cầu</th><th>Loại</th><th>Con số mục tiêu</th><th>Ước lượng (back-of-the-envelope)</th><th>Hệ quả thiết kế</th></tr></thead>
+      <tbody><tr><td></td><td><!-- chức năng / phi chức năng / bất biến --></td><td></td><td><!-- QPS, dung lượng/ngày, kích thước working set… kèm công thức --></td><td></td></tr></tbody>
+    </table></div>
+
+    <h3 id="capstone-components">Ghép từ các topic thành phần</h3>
+    <div class="table-wrap"><table class="capstone-components">
+      <thead><tr><th>Thành phần / quyết định</th><th>Topic dùng lại</th><th>Lựa chọn trong case này</th><th>Vì sao chọn với quy mô này [Rn]</th></tr></thead>
+      <tbody><tr><td></td><td><a href="../../ROADMAP.html#"></a></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <figure class="diagram">
+<pre class="mermaid">
+flowchart LR
+    client[Client] --> gw[Gateway] --> svc[Service] --> db[(DB)]
+    svc --> bus[[Broker]]
+</pre>
+      <figcaption>Kiến trúc tổng thể — thay bằng kiến trúc thật, ghi topic dùng lại trên từng thành phần.</figcaption>
+    </figure>
+
+    <h3 id="capstone-interactions">Tương tác giữa các cơ chế & failure mode khi ghép</h3>
+    <div class="guide">Đây là giá trị chính của case study: lỗi chỉ xuất hiện khi các cơ chế gặp nhau (ví dụ retry của gateway + at-least-once của broker + cache invalidation
+      → trùng và dữ liệu cũ cùng lúc). Mỗi dòng nêu chuỗi nhân quả và kịch bản kiểm chứng end-to-end ở 04.</div>
+    <div class="table-wrap"><table class="capstone-interactions">
+      <thead><tr><th>Cơ chế A</th><th>Cơ chế B</th><th>Khi gặp nhau thì sao (chuỗi nhân quả)</th><th>Bất biến bị đe doạ</th><th>Kiểm chứng (kịch bản)</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <h4>Lý do chi tiết</h4>
+    <ol class="reasons"><li id="rc-1"><strong>R1</strong> </li></ol>
+    <div class="callout insight" id="ins-capstone-1" data-tags=""><span class="callout-title">Insight</span>
+      <p class="claim"><!-- điều chỉ thấy được khi ghép hệ thống, không topic đơn lẻ nào cho thấy --></p>
+      <div class="why"><strong>Vì sao:</strong>
+        <dl class="why-steps">
+          <dt>Cơ chế</dt><dd><ol><li></li><li></li></ol></dd>
+          <dt>Điều kiện</dt><dd></dd>
+          <dt>Định lượng</dt><dd></dd>
+          <dt>Khi nào không đúng</dt><dd></dd>
+          <dt>Liên hệ</dt><dd></dd>
+        </dl>
+      </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
+  </section>
+
   <section>
     <h2 id="ecosystem"><span class="num">19</span>Hệ sinh thái &amp; công cụ</h2>
     <div class="guide">Thư viện, managed service, tính năng có sẵn của DB/broker cho từng cách. Đánh giá thực tế khi chọn cho production: độ trưởng thành, mức độ bảo trì (release gần nhất, issue mở),

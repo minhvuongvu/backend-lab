@@ -24,20 +24,22 @@ ROOT = Path(__file__).resolve().parent.parent
 ROADMAP = ROOT / "ROADMAP.html"
 
 STAGES = [
-    (1, "Nền tảng một node", "Dữ liệu đúng trong một database, container, JVM, Spring và mạng: mọi topic sau đều dựng trên đây.",
-     ["correctness", "postgres", "containers", "jvm", "spring", "networking"]),
+    (1, "Nền tảng một node", "Dữ liệu đúng trong một database, hệ điều hành, container, JVM, Spring và mạng: mọi topic sau đều dựng trên đây.",
+     ["correctness", "postgres", "linux", "containers", "jvm", "spring", "networking"]),
     (2, "Chịu tải & dữ liệu nóng", "Giữ hệ thống sống khi tải tăng hoặc phụ thuộc chậm, tăng tốc đọc bằng cache, và phục vụ kết nối real-time.",
      ["resilience", "caching", "redis", "realtime"]),
     (3, "Hệ phân tán & messaging", "Nhất quán, đồng thuận, giao nhận message, giao dịch trải nhiều service và các mẫu nghiệp vụ dựng trên chúng.",
      ["foundations", "kafka", "rabbitmq", "distributed", "business"]),
-    (4, "Thiết kế & tiến hoá hệ thống", "Thay đổi API, dữ liệu và ranh giới kiến trúc mà không phá hệ thống đang chạy.",
-     ["api", "architecture"]),
-    (5, "Kho dữ liệu chuyên dụng & AI", "Document store, tìm kiếm, lưu trữ object, phân tích (OLAP) và tích hợp AI.",
-     ["mongodb", "search-storage", "analytics", "ai"]),
-    (6, "Nền tảng chạy hệ thống", "Kubernetes, tìm service, cấu hình, cổng vào và chạy trên nhiều vùng.",
-     ["kubernetes", "platform", "gateway", "multiregion"]),
+    (4, "Thiết kế & tiến hoá hệ thống", "Thay đổi API, dữ liệu và ranh giới kiến trúc mà không phá hệ thống đang chạy, và kiểm thử để chắc điều đó.",
+     ["api", "architecture", "testing"]),
+    (5, "Kho dữ liệu chuyên dụng & AI", "Document store, tìm kiếm, lưu trữ object, storage engine (B-tree, LSM), phân tích (OLAP) và tích hợp AI.",
+     ["mongodb", "search-storage", "storage-engines", "analytics", "ai"]),
+    (6, "Nền tảng chạy hệ thống", "Kubernetes, tìm service, cấu hình, cổng vào, dịch vụ cloud managed và chạy trên nhiều vùng.",
+     ["kubernetes", "platform", "gateway", "cloud", "multiregion"]),
     (7, "Bảo mật & vận hành", "Danh tính, phân quyền, bí mật, quan sát, cảnh báo và đưa thay đổi lên production.",
      ["security", "sre", "cicd"]),
+    (8, "Case study tổng hợp", "Thiết kế và kiểm chứng end-to-end một hệ thống hoàn chỉnh bằng cách ghép các topic đã học; tiền đề là các topic thành phần.",
+     ["capstone"]),
 ]
 
 ROW_RE = re.compile(r'[ \t]*<tr id="([^"]+)" data-slug="[^"]*"[^>]*>.*?</tr>\n', re.S)
