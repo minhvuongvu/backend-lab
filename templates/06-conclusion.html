@@ -21,6 +21,10 @@
     - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
+  CHỈ MỤC THEO VẤN ĐỀ (scripts/build_knowledge.py → PROBLEMS.html):
+    - Bảng decision guide §6 có data-index="decision"; mỗi hàng có data-problem="<slug>" (slug triệu chứng như ở 01 §4/§13, dùng lại slug có sẵn
+      trong PROBLEMS.html) và data-choice="<ID implementation>" (before / A / B...). Hàng đọc thành: "gặp vấn đề X trong ngữ cảnh Y thì chọn Z vì ...".
+    - Kiểm tra: python3 scripts/build_knowledge.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -109,9 +113,9 @@ flowchart TD
     Q1 -->|không| B[Cách B]
 </pre>
     </figure>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-index="decision">
       <thead><tr><th>Ngữ cảnh</th><th>Chọn</th><th>Vì sao (số đo + cơ chế)</th><th>Khác bản 01 §20?</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td><td></td></tr></tbody>
+      <tbody><tr data-problem="" data-choice=""><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 

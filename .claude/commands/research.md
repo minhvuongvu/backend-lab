@@ -1,11 +1,11 @@
 ---
 description: Nghiên cứu một topic backend theo quy trình 7 phase (research → design → implement → plan → execute → conclusion → production)
-argument-hint: <topic> [1-7 | next | all] [lite | full]
+argument-hint: <topic | X vs Y> [1-7 | next | all] [full | lite | spike]
 ---
 
 Đối số: `$ARGUMENTS`
 
-Tách đối số từ cuối lên: nếu từ cuối thuộc {`lite`, `full`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic (topic mới: `full`).
+Tách đối số từ cuối lên: nếu từ cuối thuộc {`full`, `lite`, `spike`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Nếu tên topic có dạng `X vs Y` (hoặc `X vs Y vs Z`) thì đây là **topic so sánh** (xem § Topic so sánh), slug `x-vs-y`. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic (topic mới: `full`).
 
 Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tài liệu HTML, trung thực, tối giản, so sánh công bằng, thí nghiệm, git.
 
@@ -24,7 +24,8 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tà
 5. Đọc `topics/<slug>/README.html` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
 6. Xác định chế độ và phase:
    - chế độ: nếu đối số đổi chế độ so với README (ví dụ topic đang `lite` mà gọi `full`), báo những gì phải bổ sung cho các phase đã xong (xem § Chế độ lite) và hỏi trước khi đổi; ghi `data-field="mode"`.
-   - `next` → phase đầu tiên có `data-status` khác `done`/`skipped` trong `ol.phase-list`. Nếu cả 7 đã xong, báo và dừng.
+   - `next` → phase đầu tiên có `data-status` khác `done`/`skipped` trong `ol.phase-list`.
+   - chế độ `spike` mới: đánh dấu phase 2 và 7 `skipped` ngay khi tạo topic. Nếu cả 7 đã xong, báo và dừng.
    - `N` → nếu có phase < N chưa `done`, cảnh báo phase nào còn thiếu và hỏi tôi trước khi làm.
    - `all` → chạy lần lượt từ phase `next` tới 7.
 7. Nếu `ul.approvals` trong README còn mục `data-status="open"` thuộc phase trước, liệt kê chúng và hỏi tôi có muốn tiếp tục không (trừ chế độ `all`).
@@ -62,6 +63,7 @@ Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 
 ## Phase 3 — Implement → `system/` + `03-implementation.html` (mục tiêu 9–11)
 
+- Bắt đầu từ bộ khung đã được `new-topic` copy vào `system/` (xem `shared/scaffold/README.md`): thay domain mẫu `Item` bằng domain của topic, định nghĩa contract ở `contract/`, mỗi implementation một package `impl/<id>/` + `@Profile` + `application-<id>.yml`, contract test chạy chung cho mọi implementation.
 - Code before và mọi cách implement ở 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 3.x. Expose `/actuator/prometheus`, bật tracing OTLP và log correlation theo `shared/observability/README.md`.
 - Nếu có từ 2 implementation trở lên, dùng subagent song song: mỗi agent một implementation (module/package riêng), agent chính giữ contract chung, tích hợp và chạy `./mvnw verify`.
 - Integration test (Testcontainers):
@@ -80,7 +82,8 @@ Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 
 ## Phase 5 — Execute → `experiments/` + `results/` + `05-results.html` (mục tiêu 13)
 
-- Viết `experiments/`: `docker-compose.yml` (join network `backend-lab`, `include` exporter cần thiết, app chạy trong container có giới hạn tài nguyên), script k6 (remote write + `--tag testid=<impl>-<scenario>-<run>`) / chaos, `Makefile` với `make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`.
+- `experiments/` đã có sẵn bộ khung (compose, Makefile, k6 constant-rate/load-sweep/spike/soak, chaos toxiproxy/container, integrity checker, charts): chỉ sửa phần khác biệt của topic (service phụ thuộc, exporter cần include, kịch bản k6, invariant cần kiểm, lệnh tiêm lỗi).
+- Yêu cầu với `experiments/`: `docker-compose.yml` (join network `backend-lab`, `include` exporter cần thiết, app chạy trong container có giới hạn tài nguyên), script k6 (remote write + `--tag testid=<impl>-<scenario>-<run>`) / chaos, `Makefile` với `make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`.
 - `make obs-up` trước khi chạy; ghi chế độ observability (`OBS`, sampling, profiling) vào `results/env.md` và giữ nguyên cho mọi ô của ma trận.
 - Ghi `results/env.md` bằng output của lệnh thật trước khi chạy.
 - Chạy pilot → chốt số lần lặp và thời gian warmup (`scripts/stats.py steady-state`); hiệu chuẩn công cụ đo bằng độ trễ biết trước.
@@ -127,15 +130,39 @@ Cho topic cần học nhanh. Mục tiêu: vẫn hiểu đúng cơ chế và th�
 - Gate ở lite: chỉ sau phase 1 và 4.
 - Nâng lite → full (`/research <topic> full`): bổ sung các mục đã ghi "— (lite)", thêm implementation và kịch bản còn thiếu, chạy lại phase 5 với N từ pilot, cập nhật 06, rồi làm phase 7.
 
+## Chế độ spike
+
+Khám phá nhanh MỘT hiện tượng hoặc MỘT câu hỏi (thường là một chuyên đề đặc thù, ví dụ "replication slot làm WAL phình khi connector dừng"), không đi cả quy trình. Ghi `data-field="mode"` = `spike`.
+
+- Phase 0: hỏi tôi (hoặc lấy từ đối số) **đích của spike**: hiện tượng/câu hỏi cụ thể, kết quả nào thì coi là trả lời được. Ghi vào `data-field="scope"`.
+- Phase 1: chỉ §4 (vấn đề), §8 (cơ chế liên quan), §11 (định lượng cho hiện tượng), chuyên đề đích (đầy đủ), §24–25 (một câu hỏi chính), §27; mục khác ghi "— (spike)". Insight vẫn đủ `why-steps`.
+- Phase 2: gộp vào phase 3 (`data-status="skipped"`, lý do "gộp vào 3 — spike").
+- Phase 3: hệ thống tối thiểu chỉ đủ tái hiện hiện tượng (dùng bộ khung `shared/scaffold/`); có test chứng minh hiện tượng xảy ra (hoặc không). 03 chỉ các bước cốt lõi.
+- Phase 4: một giả thuyết, một kịch bản tái hiện (+ kịch bản đối chứng nếu cần), N = 3; vẫn có steady state và thứ tự ngẫu nhiên nếu có nhiều cấu hình.
+- Phase 5–6: như lite; 06 ghi rõ **"spike"**: trả lời câu hỏi đích được tới đâu, độ tin cậy, cần gì để chắc chắn hơn.
+- Phase 7: `skipped`.
+- Gate: chỉ sau phase 1. Nâng spike → lite/full: bổ sung mục đã ghi "— (spike)", làm phase 2 đầy đủ, mở rộng implementation và kịch bản.
+
+## Topic so sánh (`X vs Y`)
+
+So sánh hai (hoặc nhiều) công nghệ/cách giải cùng một bài toán, ví dụ `Redis distributed lock vs PostgreSQL advisory lock`, `Kafka vs RabbitMQ cho work queue`. Ghi `data-field="type"` = `compare` trong README topic; chế độ (full/lite/spike) vẫn áp dụng như bình thường.
+
+- **Implementations:** mỗi công nghệ được so là một implementation (A = X, B = Y…); `before` vẫn là hệ thống as-is (có thể trùng với một bên nếu hệ thống đang dùng X — ghi rõ).
+- **Dùng lại topic đã có:** trước khi viết, tra `ROADMAP.html`, `INSIGHTS.html`, `GLOSSARY.html`, `PROBLEMS.html` và các topic liên quan; phần lý thuyết đã có ở topic khác thì tóm tắt 2–3 câu + link, không viết lại. Ghi nguồn dùng lại vào nhật ký quyết định.
+- **Phase 1:** bắt buộc mục "So sánh trực diện" trong 01 (bảng theo chiều: mô hình & đảm bảo, kiến trúc bên trong, đặc tính hiệu năng, mô hình lỗi, vận hành, hệ sinh thái, chi phí, độ khó di chuyển X ↔ Y), mỗi ô có lý do nhân quả `[Rn]`; tập trung vào chỗ hai bên KHÁC nhau về cơ chế và vì sao khác.
+- **Phase 4:** cùng contract, cùng workload, tuning công bằng là điều kiện sống còn (so sánh công nghệ dễ thiên vị nhất ở đây); ghi quá trình tuning của từng bên.
+- **Phase 6:** decision guide "chọn X khi…, chọn Y khi…" có điều kiện định lượng; ghi rõ phạm vi kết luận (version, cấu hình, quy mô đã thử).
+- **Roadmap:** topic so sánh nhận các topic về X và Y (nếu có) làm tiền đề.
+
 ## Kiểm tra tài liệu (trước gate / trước khi kết thúc phase có tài liệu HTML)
 
 - Không còn `<div class="guide">`, ô/placeholder rỗng, hay class `draft`.
 - Mỗi phần lớn có ít nhất một `callout insight`; khẳng định quan trọng đều có nhãn; mọi `href="#src-N"` trỏ tới nguồn tồn tại.
 - Mục tiêu học của phase (bảng trong `CLAUDE.md`) đều đã được trả lời cho before và MỌI cách implement (ở lite: các mục bắt buộc của lite).
-- Insight có `data-tags` và `id`; chạy `python3 scripts/build_insights.py --check` (lỗi thì sửa trước khi gate).
+- Insight có `data-tags` và `id`; hàng vấn đề/failure mode/decision/runbook có `data-problem` (+ `data-kind`/`data-choice`), thuật ngữ có `data-term`, số liệu tham chiếu ở 05 có `data-bench`. Chạy `make hubs-check` (hoặc ba lệnh `--check` của `build_insights.py`, `build_knowledge.py`, `build_dashboard.py`); lỗi thì sửa trước khi gate.
 - Render bằng headless Chrome/Edge (`--headless=new --dump-dom`) nếu có: không có "Syntax error" của mermaid.
 
-## Gate (sau phase 1, 2 và 4; chế độ lite: sau phase 1 và 4)
+## Gate (sau phase 1, 2 và 4; lite: sau phase 1 và 4; spike: sau phase 1)
 
 1. Gọi subagent `lab-reviewer` với đường dẫn topic và phase vừa xong.
 2. Sửa mọi vấn đề **nghiêm trọng**; vấn đề **nên sửa** thì sửa hoặc ghi lý do không sửa vào nhật ký quyết định.
@@ -147,5 +174,5 @@ Cho topic cần học nhanh. Mục tiêu: vẫn hiểu đúng cơ chế và th�
 1. Cập nhật `topics/<slug>/README.html`: phase vừa xong `data-status="done"` + `class="done"` (phase đang làm dở: `in-progress`), `data-field="current-phase"`, `data-field="updated"`, thêm dòng vào bảng nhật ký quyết định, cập nhật câu hỏi mở; phase 1 điền `data-field="scope"` và bảng Implementations, phase 2 điền bảng Stack.
 2. Cập nhật cột "Phase hiện tại" của topic trong bảng Topics ở `README.md` gốc (ví dụ `2/7 — System design`, thêm ` (lite)` nếu chế độ lite).
 3. Cập nhật hàng của topic trong `ROADMAP.html`: `data-status` (`in-progress` khi đang làm, `done` khi xong phase 6 ở lite hoặc phase 7 ở full) và chip hiển thị.
-4. Dựng lại kho insight: `python3 scripts/build_insights.py` (cập nhật `INSIGHTS.html`).
-5. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Chỉ add file trong `topics/<slug>/`, `README.md` gốc, `ROADMAP.html`, `INSIGHTS.html`.
+4. Dựng lại các trang tổng: `make hubs` (hoặc lần lượt `build_insights.py`, `build_knowledge.py`, `build_dashboard.py`): cập nhật `INSIGHTS.html`, `PROBLEMS.html`, `GLOSSARY.html`, `BENCHMARKS.html`, `LAB.html` và mục "Topic liên quan" trong README của mọi topic.
+5. Commit: `topic(<slug>): phase N - <tóm tắt tiếng Anh>`. Lần commit đầu có `system/`: `git update-index --chmod=+x topics/<slug>/system/mvnw topics/<slug>/experiments/chaos/*.sh` (Windows không giữ bit thực thi). Chỉ add file trong `topics/` (README của topic khác có thể đổi ở mục Topic liên quan), `README.md` gốc, `ROADMAP.html` và các trang tổng `*.html` ở gốc.

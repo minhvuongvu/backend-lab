@@ -15,6 +15,10 @@
   Phase 7 — Production rollout (mục tiêu 14). Cách đưa từng implementation từ hệ thống before lên môi trường người dùng thật.
   Dựa trên 06 §7 (giới hạn lab). Manifest/config mẫu đặt trong deploy/ và đã được validate (ghi lệnh validate).
   Phần nào chưa kiểm chứng được trong lab thì đánh dấu [theo tài liệu] hoặc [suy luận].
+  CHỈ MỤC THEO VẤN ĐỀ (scripts/build_knowledge.py → PROBLEMS.html):
+    - Bảng runbook §3 có data-index="runbook"; mỗi hàng có data-problem="<slug>" (slug triệu chứng như ở 01 §4/§13, dùng lại slug có sẵn
+      trong PROBLEMS.html) để chẩn đoán và cách xử lý hiện dưới đúng vấn đề.
+    - Kiểm tra: python3 scripts/build_knowledge.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -100,9 +104,9 @@ flowchart LR
   <section>
     <h2 id="runbook"><span class="num">3</span>Runbook theo failure mode</h2>
     <div class="guide">Mỗi failure mode ở 01 §13/§17, mỗi chuyên đề đặc thù (CĐn / CĐ-An) và bất thường ở 05: triệu chứng → chẩn đoán (query/lệnh cụ thể) → xử lý → phòng ngừa.</div>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-index="runbook">
       <thead><tr><th>Failure mode</th><th>Triệu chứng / alert</th><th>Chẩn đoán</th><th>Xử lý</th><th>Phòng ngừa</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <tbody><tr data-problem=""><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
   </section>
 

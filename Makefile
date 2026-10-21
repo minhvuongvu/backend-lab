@@ -6,7 +6,7 @@ LAB_NETWORK := backend-lab
 # OBS=full (metrics + logs + traces + profiles) or OBS=metrics (Prometheus + Grafana + docker-stats only)
 OBS ?= full
 
-.PHONY: help obs-up obs-down obs-status lab-network new-topic insights
+.PHONY: help obs-up obs-down obs-status lab-network new-topic insights hubs hubs-check
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -34,3 +34,13 @@ new-topic: ## Create a topic from templates: make new-topic SLUG=transactional-o
 insights: ## Rebuild INSIGHTS.html from every topic (and check insight structure)
 	python3 scripts/build_insights.py
 	python3 scripts/build_insights.py --check
+
+hubs: ## Rebuild every hub page: LAB, INSIGHTS, PROBLEMS, GLOSSARY, BENCHMARKS (+ related topics in READMEs)
+	python3 scripts/build_insights.py
+	python3 scripts/build_knowledge.py
+	python3 scripts/build_dashboard.py
+
+hubs-check: ## Lint insight, problem/glossary and benchmark markup of every topic
+	python3 scripts/build_insights.py --check
+	python3 scripts/build_knowledge.py --check
+	python3 scripts/build_dashboard.py --check

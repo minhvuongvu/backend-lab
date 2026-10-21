@@ -46,6 +46,16 @@
     - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
+  VẤN ĐỀ & THUẬT NGỮ CHO TRANG TỔNG (scripts/build_knowledge.py → PROBLEMS.html, GLOSSARY.html):
+    - Bảng được đánh chỉ mục bằng data-index trên <table>; mỗi hàng có nội dung phải có data-problem="<slug>":
+      slug kebab-case chữ thường mô tả TRIỆU CHỨNG nhìn từ ngoài (không phải tên solution), ví dụ lost-events-on-deploy,
+      p99-spike-under-load, lock-contention, replica-lag, duplicate-processing, pool-exhaustion.
+    - Hàng mô tả triệu chứng (data-index="problem-type" | "problem-impact" | "failure-mode") và khối .deep-dive có thêm
+      data-kind="correctness|performance|scalability|cost|operability" và tuỳ chọn data-symptom="câu mô tả ngắn" (mặc định lấy ô Biểu hiện / Failure mode).
+    - Một hàng thuộc nhiều vấn đề: data-problem="slug-a,slug-b".
+    - DÙNG LẠI slug đã có (xem PROBLEMS.html) để cùng một triệu chứng ở nhiều topic gom về một chỗ.
+    - Thuật ngữ §6: mỗi <dt> có data-term="<slug>" (kebab-case chữ thường của thuật ngữ tiếng Anh) và id="term-<slug>"; <dd> = định nghĩa + chỗ hay hiểu nhầm.
+    - Kiểm tra trước gate: python3 scripts/build_knowledge.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -167,9 +177,10 @@ flowchart LR
       <strong>chi phí / tài nguyên</strong> (CPU, RAM, IO, connection, tiền cloud),
       <strong>vận hành</strong> (khó debug, khó deploy, on-call nặng). Một bài toán có thể thuộc nhiều loại.
       Mỗi dòng phải có chỉ số đo được và so sánh hiện trạng với mục tiêu ở §3.</div>
-    <div class="table-wrap"><table>
+    <div class="guide">Mỗi hàng: <code>data-problem</code> (slug triệu chứng, dùng lại slug có sẵn trong PROBLEMS.html) + <code>data-kind</code>. Xem quy tắc ở comment đầu file.</div>
+    <div class="table-wrap"><table data-index="problem-type">
       <thead><tr><th>Loại vấn đề</th><th>Biểu hiện</th><th>Đo bằng chỉ số nào</th><th>Hiện tại</th><th>Mục tiêu (§3)</th></tr></thead>
-      <tbody><tr><td><!-- đúng đắn / hiệu năng / mở rộng / chi phí / vận hành --></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <tbody><tr data-problem="" data-kind=""><td><!-- đúng đắn / hiệu năng / mở rộng / chi phí / vận hành --></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
     <div class="guide">Sequence diagram của luồng as-is. Đánh dấu chính xác: <strong>✗</strong> tại điểm hỏng (vấn đề đúng đắn) HOẶC <strong>⏱</strong> tại điểm nghẽn
       (chỗ xếp hàng, lock, round-trip, I/O đồng bộ) kèm thời gian / tài nguyên tiêu tốn ở đó (ví dụ "⏱ 2 RTT ≈ 4 ms", "⏱ chờ row lock, p99 120 ms").</div>
@@ -188,9 +199,9 @@ sequenceDiagram
     </figure>
 
     <h3 id="problem-impact">4.2 Tác động</h3>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-index="problem-impact">
       <thead><tr><th>Điều kiện / mức tải kích hoạt</th><th>Biểu hiện (lỗi / chậm / tốn tài nguyên)</th><th>Tác động nghiệp vụ</th><th>Tác động kỹ thuật</th><th>Phát hiện bằng</th><th>Tần suất / mức độ</th></tr></thead>
-      <tbody><tr><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+      <tbody><tr data-problem="" data-kind=""><td></td><td></td><td></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
 
     <h3 id="problem-why-hard">4.3 Vì sao bài toán khó</h3>
@@ -250,7 +261,8 @@ sequenceDiagram
   <section>
     <h2 id="prerequisites"><span class="num">6</span>Kiến thức nền &amp; thuật ngữ</h2>
     <div class="guide">Chỉ những khái niệm thực sự dùng ở dưới. Mỗi thuật ngữ: định nghĩa chính xác + chỗ hay hiểu nhầm + link gốc.</div>
-    <dl class="glossary"><dt></dt><dd></dd></dl>
+    <div class="guide">Mỗi thuật ngữ: <code>&lt;dt id="term-&lt;slug&gt;" data-term="&lt;slug&gt;"&gt;</code> (slug = kebab-case chữ thường của thuật ngữ tiếng Anh, ví dụ <code>term-at-least-once</code>), để GLOSSARY.html gom thuật ngữ của mọi topic.</div>
+    <dl class="glossary"><dt id="term-" data-term=""></dt><dd></dd></dl>
   </section>
 
   <!-- ================================================================ -->
@@ -384,9 +396,9 @@ sequenceDiagram
     <h2 id="failure-modes"><span class="num">13</span>Failure mode của solution</h2>
     <div class="guide">Những gì vẫn hỏng hoặc vẫn chậm KỂ CẢ khi áp dụng đúng (bao gồm suy giảm hiệu năng: hot key, hàng đợi dồn, cache stampede...). Đây là input cho kịch bản lỗi ở phase 4.
       Cột "Cơ chế" phải là chuỗi sự kiện từ kích hoạt tới hậu quả (ví dụ "TTL hết đồng thời → N request cùng miss → N query DB cùng lúc → pool cạn → timeout dây chuyền"); ô hẹp thì dùng [Rn].</div>
-    <div class="table-wrap"><table>
+    <div class="table-wrap"><table data-index="failure-mode">
       <thead><tr><th>ID</th><th>Failure mode</th><th>Kích hoạt</th><th>Cơ chế (vì sao xảy ra)</th><th>Hậu quả</th><th>Phát hiện</th><th>Giảm thiểu</th></tr></thead>
-      <tbody><tr><td>FM1</td><td></td><td></td><td><!-- tóm tắt --> <a href="#r13-1">[R1]</a></td><td></td><td></td><td></td></tr></tbody>
+      <tbody><tr data-problem="" data-kind=""><td>FM1</td><td></td><td></td><td><!-- tóm tắt --> <a href="#r13-1">[R1]</a></td><td></td><td></td><td></td></tr></tbody>
     </table></div>
     <ol class="reasons">
       <li id="r13-1"><strong>R1</strong> <!-- chuỗi sự kiện đầy đủ, điều kiện, độ lớn --></li>
@@ -443,7 +455,7 @@ sequenceDiagram
     </table></div>
 
     <h3 id="cd-1" class="deep-dive-title"><span class="dd-code">CĐ1</span><!-- tên chuyên đề --></h3>
-      <div class="deep-dive" data-tags="">
+      <div class="deep-dive" data-tags="" data-problem="" data-kind="">
         <dl class="dd-meta">
           <dt>Thuộc</dt><dd>Solution (mọi cách implement)</dd>
           <dt>Vì sao đặc thù</dt><dd><!-- vì sao hiện tượng này KHÔNG tồn tại ở before / ở cách khác: thành phần hay cơ chế nào chỉ có ở đây sinh ra nó --></dd>
@@ -538,9 +550,9 @@ sequenceDiagram
       </div>
 
       <h4>Failure mode</h4>
-      <div class="table-wrap"><table>
+      <div class="table-wrap"><table data-index="failure-mode">
         <thead><tr><th>Failure mode</th><th>Kích hoạt</th><th>Cơ chế (tóm tắt + [Rn])</th><th>Hậu quả</th><th>Phát hiện</th><th>Giảm thiểu</th></tr></thead>
-        <tbody><tr><td></td><td></td><td><a href="#ra-5">[R5]</a></td><td></td><td></td><td></td></tr></tbody>
+        <tbody><tr data-problem="" data-kind=""><td></td><td></td><td><a href="#ra-5">[R5]</a></td><td></td><td></td><td></td></tr></tbody>
       </table></div>
 
       <h4>Giới hạn lý thuyết &amp; đánh đổi nền tảng</h4>
@@ -593,7 +605,7 @@ sequenceDiagram
       <div class="guide">Hiện tượng chỉ có ở cách này (tiêu chí ở mục "Chuyên đề đặc thù"). Mã CĐ-A1, CĐ-A2… (cách B: CĐ-B1…), ghi vào danh mục chuyên đề. Không có thì ghi "Không có" kèm lý do.</div>
       <div class="deep-dive-nested">
       <h4 id="cd-a1" class="deep-dive-title"><span class="dd-code">CĐ-A1</span><!-- tên chuyên đề --></h4>
-      <div class="deep-dive" data-tags="">
+      <div class="deep-dive" data-tags="" data-problem="" data-kind="">
         <dl class="dd-meta">
           <dt>Thuộc</dt><dd>Cách A</dd>
           <dt>Vì sao đặc thù</dt><dd><!-- vì sao hiện tượng này KHÔNG tồn tại ở before / ở cách khác: thành phần hay cơ chế nào chỉ có ở đây sinh ra nó --></dd>
@@ -683,6 +695,49 @@ flowchart LR
     <ol class="reasons">
       <li id="r18-1"><strong>R1</strong> <!-- ví dụ: A thêm 1 INSERT cùng transaction (~0,2 ms) nhưng không thêm fsync vì commit vốn fsync WAL một lần → Δp50 ≈ +0,2 ms; p99 có thể tăng hơn do tranh chấp trên bảng outbox khi publisher DELETE đồng thời --></li>
     </ol>
+  </section>
+
+  <section class="compare-only">
+    <h2 id="head-to-head">So sánh trực diện</h2>
+    <p><span class="badge">chỉ topic so sánh</span></p>
+    <div class="guide"><strong>Chỉ dùng cho topic so sánh</strong> (<code>data-field="type"</code> = <code>compare</code>, ví dụ "Redis lock vs PostgreSQL advisory lock"); topic thường thì XOÁ cả section này.
+      Mỗi công nghệ là một implementation (A = X, B = Y…). Tập trung vào chỗ hai bên KHÁC nhau về cơ chế và vì sao khác — phần giống nhau chỉ cần một dòng.
+      Lý thuyết đã có ở topic khác (tra ROADMAP, INSIGHTS, GLOSSARY, PROBLEMS): tóm tắt 2–3 câu + link, không viết lại. Mỗi ô ghi ngắn + <code>[Rn]</code>, giải thích nhân quả chi tiết ở danh sách lý do bên dưới.</div>
+    <div class="table-wrap"><table class="head-to-head">
+      <thead><tr><th>Chiều so sánh</th><th>A — <!-- X --></th><th>B — <!-- Y --></th><th>Khác nhau vì cơ chế nào</th><th>Hệ quả khi chọn</th></tr></thead>
+      <tbody>
+        <tr><td>Mô hình &amp; đảm bảo</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Kiến trúc bên trong (lưu trữ, giao thức, đồng thuận…)</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Đặc tính hiệu năng (latency, throughput, điểm bão hoà)</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Mô hình lỗi (hỏng thế nào, phục hồi ra sao)</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Vận hành (triển khai, giám sát, nâng cấp)</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Hệ sinh thái &amp; tích hợp với Spring / stack hiện có</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Chi phí (hạ tầng, giấy phép, con người)</td><td></td><td></td><td></td><td></td></tr>
+        <tr><td>Độ khó di chuyển X ↔ Y</td><td></td><td></td><td></td><td></td></tr>
+      </tbody>
+    </table></div>
+    <h4>Lý do chi tiết</h4>
+    <ol class="reasons">
+      <li id="rh-1"><strong>R1</strong> <!-- cơ chế khác nhau → hệ quả, điều kiện, độ lớn --></li>
+    </ol>
+    <h3 id="head-to-head-reuse">Kiến thức dùng lại từ topic khác</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Topic / trang</th><th>Dùng lại phần nào</th><th>Vì sao đủ, không cần viết lại</th></tr></thead>
+      <tbody><tr><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+    <div class="callout insight" id="ins-head-to-head-1" data-tags=""><span class="callout-title">Insight</span>
+      <p class="claim"><!-- điều quyết định lựa chọn giữa X và Y mà so sánh bề mặt (benchmark, feature list) không thấy --></p>
+      <div class="why"><strong>Vì sao:</strong>
+        <dl class="why-steps">
+          <dt>Cơ chế</dt><dd><ol><li></li><li></li></ol></dd>
+          <dt>Điều kiện</dt><dd></dd>
+          <dt>Định lượng</dt><dd></dd>
+          <dt>Khi nào không đúng</dt><dd></dd>
+          <dt>Liên hệ</dt><dd></dd>
+        </dl>
+      </div>
+      <div class="evidence"><strong>Căn cứ:</strong> </div>
+    </div>
   </section>
 
   <section>

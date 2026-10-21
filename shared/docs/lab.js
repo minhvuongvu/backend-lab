@@ -119,8 +119,12 @@ const DOCS = [
 
 // Repo-level hub pages (<body data-page="hub">) link to each other instead of to phase documents.
 const HUB = [
+  ["LAB.html", "Tổng quan"],
   ["ROADMAP.html", "Lộ trình"],
+  ["PROBLEMS.html", "Theo vấn đề"],
   ["INSIGHTS.html", "Kho insight"],
+  ["BENCHMARKS.html", "Số liệu"],
+  ["GLOSSARY.html", "Thuật ngữ"],
 ];
 
 function buildDocNav() {

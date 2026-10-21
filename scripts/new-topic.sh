@@ -20,10 +20,27 @@ fi
 TOPIC="$(echo "$SLUG" | tr '-' ' ' | awk '{for (i = 1; i <= NF; i++) $i = toupper(substr($i, 1, 1)) substr($i, 2)} 1')"
 DATE="$(date +%Y-%m-%d)"
 
-mkdir -p "$TOPIC_DIR"/{system,experiments,results/raw,results/charts,deploy}
-for d in system experiments results/raw results/charts deploy; do
+# Java package segment: "transactional-outbox" -> "transactionaloutbox"
+PKG="${SLUG//-/}"
+
+mkdir -p "$TOPIC_DIR"/{results/raw,results/charts,results/analysis,deploy}
+for d in results/raw results/charts results/analysis deploy; do
   touch "$TOPIC_DIR/$d/.gitkeep"
 done
+
+# Reusable skeleton (shared/scaffold): Spring Boot system + experiment kit (compose, Makefile, k6, chaos,
+# integrity checker, charts). Paths inside it are already written for topics/<slug>/..., so only the
+# {{SLUG}}/{{PKG}}/{{TOPIC}} tokens are replaced (Go templates like {{.Server.Version}} must survive).
+SCAFFOLD="$ROOT/shared/scaffold"
+cp -r "$SCAFFOLD/system" "$TOPIC_DIR/system"
+cp -r "$SCAFFOLD/experiments" "$TOPIC_DIR/experiments"
+for src_root in "$TOPIC_DIR/system/src/main/java/lab" "$TOPIC_DIR/system/src/test/java/lab"; do
+  [[ -d "$src_root/__PKG__" ]] && mv "$src_root/__PKG__" "$src_root/$PKG"
+done
+grep -rlE '\{\{(SLUG|PKG|TOPIC)\}\}' "$TOPIC_DIR/system" "$TOPIC_DIR/experiments" | while IFS= read -r f; do
+  sed -i -e "s/{{SLUG}}/$SLUG/g" -e "s/{{PKG}}/$PKG/g" -e "s/{{TOPIC}}/$TOPIC/g" "$f"
+done
+chmod +x "$TOPIC_DIR/system/mvnw" "$TOPIC_DIR/experiments/chaos/"*.sh 2>/dev/null || true
 
 # Templates live one level below the repo root (templates/), topics two levels (topics/<slug>/),
 # so shared asset paths are rewritten from ../shared/ to ../../shared/ on copy.

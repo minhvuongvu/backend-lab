@@ -1,0 +1,42 @@
+# Shared by before and every implementation. Profile files only add what differs (CLAUDE.md: fair comparison).
+spring:
+  application:
+    name: {{SLUG}}
+  profiles:
+    default: before
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/lab}
+    username: ${DB_USER:lab}
+    password: ${DB_PASSWORD:lab}
+    hikari:
+      maximum-pool-size: ${DB_POOL_SIZE:10}   # identical for every impl unless the topic is about pooling
+  threads:
+    virtual:
+      enabled: false   # keep the threading model fixed across implementations; change only on purpose
+
+lab:
+  topic: {{SLUG}}
+  impl: before
+
+server:
+  shutdown: graceful   # drain in-flight requests on SIGTERM (matters for failure scenarios)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus
+  metrics:
+    distribution:
+      percentiles-histogram:
+        http.server.requests: true   # needed for histogram_quantile p95/p99 in Grafana
+  tracing:
+    sampling:
+      probability: ${TRACING_SAMPLING:0.0}   # 0 for pure performance runs, 1.0 for diagnosis (same for every impl)
+  otlp:
+    tracing:
+      endpoint: ${OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+
+logging:
+  level:
+    root: INFO

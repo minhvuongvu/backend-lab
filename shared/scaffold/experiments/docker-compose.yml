@@ -1,0 +1,93 @@
+# Experiment stack for topic {{SLUG}}. Run from topics/{{SLUG}}/experiments (Makefile wraps these commands).
+# Fairness: the app gets the SAME cpus/mem_limit for before and every implementation; only IMPL changes.
+name: {{SLUG}}
+
+include:
+  # Exporters scraped by the shared Prometheus (shared/observability). Add redis.yml / kafka.yml when used.
+  - path: ../../../shared/observability/exporters/postgres.yml
+    env_file: .env
+
+services:
+  app:
+    build: ../system
+    image: lab/{{SLUG}}:local
+    environment:
+      SPRING_PROFILES_ACTIVE: ${IMPL:-before}
+      DB_URL: jdbc:postgresql://toxiproxy:15432/lab   # through toxiproxy so faults can be injected on the DB link
+      DB_USER: lab
+      DB_PASSWORD: lab
+      DB_POOL_SIZE: ${DB_POOL_SIZE:-10}
+      TRACING_SAMPLING: ${TRACING_SAMPLING:-0.0}
+      OTLP_TRACES_ENDPOINT: http://alloy:4318/v1/traces
+    cpus: ${APP_CPUS:-2}
+    mem_limit: ${APP_MEM:-1g}
+    labels:
+      lab.scrape: "true"
+      lab.port: "8080"
+      lab.path: /actuator/prometheus
+    depends_on:
+      toxiproxy:
+        condition: service_started
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      # The JRE image has no curl/wget: speak HTTP over bash's /dev/tcp and look for "UP".
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /actuator/health HTTP/1.0\r\n\r\n' >&3 && grep -q UP <&3"]
+      interval: 3s
+      timeout: 2s
+      retries: 40
+    networks:
+      default: {}
+      lab:
+        aliases: ["{{SLUG}}-app"]   # k6 (on the lab network) targets http://{{SLUG}}-app:8080
+
+  postgres:
+    image: postgres:17.6-alpine
+    environment:
+      POSTGRES_DB: lab
+      POSTGRES_USER: lab
+      POSTGRES_PASSWORD: lab
+    command: ["postgres", "-c", "shared_buffers=256MB", "-c", "max_connections=200"]
+    cpus: ${PG_CPUS:-2}
+    mem_limit: ${PG_MEM:-1g}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lab -d lab"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+    networks: [default, lab]
+
+  # Fault injection on the app -> postgres link (latency, bandwidth, timeout, reset). See chaos/toxiproxy.py.
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.12.0
+    command: ["-host=0.0.0.0", "-config=/config/toxiproxy.json"]
+    volumes:
+      - ./toxiproxy.json:/config/toxiproxy.json:ro
+    ports:
+      - "127.0.0.1:${TOXIPROXY_API_PORT:-8474}:8474"
+    networks: [default, lab]
+
+  # Enable when the topic needs them (and include the matching exporter above):
+  # redis:
+  #   image: redis:8.2.2-alpine
+  #   cpus: ${REDIS_CPUS:-1}
+  #   mem_limit: ${REDIS_MEM:-512m}
+  #   networks: [default, lab]
+  # kafka:
+  #   image: apache/kafka:4.1.0
+  #   environment:
+  #     KAFKA_NODE_ID: 1
+  #     KAFKA_PROCESS_ROLES: broker,controller
+  #     KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+  #     KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+  #     KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+  #     KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+  #   cpus: ${KAFKA_CPUS:-2}
+  #   mem_limit: ${KAFKA_MEM:-1g}
+  #   networks: [default, lab]
+
+networks:
+  lab:
+    name: backend-lab
+    external: true

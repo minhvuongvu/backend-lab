@@ -71,16 +71,19 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Gợi ý theo phase: phase 1 mỗi agent một góc nguồn; phase 3 mỗi agent một implementation; phase 5 tách chạy thí nghiệm, vẽ biểu đồ, kiểm tra toàn vẹn, viết nháp 05; tài liệu HTML dài có thể chia theo phần.
 - Không chia nhỏ việc ngắn hoặc phụ thuộc chặt vào nhau chỉ để có nhiều agent.
 
-## Lộ trình, kho insight, chế độ lite
+## Trang tổng, chế độ, loại topic
 - `ROADMAP.html`: danh sách topic có quan hệ tiền đề (`tr[data-slug][data-prereq][data-status]`). `/research` cảnh báo khi tiền đề chưa xong (khuyến nghị, không chặn), thêm topic mới vào roadmap, cập nhật trạng thái; `/lab-status` gợi ý topic học tiếp. Tiền đề phải có lý do cơ chế (topic sau dựa vào cơ chế của topic trước), đồ thị không có chu trình.
+- Trang tổng ở gốc repo (thanh điều hướng chung): `LAB.html` tổng quan tiến độ, chờ duyệt, topic sẵn sàng học; `PROBLEMS.html` tra theo triệu chứng → nguyên nhân, lựa chọn, runbook (`data-problem`); `GLOSSARY.html` thuật ngữ chung (`data-term`); `BENCHMARKS.html` số liệu tham chiếu đã đo, dùng lại cho mô hình định lượng của topic sau (`data-bench`, chỉ số [đo được]). README mỗi topic có mục "Topic liên quan" tự sinh. Dựng lại tất cả bằng `make hubs`, kiểm tra markup bằng `make hubs-check`.
 - `INSIGHTS.html`: kho insight và chuyên đề của mọi topic, gom theo tag để thấy nguyên lý lặp lại giữa các topic; dựng lại bằng `python3 scripts/build_insights.py` (hoặc `make insights`) sau mỗi phase, `--check` trước gate. Mỗi insight có `id` duy nhất và `data-tags` (2–5 tag kebab-case, ưu tiên dùng lại tag đã có).
 - Chế độ `lite` (`/research <topic> lite`): cho topic học nhanh; bảng nới lỏng trong `.claude/commands/research.md` § Chế độ lite. Kết luận ở lite ghi rõ "khám phá (lite)". Không nới quy tắc trung thực và test tính đúng đắn.
+- Chế độ `spike` (`/research <topic> spike`): khám phá nhanh một hiện tượng/câu hỏi (thường một chuyên đề), § Chế độ spike. Kết luận ghi rõ "spike".
+- Topic so sánh (`/research X vs Y`): `data-field="type"` = `compare`, mỗi công nghệ là một implementation, bắt buộc mục "So sánh trực diện" trong 01, dùng lại topic đã có thay vì viết lại; § Topic so sánh.
 
 ## Một chủ đề, một phiên
 - Mỗi phiên chỉ làm một topic.
 - Nếu hội thoại hiện tại đã làm topic khác, nhắc tôi chạy `/clear` trước khi tiếp tục.
 - Trạng thái nằm trong file, không nằm trong hội thoại. Khi bắt đầu, luôn đọc `topics/<slug>/README.html` và các file phase trước.
-- README của topic là HTML (khung `templates/topic-README.html`). Trạng thái máy đọc nằm ở thuộc tính `data-*`: `data-field="current-phase|updated|scope"`, phase `<li data-phase="N" data-status="todo|in-progress|done">` (class trùng với status), chờ duyệt `ul.approvals li[data-status=open|approved|rejected]`, câu hỏi `ul.questions li[data-status=open|answered]`. Khi cập nhật, sửa cả `data-*` lẫn chữ hiển thị. `README.md` gốc của repo vẫn là Markdown.
+- README của topic là HTML (khung `templates/topic-README.html`). Trạng thái máy đọc nằm ở thuộc tính `data-*`: `data-field="current-phase|updated|scope|mode|type"` (mode: full/lite/spike; type: standard/compare), phase `<li data-phase="N" data-status="todo|in-progress|done|skipped">` (class trùng với status), chờ duyệt `ul.approvals li[data-status=open|approved|rejected]`, câu hỏi `ul.questions li[data-status=open|answered]`. Khi cập nhật, sửa cả `data-*` lẫn chữ hiển thị. `README.md` gốc của repo vẫn là Markdown.
 - Trong cùng một topic, `/clear` giữa các phase vẫn an toàn.
 
 ## Stack mặc định
@@ -127,6 +130,7 @@ Chi tiết trong `templates/04-experiment-plan.html`; công cụ thống kê `sc
 - Dữ liệu thô trong `results/raw/` đặt tên `<impl>-<scenario>-<run>-<timestamp>`, không sửa tay; thứ tự chạy lưu ở `results/raw/run-order.csv`.
 
 ## Tái lập
+- Bộ khung dùng lại `shared/scaffold/` (Spring Boot system + experiment kit) được `make new-topic` copy vào `system/` và `experiments/` của mỗi topic; topic chỉ viết phần khác biệt. Cải tiến chung thì sửa ở `shared/scaffold/`, không sửa riêng lẻ trong từng topic.
 - Mọi thứ chạy được bằng `make` trong `experiments/` (`make up`, `make run IMPL=x SCENARIO=y`, `make report`, `make down`).
 - Ghi môi trường chạy vào `results/env.md`.
 - Observability dùng chung (`shared/observability/README.md`): `make obs-up` = metrics + logs + traces + profiles (Prometheus, Loki, Tempo, Pyroscope, Alloy, Grafana); `make obs-up OBS=metrics` = chỉ metrics. Cổng đổi được qua `PROM_PORT`, `GRAFANA_PORT`, `OTLP_*_PORT`, `PYROSCOPE_PORT`.

@@ -21,6 +21,19 @@
     - Dùng lại tag đã có ở topic khác (xem INSIGHTS.html § Theo tag) để insight của nhiều topic nối với nhau.
     - Khối .deep-dive cũng có data-tags theo cùng quy tắc.
     - Kiểm tra trước gate: python3 scripts/build_insights.py --check
+  SỐ LIỆU THAM CHIẾU (scripts/build_dashboard.py → BENCHMARKS.html), §8:
+    - Chỉ số đo được dùng lại được ngoài topic này (chi phí một thao tác, overhead một cấu hình, độ trễ một thành phần) được ghi thành
+      một <tr data-bench="..."> trong table.benchmarks, các thuộc tính:
+        data-bench       slug kebab-case của ĐẠI LƯỢNG, ví dụ pg-insert-in-tx-cost, kafka-acks-all-vs-1-latency, pg-fsync-commit-latency,
+                         redis-rtt, otel-tracing-overhead. Dùng lại slug đã có ở BENCHMARKS.html để cùng đại lượng đo ở topic/môi trường
+                         khác đứng cạnh nhau.
+        data-value       số (dấu chấm thập phân, không đơn vị)      data-unit     ms | µs | req/s | MB/s | % | ...
+        data-ci-low / data-ci-high   khoảng tin cậy 95% (bỏ trống nếu không có)
+        data-metric      p50 | p95 | p99 | mean | throughput | delta-p99 | ...
+        data-conditions  điều kiện ngắn: tải, payload, cấu hình (ví dụ "500 req/s, 1 KiB, acks=all, 3 lần chạy")
+        data-raw         đường dẫn tương đối tới file trong results/raw/ (phải tồn tại)
+        data-env         đường dẫn tới results/env.md
+    - Chỉ số [đo được]; không đưa số theo tài liệu hay suy luận vào bảng này. Kiểm tra: python3 scripts/build_dashboard.py --check
 -->
 <body class="draft">
 <div class="layout">
@@ -144,6 +157,22 @@
     <div class="table-wrap"><table>
       <thead><tr><th>Quan sát</th><th>Giả thuyết nguyên nhân</th><th>Kiểm tra (truy vấn / lần chạy thêm)</th><th>Kết luận</th><th>Raw</th></tr></thead>
       <tbody><tr><td></td><td></td><td></td><td></td><td></td></tr></tbody>
+    </table></div>
+  </section>
+
+  <section>
+    <h2 id="benchmarks"><span class="num">8</span>Số liệu tham chiếu</h2>
+    <div class="guide">Những con số đo được ở trên mà dùng lại được ngoài topic này, ví dụ: chi phí thêm một INSERT trong cùng transaction, chênh p99 giữa
+      <code>acks=all</code> và <code>acks=1</code>, độ trễ fsync khi COMMIT, RTT tới Redis, overhead của tracing. Mỗi đại lượng một hàng với thuộc tính
+      <code>data-*</code> theo hợp đồng ở comment đầu file; trang <code>BENCHMARKS.html</code> gom các hàng này từ mọi topic.
+      Trước khi đặt slug mới, xem BENCHMARKS.html: cùng đại lượng thì dùng lại slug. Không có đại lượng nào dùng lại được thì ghi "—" kèm lý do.</div>
+    <div class="table-wrap"><table class="benchmarks">
+      <thead><tr><th>Đại lượng (slug)</th><th>Giá trị [95% CI]</th><th>Metric</th><th>Điều kiện</th><th>Raw</th></tr></thead>
+      <tbody>
+        <tr data-bench="" data-value="" data-unit="" data-ci-low="" data-ci-high="" data-metric="" data-conditions="" data-raw="" data-env="results/env.md">
+          <td><code><!-- slug --></code> <!-- mô tả ngắn --></td><td><!-- value [low, high] unit --></td><td></td><td></td><td><a href="results/raw/"><!-- file --></a></td>
+        </tr>
+      </tbody>
     </table></div>
   </section>
 
