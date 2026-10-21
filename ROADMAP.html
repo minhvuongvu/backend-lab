@@ -16,7 +16,7 @@
   LỘ TRÌNH TOPIC — trang tổng, Claude đọc và cập nhật.
   Hợp đồng dữ liệu (máy đọc), mỗi topic là một <tr> trong table.roadmap:
     data-slug      slug kebab-case, trùng thư mục topics/<slug>/ và id của <tr>
-    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd
+    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd | mongodb
     data-prereq    danh sách slug tiền đề, phân tách bằng dấu phẩy (rỗng nếu không có); đồ thị phải là DAG
     data-mode      full | lite — chế độ gợi ý cho /research
     data-priority  1 (cao) – 3 (thấp)
@@ -152,6 +152,20 @@
         <li><a href="#minio-erasure-coding-consistency">MinIO: erasure coding, quorum &amp; tự chữa bitrot</a> — độ bền của object storage</li>
         <li><a href="#object-upload-presigned-multipart">Upload file: presigned URL &amp; multipart</a> — luồng upload đúng cách</li>
     </ol>
+    <h3 id="path-8">MongoDB</h3>
+    <p>Từ mô hình hoá document tới replica set, transaction và sharding; đối chiếu liên tục với cơ chế tương ứng của PostgreSQL.</p>
+    <ol class="learning-path">
+        <li><a href="#mongodb-document-modeling">MongoDB: mô hình hoá document — embed vs reference</a> — mô hình đi theo access pattern</li>
+        <li><a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a> — nền B-tree để so sánh</li>
+        <li><a href="#mongodb-wiredtiger-indexes">MongoDB: WiredTiger cache &amp; chiến lược index (ESR)</a> — cache và thứ tự trường trong index</li>
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — nền cho transaction</li>
+        <li><a href="#mvcc-vacuum-bloat">MVCC, VACUUM &amp; bloat</a> — tiền đề của replica lag</li>
+        <li><a href="#read-replica-lag">Read replica &amp; replication lag</a> — đọc dữ liệu cũ ở PostgreSQL</li>
+        <li><a href="#mongodb-replica-set-write-concern">MongoDB replica set: oplog, bầu primary, write concern &amp; read concern</a> — ghi đã ack vẫn bị rollback</li>
+        <li><a href="#mongodb-multi-document-transactions">MongoDB multi-document transaction</a> — write conflict và retry</li>
+        <li><a href="#mongodb-sharding-shard-key">MongoDB sharding: shard key, chunk &amp; balancer</a> — chọn shard key</li>
+        <li><a href="#mongodb-vs-postgresql-jsonb">MongoDB vs PostgreSQL JSONB (topic so sánh)</a> — khi nào vẫn dùng PostgreSQL</li>
+    </ol>
   </section>
 
   <section>
@@ -200,6 +214,8 @@
     <figure class="diagram" data-roadmap="security" data-track-name="Bảo mật &amp; danh tính"></figure>
     <h3 id="graph-cicd">CI/CD &amp; triển khai</h3>
     <figure class="diagram" data-roadmap="cicd" data-track-name="CI/CD &amp; triển khai"></figure>
+    <h3 id="graph-mongodb">MongoDB</h3>
+    <figure class="diagram" data-roadmap="mongodb" data-track-name="MongoDB"></figure>
   </section>
 
   <section>
@@ -591,6 +607,55 @@
           <td><a href="#saga-orchestration-vs-choreography">Saga: orchestration vs choreography</a></td>
           <td>Orchestrator crash giữa saga phải tiếp tục đúng bước: cách tự viết lưu trạng thái từng bước và gửi lệnh qua outbox; durable execution (kiểu Temporal) ghi lịch sử sự kiện và replay code workflow, nên code workflow phải tất định. Timeout, retry và compensation đều phải idempotent vì mỗi bước có thể chạy lại.</td>
           <td><span class="mode-chip mode-full">full</span> Full: kill orchestrator ở từng bước, kiểm tra saga hoàn tất đúng và không chạy trùng side effect.</td>
+        </tr>
+        <tr id="mongodb-document-modeling" data-slug="mongodb-document-modeling" data-track="mongodb" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>MongoDB: mô hình hoá document — embed vs reference</strong><br><code>mongodb-document-modeling</code><br><a class="topic-link" href="topics/mongodb-document-modeling/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Không có JOIN rẻ nên mô hình phải đi theo access pattern: embed để một lần đọc lấy đủ dữ liệu, reference khi dữ liệu con tăng không giới hạn. Mảng tăng mãi làm document phình (giới hạn 16 MB), mỗi lần cập nhật ghi lại cả document và làm working set vượt cache. Sai mô hình ở đây thì index hay sharding sau này không cứu được.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo latency đọc/ghi và kích thước working set khi mảng con tăng, embed vs reference.</td>
+        </tr>
+        <tr id="mongodb-wiredtiger-indexes" data-slug="mongodb-wiredtiger-indexes" data-track="mongodb" data-prereq="mongodb-document-modeling,index-strategies" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>MongoDB: WiredTiger cache &amp; chiến lược index (ESR)</strong><br><code>mongodb-wiredtiger-indexes</code><br><a class="topic-link" href="topics/mongodb-wiredtiger-indexes/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#mongodb-document-modeling">MongoDB: mô hình hoá document — embed vs reference</a>, <a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a></td>
+          <td>WiredTiger giữ trang B-tree trong cache riêng (mặc định khoảng 50% RAM trừ 1 GB) cạnh page cache của hệ điều hành; truy vấn ngoài index hoặc working set vượt cache thì đọc đĩa và latency tăng vọt. Thứ tự trường trong compound index theo quy tắc Equality → Sort → Range quyết định có phải sort trong bộ nhớ hay không. Kiến thức B-tree từ topic index PostgreSQL áp dụng trực tiếp.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: so sánh explain và latency theo thứ tự trường của compound index, và khi working set vượt cache.</td>
+        </tr>
+        <tr id="mongodb-replica-set-write-concern" data-slug="mongodb-replica-set-write-concern" data-track="mongodb" data-prereq="read-replica-lag" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>MongoDB replica set: oplog, bầu primary, write concern &amp; read concern</strong><br><code>mongodb-replica-set-write-concern</code><br><a class="topic-link" href="topics/mongodb-replica-set-write-concern/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#read-replica-lag">Read replica &amp; replication lag</a></td>
+          <td>Secondary áp oplog bất đồng bộ: ghi với w:1 được xác nhận khi chỉ primary có, nên nếu primary chết trước khi replicate thì bản ghi bị rollback sau khi bầu primary mới. w:majority và readConcern majority/linearizable đổi latency lấy đảm bảo; đọc từ secondary ra dữ liệu cũ y như replica lag của PostgreSQL.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: kill primary dưới tải, đếm ghi đã ack nhưng bị rollback theo từng write concern; đo độ cũ khi đọc secondary.</td>
+        </tr>
+        <tr id="mongodb-multi-document-transactions" data-slug="mongodb-multi-document-transactions" data-track="mongodb" data-prereq="mongodb-replica-set-write-concern,isolation-levels-anomalies" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>MongoDB multi-document transaction</strong><br><code>mongodb-multi-document-transactions</code><br><a class="topic-link" href="topics/mongodb-multi-document-transactions/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#mongodb-replica-set-write-concern">MongoDB replica set: oplog, bầu primary, write concern &amp; read concern</a>, <a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a></td>
+          <td>Transaction dùng snapshot isolation của WiredTiger và cần replica set; hai transaction sửa cùng document thì một bên nhận write conflict (TransientTransactionError) và phải retry cả transaction. Transaction giữ snapshot nên có giới hạn thời gian (mặc định 60 giây) và tốn tài nguyên; thiết kế đúng thì phần lớn thao tác chỉ cần cập nhật atomic trên một document.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo tỉ lệ write conflict và throughput dưới contention, so với cập nhật một document.</td>
+        </tr>
+        <tr id="mongodb-sharding-shard-key" data-slug="mongodb-sharding-shard-key" data-track="mongodb" data-prereq="mongodb-replica-set-write-concern,mongodb-wiredtiger-indexes" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>MongoDB sharding: shard key, chunk &amp; balancer</strong><br><code>mongodb-sharding-shard-key</code><br><a class="topic-link" href="topics/mongodb-sharding-shard-key/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#mongodb-replica-set-write-concern">MongoDB replica set: oplog, bầu primary, write concern &amp; read concern</a>, <a href="#mongodb-wiredtiger-indexes">MongoDB: WiredTiger cache &amp; chiến lược index (ESR)</a></td>
+          <td>mongos định tuyến theo shard key: truy vấn không chứa shard key phải hỏi mọi shard (scatter-gather). Shard key tăng dần (ObjectId, timestamp) dồn mọi ghi vào chunk cuối của một shard; key có ít giá trị tạo jumbo chunk không chia được. Mỗi shard là một replica set, nên mọi đảm bảo của topic trước vẫn áp dụng.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: so sánh phân bố ghi và latency với shard key tăng dần, hashed và compound.</td>
+        </tr>
+        <tr id="mongodb-change-streams" data-slug="mongodb-change-streams" data-track="mongodb" data-prereq="mongodb-replica-set-write-concern,transactional-outbox" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>MongoDB change streams: resume token &amp; cửa sổ oplog</strong><br><code>mongodb-change-streams</code><br><a class="topic-link" href="topics/mongodb-change-streams/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#mongodb-replica-set-write-concern">MongoDB replica set: oplog, bầu primary, write concern &amp; read concern</a>, <a href="#transactional-outbox">Transactional outbox</a></td>
+          <td>Change stream đọc từ oplog nên consumer resume được bằng resume token; nếu consumer dừng lâu hơn cửa sổ oplog thì token hết hiệu lực và mất sự kiện. Giao nhận là at-least-once như outbox/CDC; dùng change stream thay outbox chỉ an toàn khi xử lý idempotent và oplog đủ dài.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: dừng consumer lâu hơn cửa sổ oplog và crash giữa xử lý, đếm sự kiện mất/trùng.</td>
+        </tr>
+        <tr id="mongodb-vs-postgresql-jsonb" data-slug="mongodb-vs-postgresql-jsonb" data-track="mongodb" data-prereq="mongodb-document-modeling,mongodb-multi-document-transactions,index-strategies" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>MongoDB vs PostgreSQL JSONB (topic so sánh)</strong><br><code>mongodb-vs-postgresql-jsonb</code><br><a class="topic-link" href="topics/mongodb-vs-postgresql-jsonb/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-mongodb">MongoDB</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#mongodb-document-modeling">MongoDB: mô hình hoá document — embed vs reference</a>, <a href="#mongodb-multi-document-transactions">MongoDB multi-document transaction</a>, <a href="#index-strategies">Chiến lược index (B-tree, composite, partial, covering)</a></td>
+          <td>Cả hai lưu được dữ liệu dạng document, nhưng khác nhau ở cách cập nhật (JSONB ghi lại cả tuple mới theo MVCC, MongoDB cập nhật tại chỗ trong WiredTiger), index (GIN vs B-tree theo đường dẫn trường), transaction và mở rộng ngang. Trả lời câu hỏi thực tế: khi nào dữ liệu document vẫn nên nằm trong PostgreSQL.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng workload đọc/ghi document, đo latency, kích thước lưu trữ và chi phí cập nhật một phần.</td>
         </tr>
       </tbody>
     </table></div>
