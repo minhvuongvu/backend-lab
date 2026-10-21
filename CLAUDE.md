@@ -87,7 +87,7 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Trong cùng một topic, `/clear` giữa các phase vẫn an toàn.
 
 ## Stack mặc định
-- Java 21, Spring Boot 3.x, Maven wrapper (`./mvnw`), PostgreSQL, Redis, Kafka, Docker Compose.
+- Java 21, Spring Boot 4.x (bản ổn định còn hỗ trợ OSS; 3.5 hết hỗ trợ OSS từ 2026-06-30 — chỉ dùng 3.x khi topic cần giống môi trường cũ và ghi lý do), Maven wrapper (`./mvnw`), PostgreSQL, Redis, Kafka, Docker Compose.
 - Testcontainers cho integration test.
 - k6 cho load test; Python (pandas + matplotlib) để xử lý số liệu và vẽ biểu đồ.
 - Chỉ đổi stack khi topic đòi hỏi, và ghi lý do vào README của topic.

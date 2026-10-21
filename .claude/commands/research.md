@@ -64,7 +64,7 @@ Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 ## Phase 3 — Implement → `system/` + `03-implementation.html` (mục tiêu 9–11)
 
 - Bắt đầu từ bộ khung đã được `new-topic` copy vào `system/` (xem `shared/scaffold/README.md`): thay domain mẫu `Item` bằng domain của topic, định nghĩa contract ở `contract/`, mỗi implementation một package `impl/<id>/` + `@Profile` + `application-<id>.yml`, contract test chạy chung cho mọi implementation.
-- Code before và mọi cách implement ở 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 3.x. Expose `/actuator/prometheus`, bật tracing OTLP và log correlation theo `shared/observability/README.md`.
+- Code before và mọi cách implement ở 01, theo contract ở 02. Maven wrapper, Java 21, Spring Boot 4.x (version theo bộ khung). Expose `/actuator/prometheus`, bật tracing OTLP và log correlation theo `shared/observability/README.md`.
 - Nếu có từ 2 implementation trở lên, dùng subagent song song: mỗi agent một implementation (module/package riêng), agent chính giữ contract chung, tích hợp và chạy `./mvnw verify`.
 - Integration test (Testcontainers):
   - before: test tái hiện bài toán (được kỳ vọng thể hiện lỗi; ghi rõ);

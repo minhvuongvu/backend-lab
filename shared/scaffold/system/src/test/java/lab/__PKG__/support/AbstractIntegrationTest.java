@@ -2,7 +2,8 @@ package lab.{{PKG}}.support;
 
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.testcontainers.service.connection.ServiceConnection;
-import org.testcontainers.containers.PostgreSQLContainer;
+// Testcontainers 2: module classes moved to org.testcontainers.<module>; PostgreSQLContainer is no longer generic.
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 /**
  * Real infrastructure in containers (no mocks for the parts the topic is about).
@@ -17,7 +18,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 public abstract class AbstractIntegrationTest {
 
     @ServiceConnection
-    static final PostgreSQLContainer<?> POSTGRES = new PostgreSQLContainer<>("postgres:17.6-alpine");
+    static final PostgreSQLContainer POSTGRES = new PostgreSQLContainer("postgres:17.6-alpine");
 
     // Enable when the topic uses Kafka / Redis (and the matching dependencies in pom.xml), and start them below:
     // @ServiceConnection

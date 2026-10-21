@@ -33,9 +33,29 @@ management:
   tracing:
     sampling:
       probability: ${TRACING_SAMPLING:0.0}   # 0 for pure performance runs, 1.0 for diagnosis (same for every impl)
+  # Boot 4's spring-boot-starter-opentelemetry turns on THREE OTLP exports by default (all verified in 4.1.1 metadata).
+  # Metrics: Prometheus scraping is the single source of numbers, so OTLP metric push is off (it would add CPU,
+  # allocations and network on the measured app and duplicate series). Logs: stdout is collected by Alloy, so OTLP
+  # log export is off unless the app runs on the host. Traces: on; volume is controlled by sampling.probability.
   otlp:
+    metrics:
+      export:
+        enabled: false
+  logging:
+    export:
+      otlp:
+        enabled: ${OTLP_LOGS_ENABLED:false}
+  # Boot 4: management.otlp.tracing.endpoint was removed (deprecation level "error" since 4.0.0, i.e. ignored);
+  # its replacement lives under management.opentelemetry.*. Verified in spring-boot-*-4.1.1 configuration metadata.
+  opentelemetry:
     tracing:
-      endpoint: ${OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+      export:
+        otlp:
+          endpoint: ${OTLP_TRACES_ENDPOINT:http://localhost:4318/v1/traces}
+    logging:
+      export:
+        otlp:
+          endpoint: ${OTLP_LOGS_ENDPOINT:http://localhost:4318/v1/logs}
 
 logging:
   level:

@@ -107,17 +107,18 @@ networks:
 
 **Container phải nằm trên network `backend-lab`**, nếu không Prometheus và Alloy không thấy nó. Thiếu label `lab.scrape: "true"` thì Prometheus bỏ qua container, nhưng log vẫn được thu.
 
-## 4. Cấu hình Spring Boot (3.x)
+## 4. Cấu hình Spring Boot (4.x)
 
-Dependencies:
+Lab dùng Spring Boot **4.1.x** (bản 4.1.1). Mọi tên thuộc tính dưới đây đã được đối chiếu với file `META-INF/spring-configuration-metadata.json` trong các jar `spring-boot-*-4.1.1` (nguồn chính xác nhất cho đúng version), và đã chạy thật trong bộ khung `shared/scaffold/system`.
+
+Dependencies (Boot 4 là modular: mỗi công nghệ một starter riêng):
 
 ```xml
 <dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-actuator</artifactId></dependency>
 <dependency><groupId>io.micrometer</groupId><artifactId>micrometer-registry-prometheus</artifactId></dependency>
-<dependency><groupId>io.micrometer</groupId><artifactId>micrometer-tracing-bridge-otel</artifactId></dependency>
-<dependency><groupId>io.opentelemetry</groupId><artifactId>opentelemetry-exporter-otlp</artifactId></dependency>
-<!-- tuỳ chọn: span cho JDBC query -->
-<dependency><groupId>net.ttddyy.observation</groupId><artifactId>datasource-micrometer-spring-boot</artifactId></dependency>
+<!-- Thay cho micrometer-tracing-bridge-otel + opentelemetry-exporter-otlp của Boot 3: gồm bridge, exporter OTLP và auto-config -->
+<dependency><groupId>org.springframework.boot</groupId><artifactId>spring-boot-starter-opentelemetry</artifactId></dependency>
+<!-- Kafka: spring-boot-starter-kafka (thay cho spring-kafka đứng riêng) -->
 ```
 
 `application.yml`:
@@ -127,19 +128,26 @@ management:
   endpoints.web.exposure.include: health,prometheus
   metrics.distribution.percentiles-histogram.http.server.requests: true   # cần cho histogram_quantile p95/p99
   tracing.sampling.probability: 1.0        # mặc định 0.1 (10%) — xem §8 về overhead
-  otlp.tracing.endpoint: http://localhost:4318/v1/traces   # trong container: http://alloy:4318/v1/traces
+  otlp.metrics.export.enabled: false       # QUAN TRỌNG ở Boot 4: xem ghi chú bên dưới
+  logging.export.otlp.enabled: false       # bật khi app chạy trên host và muốn log tới Loki qua OTLP
+  opentelemetry:
+    tracing.export.otlp.endpoint: http://localhost:4318/v1/traces   # trong container: http://alloy:4318/v1/traces
+    logging.export.otlp.endpoint: http://localhost:4318/v1/logs     # chỉ dùng khi logging.export.otlp.enabled=true
 spring:
   kafka:
-    template.observation-enabled: true     # span producer + propagate trace context qua header
-    listener.observation-enabled: true     # span consumer nối tiếp trace của producer
+    template.observation-enabled: true     # span producer + propagate trace context qua header (mặc định false)
+    listener.observation-enabled: true     # span consumer nối tiếp trace của producer (mặc định false)
 ```
 
-- **Correlation ID trong log:** khi có Micrometer Tracing, Spring Boot tự thêm correlation ID (`traceId`, `spanId` từ MDC) vào log. Muốn đổi format thì dùng `logging.pattern.correlation`.
-- **Exemplar:** Micrometer tự gắn exemplar `trace_id` vào histogram khi tracing bật, không cần cấu hình thêm. Trên Grafana bật "Exemplars" trong panel để nhảy sang trace.
+- **Đổi tên so với Boot 3:** `management.otlp.tracing.endpoint` và `management.otlp.logging.endpoint` bị loại ở mức `error` từ 4.0.0 (Boot bỏ qua chúng), thay bằng `management.opentelemetry.tracing.export.otlp.endpoint` và `management.opentelemetry.logging.export.otlp.endpoint`. Giữ tên cũ thì trace không bao giờ được gửi đi mà cũng không báo lỗi khi khởi động.
+- **Starter OpenTelemetry bật cả 3 luồng OTLP mặc định** (metric, log, trace; đều `true` theo metadata 4.1.1). Khi chạy thử bộ khung, app tự đẩy metric qua `OtlpMeterRegistry` mỗi phút tới `localhost:4318`. Lab lấy metric bằng Prometheus scrape (một nguồn số liệu duy nhất), nên tắt `management.otlp.metrics.export.enabled`: luồng đẩy thừa vừa tốn CPU/bộ nhớ/network của chính app đang đo, vừa sinh series trùng. Sau khi tắt, log không còn dòng `OtlpMeterRegistry` và trace vẫn được gửi tới `alloy:4318`.
+- **Correlation ID trong log:** khi có tracing, Spring Boot thêm `traceId`/`spanId` vào log; đổi format bằng `logging.pattern.correlation` (có trong metadata 4.1.1).
+- **Exemplar:** Micrometer gắn exemplar `trace_id` vào histogram khi tracing bật; trên Grafana bật "Exemplars" trong panel để nhảy sang trace. *Chưa kiểm lại trên Boot 4.1 trong phiên này* (đã kiểm phía Prometheus/Tempo bằng dữ liệu OTLP mẫu, chưa kiểm exemplar do app Boot 4 sinh ra).
+- **Span cho JDBC query:** thư viện `net.ttddyy.observation:datasource-micrometer-spring-boot` từng dùng với Boot 3; *chưa xác minh tương thích Boot 4*, kiểm tra trước khi thêm.
 - **Logs:**
   - App chạy trong container: stdout được Alloy tự thu, không cần làm gì.
   - App chạy trên host: log không tới Loki. Khi chạy thí nghiệm nên đưa app vào container, vừa có log vừa có `lab_container_*` và giới hạn tài nguyên giống nhau giữa các implementation.
-  - Gửi log qua OTLP (Alloy → Loki `/otlp`) là tuỳ chọn: đặt `management.otlp.logging.endpoint: http://localhost:4318/v1/logs` (có trong Spring Boot 3.4+, đã đối chiếu với appendix properties của 3.5) và thêm OpenTelemetry Logback appender để log đi vào OpenTelemetry SDK. Đường OTLP log → Alloy → Loki đã được kiểm tra bằng log mẫu, log vào Loki kèm label `trace_id`.
+  - Gửi log qua OTLP (Alloy → Loki `/otlp`): bật `management.logging.export.otlp.enabled` và đặt `management.opentelemetry.logging.export.otlp.endpoint`. Đường OTLP log → Alloy → Loki đã được kiểm tra bằng log mẫu (log vào Loki kèm label `trace_id`).
 
 ## 5. Profiling (Pyroscope Java agent)
 
@@ -231,9 +239,11 @@ Ngoài ra Grafana 13 có sẵn các app Drilldown (Metrics, Logs, Traces, Profil
 
 ## Nguồn
 
-- Spring Boot tracing (sampling, correlation, OTLP dependencies): https://docs.spring.io/spring-boot/3.5/reference/actuator/tracing.html
+- Spring Boot tracing (sampling, correlation): https://docs.spring.io/spring-boot/reference/actuator/tracing.html — tên thuộc tính 4.1 đã đối chiếu bằng spring-configuration-metadata.json trong jar 4.1.1
 - Pyroscope Java SDK: https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/java/
 - k6 Prometheus remote write: https://grafana.com/docs/k6/latest/results-output/real-time/prometheus-remote-write/
 - Prometheus `docker_sd_configs`: https://prometheus.io/docs/prometheus/latest/configuration/configuration/#docker_sd_config
 - Grafana Alloy components: https://grafana.com/docs/alloy/latest/reference/components/
 - Tempo 3.0 migration: https://grafana.com/docs/tempo/latest/set-up-for-tracing/setup-tempo/migrate-to-3/
+- [Spring Boot 4.0 Migration Guide](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide) — starter modular, Jackson 3, đổi tên thuộc tính
+- [Spring Boot 4.1.1 available now](https://spring.io/blog/2026/08/20/spring-boot-4-1-1-available-now/)

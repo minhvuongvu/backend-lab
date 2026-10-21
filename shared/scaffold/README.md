@@ -4,7 +4,7 @@
 
 Placeholder `{{SLUG}}`, `{{PKG}}`, `{{TOPIC}}` và thư mục `__PKG__` được thay khi tạo topic.
 
-## system/ — Spring Boot (Java 21, Spring Boot 3.5.16, Maven wrapper)
+## system/ — Spring Boot (Java 21, Spring Boot 4.1.1, Maven wrapper)
 
 | Phần | Vai trò | Topic phải đổi gì |
 |---|---|---|
@@ -12,7 +12,7 @@ Placeholder `{{SLUG}}`, `{{PKG}}`, `{{TOPIC}}` và thư mục `__PKG__` được
 | `impl/before/` (profile `before`) | Hệ thống as-is, phải tái hiện được vấn đề ở 01 §4 | Viết lại theo as-is của topic |
 | `impl/a/` (profile `a`) | Mẫu cách một implementation cắm vào bằng `@Profile`. Hiện hành vi y hệt before | Viết implementation A; thêm `impl/b` (profile `b`)… |
 | `web/ItemController` | HTTP mỏng, giống nhau cho mọi implementation để k6 gọi cùng API | Đổi endpoint theo contract |
-| `config/ObservabilityConfig` + `application.yml` | Tag `topic`, `impl` cho mọi metric; histogram cho p95/p99; tracing OTLP (sampling mặc định 0) | Thường giữ nguyên |
+| `config/ObservabilityConfig` + `application.yml` | Tag `topic`, `impl` cho mọi metric; histogram cho p95/p99; tracing OTLP (sampling mặc định 0); tắt đẩy metric qua OTLP (Prometheus là nguồn số liệu duy nhất) | Thường giữ nguyên |
 | `application-<impl>.yml` | Chỉ chứa cấu hình khác biệt của implementation đó | Giải thích từng thuộc tính trong 03 |
 | `db/migration/V1__init.sql` | Bảng mẫu `item` | Thay bằng schema ở 02 §7 |
 | `test/.../AbstractIntegrationTest` | Testcontainers dạng singleton (PostgreSQL; Kafka/Redis để sẵn dạng comment) | Bật container cần dùng |
@@ -31,6 +31,27 @@ cd system
 ./mvnw verify                                  # build + test mọi profile với PostgreSQL thật (cần Docker)
 SPRING_PROFILES_ACTIVE=a ./mvnw spring-boot:run
 ```
+
+### Ghi chú version: Spring Boot 4.1 (chuyển từ 3.5)
+
+- **Vì sao 4.1.1:** Spring Boot 3.5 hết hỗ trợ OSS ngày 30/06/2026 (3.5.16 là bản OSS cuối). 4.1 là dòng ổn định mới nhất, hỗ trợ OSS tới 31/07/2027 theo [endoflife.date](https://endoflife.date/spring-boot); 4.0 chỉ tới 31/12/2026; 4.2 mới ở milestone. Nguồn: [Spring Boot 4.1.1 available now](https://spring.io/blog/2026/08/20/spring-boot-4-1-1-available-now/), [Spring Boot 4.0 Migration Guide](https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-4.0-Migration-Guide).
+- **Những gì đã đổi so với 3.5 và vì sao:**
+
+| Thay đổi | Vì sao |
+|---|---|
+| `spring-boot-starter-web` → `spring-boot-starter-webmvc` | Boot 4 modular: starter cũ bị deprecate, tên mới nói rõ là Spring MVC |
+| `flyway-core` → `spring-boot-starter-flyway` (giữ `flyway-database-postgresql`) | Auto-config của Flyway tách thành module riêng; chỉ thêm thư viện Flyway thì không còn được tự cấu hình |
+| `micrometer-tracing-bridge-otel` + `opentelemetry-exporter-otlp` → `spring-boot-starter-opentelemetry` | Starter gồm bridge, exporter OTLP và auto-config (module `spring-boot-opentelemetry`) |
+| `spring-boot-starter-test` → `spring-boot-starter-webmvc-test` + `spring-boot-starter-jdbc-test` | Mỗi module có starter test riêng, kéo theo `spring-boot-starter-test` |
+| Testcontainers `junit-jupiter`, `postgresql` → `testcontainers-junit-jupiter`, `testcontainers-postgresql` (2.0.5); `org.testcontainers.containers.PostgreSQLContainer<?>` → `org.testcontainers.postgresql.PostgreSQLContainer` | Testcontainers 2 thêm tiền tố artifact, chuyển lớp module sang package `org.testcontainers.<module>` và bỏ generic |
+| `MeterRegistryCustomizer`: `org.springframework.boot.actuate.autoconfigure.metrics` → `org.springframework.boot.micrometer.metrics.autoconfigure` | Lớp chuyển sang module `spring-boot-micrometer-metrics` |
+| `management.otlp.tracing.endpoint` → `management.opentelemetry.tracing.export.otlp.endpoint` | Tên cũ bị loại ở mức `error` từ 4.0.0: Boot bỏ qua nó, trace sẽ không được gửi mà không báo lỗi |
+| Thêm `management.otlp.metrics.export.enabled: false`, `management.logging.export.otlp.enabled: false` | Starter OpenTelemetry bật đẩy metric và log qua OTLP mặc định; lab dùng Prometheus scrape và Alloy thu stdout, nên tắt để không tốn tài nguyên của app đang đo và không trùng dữ liệu |
+| Kafka (khi bật): `spring-kafka` → `spring-boot-starter-kafka`; `testcontainers-kafka` | Starter modular; `spring.kafka.template/listener.observation-enabled` giữ nguyên tên (mặc định `false`) |
+
+- **Không đổi:** Java 21, Maven wrapper (Maven 3.9.9), cấu trúc contract / `impl/<id>` / profile, Dockerfile (`-Djarmode=tools extract --layers --launcher` vẫn chạy với Boot 4).
+- **Đã kiểm chứng thật (21/10/2026):** `./mvnw verify` → BUILD SUCCESS, 6/6 test (before + a, Testcontainers PostgreSQL); image build và app `healthy` trong compose với `IMPL=before` và `IMPL=a`; POST 201 / GET 200; `/actuator/prometheus` có tag `impl`, `topic` và bucket `http_server_requests_seconds_bucket`; trace gửi tới `alloy:4318`; không còn `OtlpMeterRegistry`; không có cảnh báo thuộc tính lỗi thời khi khởi động.
+- **Jackson 3:** Boot 4 dùng Jackson 3 (package `tools.jackson`, trừ annotation vẫn ở `com.fasterxml.jackson.annotation`). Bộ khung không import Jackson trực tiếp nên không phải sửa; topic nào cấu hình Jackson thì dùng `JsonMapper`/`JsonMapperBuilderCustomizer` và thuộc tính `spring.jackson.json.*`.
 
 ## experiments/ — chạy thí nghiệm
 
