@@ -24,18 +24,18 @@ ROOT = Path(__file__).resolve().parent.parent
 ROADMAP = ROOT / "ROADMAP.html"
 
 STAGES = [
-    (1, "Nền tảng một node", "Dữ liệu đúng trong một database, JVM và mạng: mọi topic sau đều dựng trên đây.",
-     ["correctness", "postgres", "jvm", "networking"]),
-    (2, "Chịu tải & dữ liệu nóng", "Giữ hệ thống sống khi tải tăng hoặc phụ thuộc chậm, và tăng tốc đọc bằng cache.",
-     ["resilience", "caching", "redis"]),
-    (3, "Hệ phân tán & messaging", "Nhất quán, đồng thuận, giao nhận message và giao dịch trải nhiều service.",
-     ["foundations", "kafka", "rabbitmq", "distributed"]),
+    (1, "Nền tảng một node", "Dữ liệu đúng trong một database, container, JVM, Spring và mạng: mọi topic sau đều dựng trên đây.",
+     ["correctness", "postgres", "containers", "jvm", "spring", "networking"]),
+    (2, "Chịu tải & dữ liệu nóng", "Giữ hệ thống sống khi tải tăng hoặc phụ thuộc chậm, tăng tốc đọc bằng cache, và phục vụ kết nối real-time.",
+     ["resilience", "caching", "redis", "realtime"]),
+    (3, "Hệ phân tán & messaging", "Nhất quán, đồng thuận, giao nhận message, giao dịch trải nhiều service và các mẫu nghiệp vụ dựng trên chúng.",
+     ["foundations", "kafka", "rabbitmq", "distributed", "business"]),
     (4, "Thiết kế & tiến hoá hệ thống", "Thay đổi API, dữ liệu và ranh giới kiến trúc mà không phá hệ thống đang chạy.",
      ["api", "architecture"]),
-    (5, "Kho dữ liệu chuyên dụng", "Document store, tìm kiếm toàn văn và lưu trữ object.",
-     ["mongodb", "search-storage"]),
-    (6, "Nền tảng chạy hệ thống", "Container, Kubernetes, tìm service, cấu hình và cổng vào.",
-     ["containers", "kubernetes", "platform", "gateway"]),
+    (5, "Kho dữ liệu chuyên dụng & AI", "Document store, tìm kiếm, lưu trữ object, phân tích (OLAP) và tích hợp AI.",
+     ["mongodb", "search-storage", "analytics", "ai"]),
+    (6, "Nền tảng chạy hệ thống", "Kubernetes, tìm service, cấu hình, cổng vào và chạy trên nhiều vùng.",
+     ["kubernetes", "platform", "gateway", "multiregion"]),
     (7, "Bảo mật & vận hành", "Danh tính, phân quyền, bí mật, quan sát, cảnh báo và đưa thay đổi lên production.",
      ["security", "sre", "cicd"]),
 ]
@@ -43,6 +43,7 @@ STAGES = [
 ROW_RE = re.compile(r'[ \t]*<tr id="([^"]+)" data-slug="[^"]*"[^>]*>.*?</tr>\n', re.S)
 GROUP_RE = re.compile(r'[ \t]*<tr class="track-group"[^>]*>.*?</tr>\n', re.S)
 ORDER_SPAN_RE = re.compile(r'<span class="order-no"[^>]*>#\d+</span> ?')
+LATER_SPAN_RE = re.compile(r' ?<span class="after-stage"[^>]*>[^<]*</span>')
 
 
 def attr(tag, name):
@@ -143,14 +144,34 @@ def main():
               f"learning-path order problems: {len(path_problems)}")
         return
 
-    # Rewrite rows: data-order attribute + "#n" badge in the first cell.
+    # Latest stage among all (transitive) prerequisites: a topic placed in an early stage whose
+    # prerequisites live in a later stage is an "advanced" topic of its group — learn it after that stage.
+    stage_idx = {t: n for n, _, _, ts in STAGES for t in ts}
+    memo = {}
+
+    def max_prereq_stage(slug):
+        if slug not in memo:
+            memo[slug] = 0
+            for p in by_slug[slug]["prereq"]:
+                if p in by_slug:
+                    memo[slug] = max(memo[slug], stage_idx.get(by_slug[p]["track"], len(STAGES) + 1), max_prereq_stage(p))
+        return memo[slug]
+
+    # Rewrite rows: data-order attribute + "#n" badge (+ "learn after stage N") in the first cell.
     def render(r):
         b = r["block"]
         tag_end = b.index(">")
-        tag = re.sub(r' data-order="\d+"', "", b[:tag_end])
-        b = tag + f' data-order="{r["order"]}"' + b[tag_end:]
+        tag = re.sub(r' data-(order|after-stage)="\d+"', "", b[:tag_end])
+        later = max_prereq_stage(r["slug"])
+        own = stage_idx.get(r["track"], len(STAGES) + 1)
+        extra = f' data-after-stage="{later}"' if later > own else ""
+        b = tag + f' data-order="{r["order"]}"{extra}' + b[tag_end:]
         b = ORDER_SPAN_RE.sub("", b)
-        return b.replace("<td><strong>", f'<td><span class="order-no" title="Thứ tự gợi ý">#{r["order"]}</span> <strong>', 1)
+        b = LATER_SPAN_RE.sub("", b)
+        b = re.sub(r"<td>\s*<strong>", "<td><strong>", b, count=1)  # leftovers of removed badges
+        badge = (f' <span class="after-stage" title="Có tiền đề ở giai đoạn {later}; topic nâng cao của nhóm này">'
+                 f'Học sau giai đoạn {later}</span>') if later > own else ""
+        return b.replace("<td><strong>", f'<td><span class="order-no" title="Thứ tự gợi ý">#{r["order"]}</span>{badge} <strong>', 1)
 
     track_names = dict(re.findall(r'data-roadmap="([^"]+)" data-track-name="([^"]+)"', s))
     stage_of = {t: (n, title) for n, title, _, ts in STAGES for t in ts}
