@@ -16,7 +16,7 @@
   LỘ TRÌNH TOPIC — trang tổng, Claude đọc và cập nhật.
   Hợp đồng dữ liệu (máy đọc), mỗi topic là một <tr> trong table.roadmap:
     data-slug      slug kebab-case, trùng thư mục topics/<slug>/ và id của <tr>
-    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture
+    data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd
     data-prereq    danh sách slug tiền đề, phân tách bằng dấu phẩy (rỗng nếu không có); đồ thị phải là DAG
     data-mode      full | lite — chế độ gợi ý cho /research
     data-priority  1 (cao) – 3 (thấp)
@@ -41,7 +41,7 @@
   <header class="doc-header">
     <div class="eyebrow">Trang tổng · Lộ trình</div>
     <h1>Lộ trình topic</h1>
-    <div class="meta"><span>28 topic đề xuất</span><span>Nền tảng tính đúng đắn: 3, PostgreSQL: 5, Messaging &amp; Kafka: 8, Phân tán &amp; nhất quán: 2, Caching: 3, Resilience: 5, Kiến trúc: 2</span></div>
+    <div class="meta"><span data-roadmap-total>—</span><span data-roadmap-by-track>—</span></div>
   </header>
 
   <section>
@@ -99,6 +99,59 @@
         <li><a href="#backpressure-load-shedding">Backpressure &amp; load shedding</a> — giữ goodput khi quá tải</li>
         <li><a href="#rate-limiting">Rate limiting (token bucket, sliding window trên Redis)</a> — giới hạn từ phía client</li>
     </ol>
+    <h3 id="path-4">Redis chuyên sâu</h3>
+    <p>Từ cách Redis thực thi một lệnh tới vì sao dữ liệu có thể mất khi failover, rồi áp vào lock và hàng đợi.</p>
+    <ol class="learning-path">
+        <li><a href="#redis-event-loop-data-structures">Redis internals: event loop đơn luồng &amp; encoding cấu trúc dữ liệu</a> — vì sao một lệnh chậm làm chậm mọi client</li>
+        <li><a href="#redis-persistence-rdb-aof">Redis persistence: RDB, AOF &amp; fsync</a> — dữ liệu mất bao nhiêu khi crash</li>
+        <li><a href="#redis-replication-sentinel-failover">Redis replication, Sentinel &amp; mất dữ liệu khi failover</a> — ghi đã ack vẫn mất khi failover</li>
+        <li><a href="#redis-cluster-sharding">Redis Cluster: hash slot, resharding &amp; hot key</a> — chia dữ liệu và giới hạn của hot key</li>
+        <li><a href="#isolation-levels-anomalies">Isolation level &amp; anomaly trong PostgreSQL</a> — anomaly nào cần lock để chặn</li>
+        <li><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a> — nền tảng lock trong DB để so sánh</li>
+        <li><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a> — TTL và retry của lock</li>
+        <li><a href="#distributed-lock-redis">Distributed lock với Redis</a> — lock trên Redis đúng tới đâu</li>
+        <li><a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a> — chuẩn bị cho so sánh với Kafka</li>
+        <li><a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a> — mất / trùng ở Kafka</li>
+        <li><a href="#redis-streams-vs-kafka">Redis Streams vs Kafka (topic so sánh)</a> — khi nào Streams đủ dùng</li>
+    </ol>
+    <h3 id="path-5">Nền tảng microservices với Spring Cloud</h3>
+    <p>Các thành phần hạ tầng mà một hệ thống Spring Cloud cần: tìm service, cấu hình, cổng vào, xác thực và phân quyền.</p>
+    <ol class="learning-path">
+        <li><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a> — registry luôn trễ nên cần retry</li>
+        <li><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a> — cache của registry nằm đâu</li>
+        <li><a href="#eureka-ap-registry">Netflix Eureka: registry AP &amp; self-preservation</a> — registry AP</li>
+        <li><a href="#consul-raft-gossip">HashiCorp Consul: Raft catalog, gossip &amp; health check</a> — registry CP</li>
+        <li><a href="#eureka-vs-consul">Eureka vs Consul (topic so sánh)</a> — hỏng kiểu nào khi partition</li>
+        <li><a href="#spring-cloud-config-server">Spring Cloud Config Server &amp; refresh cấu hình</a> — cấu hình tập trung và refresh</li>
+        <li><a href="#rate-limiting">Rate limiting (token bucket, sliding window trên Redis)</a> — nền cho rate limiter ở gateway</li>
+        <li><a href="#spring-cloud-gateway-reactive">Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</a> — cổng vào reactive</li>
+        <li><a href="#keycloak-oidc-token-flows">Keycloak: OIDC flow, JWT &amp; thu hồi token</a> — xác thực bằng token</li>
+        <li><a href="#opa-policy-decision">Open Policy Agent: Rego, sidecar vs PDP tập trung</a> — phân quyền tách khỏi code</li>
+    </ol>
+    <h3 id="path-6">Bảo mật &amp; vận hành nền tảng</h3>
+    <p>Bí mật, mã hoá, xác thực, phân quyền và đưa thay đổi lên production không downtime.</p>
+    <ol class="learning-path">
+        <li><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a> — vòng đời connection trong pool</li>
+        <li><a href="#vault-dynamic-secrets">HashiCorp Vault: dynamic secret, lease &amp; xoay vòng credential DB</a> — credential DB có thời hạn</li>
+        <li><a href="#vault-transit-envelope-encryption">Vault Transit: encryption as a service &amp; envelope encryption</a> — mã hoá dữ liệu bằng Vault</li>
+        <li><a href="#keycloak-oidc-token-flows">Keycloak: OIDC flow, JWT &amp; thu hồi token</a> — token và thu hồi</li>
+        <li><a href="#opa-policy-decision">Open Policy Agent: Rego, sidecar vs PDP tập trung</a> — quyết định phân quyền</li>
+        <li><a href="#jenkins-pipeline-testcontainers">Jenkins pipeline: agent, cache &amp; Testcontainers trong CI</a> — pipeline có integration test</li>
+        <li><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a> — tiền đề của discovery</li>
+        <li><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a> — tiền đề của gateway</li>
+        <li><a href="#rate-limiting">Rate limiting (token bucket, sliding window trên Redis)</a> — tiền đề của gateway</li>
+        <li><a href="#spring-cloud-gateway-reactive">Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</a> — điều phối traffic</li>
+        <li><a href="#blue-green-canary-deploy">Triển khai blue-green &amp; canary không downtime</a> — đổi phiên bản không downtime</li>
+    </ol>
+    <h3 id="path-7">Tìm kiếm &amp; lưu trữ object</h3>
+    <p>Hai kho dữ liệu ngoài PostgreSQL thường gặp: tìm kiếm toàn văn và lưu file.</p>
+    <ol class="learning-path">
+        <li><a href="#elasticsearch-inverted-index-relevance">Elasticsearch: inverted index, analyzer &amp; BM25</a> — vì sao tìm kiếm cần inverted index</li>
+        <li><a href="#elasticsearch-near-real-time-indexing">Elasticsearch: near-real-time, refresh, translog &amp; merge</a> — vì sao ghi xong chưa tìm thấy</li>
+        <li><a href="#elasticsearch-shard-sizing-replication">Elasticsearch: số shard, routing &amp; replica</a> — chia shard và replica</li>
+        <li><a href="#minio-erasure-coding-consistency">MinIO: erasure coding, quorum &amp; tự chữa bitrot</a> — độ bền của object storage</li>
+        <li><a href="#object-upload-presigned-multipart">Upload file: presigned URL &amp; multipart</a> — luồng upload đúng cách</li>
+    </ol>
   </section>
 
   <section>
@@ -135,6 +188,18 @@
     <figure class="diagram" data-roadmap="architecture" data-track-name="Kiến trúc">
       <figcaption>Mũi tên liền: tiền đề cùng track. Mũi tên đứt + khung đứt: tiền đề ở track khác. Viền xanh: xong; viền cam: đang làm.</figcaption>
     </figure>
+    <h3 id="graph-redis">Redis</h3>
+    <figure class="diagram" data-roadmap="redis" data-track-name="Redis"></figure>
+    <h3 id="graph-search-storage">Tìm kiếm &amp; lưu trữ object</h3>
+    <figure class="diagram" data-roadmap="search-storage" data-track-name="Tìm kiếm &amp; lưu trữ object"></figure>
+    <h3 id="graph-platform">Service discovery &amp; cấu hình</h3>
+    <figure class="diagram" data-roadmap="platform" data-track-name="Service discovery &amp; cấu hình"></figure>
+    <h3 id="graph-gateway">API Gateway</h3>
+    <figure class="diagram" data-roadmap="gateway" data-track-name="API Gateway"></figure>
+    <h3 id="graph-security">Bảo mật &amp; danh tính</h3>
+    <figure class="diagram" data-roadmap="security" data-track-name="Bảo mật &amp; danh tính"></figure>
+    <h3 id="graph-cicd">CI/CD &amp; triển khai</h3>
+    <figure class="diagram" data-roadmap="cicd" data-track-name="CI/CD &amp; triển khai"></figure>
   </section>
 
   <section>
@@ -254,11 +319,11 @@
           <td>Exactly-once của Kafka chỉ đúng trong vòng Kafka → Kafka (transactional producer + <code>read_committed</code>), dựa trên fencing theo generation của consumer group; hiểu giới hạn để không tin nhầm cho side effect ra DB.</td>
           <td><span class="mode-chip mode-full">full</span> Full: cần crash giữa transaction và đo chi phí throughput.</td>
         </tr>
-        <tr id="distributed-lock-redis" data-slug="distributed-lock-redis" data-track="distributed" data-prereq="optimistic-vs-pessimistic-locking,timeout-retry-backoff" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+        <tr id="distributed-lock-redis" data-slug="distributed-lock-redis" data-track="distributed" data-prereq="optimistic-vs-pessimistic-locking,timeout-retry-backoff,redis-replication-sentinel-failover" data-mode="full" data-priority="2" data-status="planned" data-created="false">
           <td><strong>Distributed lock với Redis</strong><br><code>distributed-lock-redis</code><br><a class="topic-link" href="topics/distributed-lock-redis/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
           <td><span class="track-chip track-distributed">Phân tán &amp; nhất quán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
-          <td><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
-          <td>Lock có TTL bị mất khi process pause (GC, network) quá TTL, hai node cùng tin mình giữ lock; cần fencing token. Dựa trên hiểu biết về locking cục bộ và timeout.</td>
+          <td><a href="#optimistic-vs-pessimistic-locking">Optimistic vs pessimistic locking</a>, <a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a>, <a href="#redis-replication-sentinel-failover">Redis replication, Sentinel &amp; mất dữ liệu khi failover</a></td>
+          <td>Lock có TTL bị mất khi process pause (GC, network) quá TTL, hai node cùng tin mình giữ lock; cần fencing token. Dựa trên hiểu biết về locking cục bộ, timeout, và replication bất đồng bộ của Redis: lock vừa cấp trên master có thể biến mất khi failover sang replica chưa nhận được nó.</td>
           <td><span class="mode-chip mode-full">full</span> Full: cần tiêm pause/clock drift để tái hiện hai owner.</td>
         </tr>
         <tr id="saga-orchestration-vs-choreography" data-slug="saga-orchestration-vs-choreography" data-track="distributed" data-prereq="transactional-outbox,inbox-dedup" data-mode="full" data-priority="2" data-status="planned" data-created="false">
@@ -337,6 +402,195 @@
           <td><a href="#cqrs-read-model">CQRS với read model bất đồng bộ</a>, <a href="#kafka-partitioning-ordering">Kafka partitioning &amp; ordering</a></td>
           <td>Lưu chuỗi sự kiện thay vì trạng thái; replay, snapshot và thứ tự sự kiện theo aggregate là cốt lõi — dựa trên CQRS và ngữ nghĩa ordering của Kafka.</td>
           <td><span class="mode-chip mode-full">full</span> Full: cần đo chi phí replay và snapshot theo độ dài chuỗi.</td>
+        </tr>
+        <tr id="redis-event-loop-data-structures" data-slug="redis-event-loop-data-structures" data-track="redis" data-prereq="" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Redis internals: event loop đơn luồng &amp; encoding cấu trúc dữ liệu</strong><br><code>redis-event-loop-data-structures</code><br><a class="topic-link" href="topics/redis-event-loop-data-structures/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-redis">Redis</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td>—</td>
+          <td>Redis xử lý lệnh trên một luồng: một lệnh O(N) (KEYS, HGETALL trên hash lớn, Lua dài) chặn MỌI client trong lúc chạy, nên p99 của cả hệ thống nhảy vọt vì một truy vấn. Encoding (listpack → hashtable, intset, skiplist) đổi khi vượt ngưỡng, làm bộ nhớ và độ phức tạp thay đổi đột ngột. Là nền cho mọi topic Redis sau.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo p99 của client thường khi chạy song song lệnh O(N), và bộ nhớ trước/sau ngưỡng đổi encoding.</td>
+        </tr>
+        <tr id="redis-persistence-rdb-aof" data-slug="redis-persistence-rdb-aof" data-track="redis" data-prereq="redis-event-loop-data-structures" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Redis persistence: RDB, AOF &amp; fsync</strong><br><code>redis-persistence-rdb-aof</code><br><a class="topic-link" href="topics/redis-persistence-rdb-aof/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-redis">Redis</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#redis-event-loop-data-structures">Redis internals: event loop đơn luồng &amp; encoding cấu trúc dữ liệu</a></td>
+          <td>RDB và AOF rewrite dùng fork(): copy-on-write làm RAM tăng theo tốc độ ghi và fork của heap lớn gây latency spike trên event loop. appendfsync everysec chấp nhận mất tới ~1 giây ghi khi crash, always đổi lấy fsync mỗi lệnh. Cần hiểu event loop để thấy vì sao fork chặn nó.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: kill -9 khi đang ghi để đo dữ liệu mất theo từng chế độ fsync, đo latency spike lúc fork.</td>
+        </tr>
+        <tr id="redis-replication-sentinel-failover" data-slug="redis-replication-sentinel-failover" data-track="redis" data-prereq="redis-persistence-rdb-aof" data-mode="full" data-priority="1" data-status="planned" data-created="false">
+          <td><strong>Redis replication, Sentinel &amp; mất dữ liệu khi failover</strong><br><code>redis-replication-sentinel-failover</code><br><a class="topic-link" href="topics/redis-replication-sentinel-failover/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-redis">Redis</span><br><span class="prio prio-1">Ưu tiên 1</span></td>
+          <td><a href="#redis-persistence-rdb-aof">Redis persistence: RDB, AOF &amp; fsync</a></td>
+          <td>Replication bất đồng bộ: master trả OK trước khi replica nhận, nên failover có thể làm mất ghi đã được xác nhận; replica full sync bằng RDB nên phụ thuộc persistence. WAIT và min-replicas-to-write chỉ giảm chứ không xoá cửa sổ mất. Đây là lý do lock và counter trên Redis có thể sai sau failover.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tiêm partition giữa master và replica rồi ép failover, đếm ghi đã ack nhưng biến mất.</td>
+        </tr>
+        <tr id="redis-cluster-sharding" data-slug="redis-cluster-sharding" data-track="redis" data-prereq="redis-replication-sentinel-failover" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Redis Cluster: hash slot, resharding &amp; hot key</strong><br><code>redis-cluster-sharding</code><br><a class="topic-link" href="topics/redis-cluster-sharding/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-redis">Redis</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#redis-replication-sentinel-failover">Redis replication, Sentinel &amp; mất dữ liệu khi failover</a></td>
+          <td>16384 hash slot chia cho các master; lệnh nhiều key phải cùng slot (hash tag), trong lúc resharding client nhận MOVED/ASK và phải đi thêm vòng. Một hot key không chia được vì nằm trọn trong một slot, nên thêm node không giảm tải cho nó. Mỗi shard vẫn dùng replication bất đồng bộ của topic trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo latency khi resharding dưới tải và tải dồn lên một node khi có hot key.</td>
+        </tr>
+        <tr id="redis-streams-vs-kafka" data-slug="redis-streams-vs-kafka" data-track="redis" data-prereq="redis-persistence-rdb-aof,kafka-delivery-semantics" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Redis Streams vs Kafka (topic so sánh)</strong><br><code>redis-streams-vs-kafka</code><br><a class="topic-link" href="topics/redis-streams-vs-kafka/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-redis">Redis</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#redis-persistence-rdb-aof">Redis persistence: RDB, AOF &amp; fsync</a>, <a href="#kafka-delivery-semantics">Kafka delivery semantics (at-most / at-least / exactly-once)</a></td>
+          <td>Cùng là log có consumer group, nhưng Streams giữ dữ liệu trong RAM, độ bền phụ thuộc AOF fsync và replication bất đồng bộ, còn Kafka ghi log xuống đĩa và nhân bản theo ISR. Khác biệt cơ chế này quyết định khi nào Streams đủ dùng và khi nào mất message. Cần nắm cả persistence của Redis lẫn delivery semantics của Kafka.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): một kịch bản thông lượng + một kịch bản crash để đếm message mất ở mỗi bên.</td>
+        </tr>
+        <tr id="elasticsearch-inverted-index-relevance" data-slug="elasticsearch-inverted-index-relevance" data-track="search-storage" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Elasticsearch: inverted index, analyzer &amp; BM25</strong><br><code>elasticsearch-inverted-index-relevance</code><br><a class="topic-link" href="topics/elasticsearch-inverted-index-relevance/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Truy vấn LIKE '%từ%' trên PostgreSQL không dùng được B-tree nên quét toàn bảng; inverted index ánh xạ term → danh sách document nên tìm kiếm không phụ thuộc kích thước bảng. Analyzer quyết định term: lệch analyzer giữa lúc index và lúc search (ví dụ tiếng Việt có/không dấu) làm trả về 0 kết quả. BM25 giải thích vì sao thứ hạng như vậy.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: so sánh latency tìm kiếm PostgreSQL vs Elasticsearch theo kích thước dữ liệu và kiểm tra analyzer tiếng Việt.</td>
+        </tr>
+        <tr id="elasticsearch-near-real-time-indexing" data-slug="elasticsearch-near-real-time-indexing" data-track="search-storage" data-prereq="elasticsearch-inverted-index-relevance" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Elasticsearch: near-real-time, refresh, translog &amp; merge</strong><br><code>elasticsearch-near-real-time-indexing</code><br><a class="topic-link" href="topics/elasticsearch-near-real-time-indexing/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#elasticsearch-inverted-index-relevance">Elasticsearch: inverted index, analyzer &amp; BM25</a></td>
+          <td>Document chỉ tìm thấy được sau refresh (mặc định 1 giây) vì phải nằm trong segment mới, nên đọc ngay sau khi ghi có thể không thấy; translog đảm bảo độ bền trước khi flush. Refresh thường xuyên tạo nhiều segment nhỏ, merge tốn IO và CPU. Đánh đổi refresh_interval giữa độ tươi và thông lượng index.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo độ trễ tới khi tìm thấy được và thông lượng bulk theo refresh_interval.</td>
+        </tr>
+        <tr id="elasticsearch-shard-sizing-replication" data-slug="elasticsearch-shard-sizing-replication" data-track="search-storage" data-prereq="elasticsearch-near-real-time-indexing" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Elasticsearch: số shard, routing &amp; replica</strong><br><code>elasticsearch-shard-sizing-replication</code><br><a class="topic-link" href="topics/elasticsearch-shard-sizing-replication/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#elasticsearch-near-real-time-indexing">Elasticsearch: near-real-time, refresh, translog &amp; merge</a></td>
+          <td>Số primary shard cố định khi tạo index; quá nhiều shard nhỏ tốn heap cho metadata và mỗi truy vấn phải fan-out tới mọi shard, quá ít thì không chia tải được. Ghi phải tới mọi bản sao in-sync nên replica tăng khả năng đọc nhưng làm chậm ghi. Mỗi shard là một bộ segment của topic trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo latency truy vấn và thông lượng ghi theo số shard và số replica.</td>
+        </tr>
+        <tr id="postgres-elasticsearch-sync" data-slug="postgres-elasticsearch-sync" data-track="search-storage" data-prereq="cdc-debezium,elasticsearch-near-real-time-indexing" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Đồng bộ PostgreSQL → Elasticsearch</strong><br><code>postgres-elasticsearch-sync</code><br><a class="topic-link" href="topics/postgres-elasticsearch-sync/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#cdc-debezium">Change data capture với Debezium</a>, <a href="#elasticsearch-near-real-time-indexing">Elasticsearch: near-real-time, refresh, translog &amp; merge</a></td>
+          <td>Ghi đôi vào PostgreSQL và Elasticsearch trong code sẽ lệch khi một bên lỗi; đồng bộ bằng CDC giải quyết việc mất, nhưng event đến sai thứ tự có thể ghi đè bản mới bằng bản cũ nếu không dùng external version. Cần CDC để có luồng thay đổi đáng tin và hiểu refresh để biết khi nào dữ liệu tìm thấy được.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tiêm crash và sai thứ tự, đối soát số document lệch giữa hai bên.</td>
+        </tr>
+        <tr id="minio-erasure-coding-consistency" data-slug="minio-erasure-coding-consistency" data-track="search-storage" data-prereq="" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>MinIO: erasure coding, quorum &amp; tự chữa bitrot</strong><br><code>minio-erasure-coding-consistency</code><br><a class="topic-link" href="topics/minio-erasure-coding-consistency/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td>—</td>
+          <td>MinIO chia object thành khối data + parity trên một erasure set; đọc cần đủ data shard, ghi cần write quorum, nên mất tới parity ổ đĩa vẫn đọc được nhưng mất thêm thì ghi bị từ chối. Checksum từng khối phát hiện bitrot và tự chữa khi đọc. Hiểu cơ chế này mới ước lượng được dung lượng thực và độ bền.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: rút ổ/node trong lúc ghi đọc để kiểm chứng quorum và đo overhead của parity.</td>
+        </tr>
+        <tr id="object-upload-presigned-multipart" data-slug="object-upload-presigned-multipart" data-track="search-storage" data-prereq="" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Upload file: presigned URL &amp; multipart</strong><br><code>object-upload-presigned-multipart</code><br><a class="topic-link" href="topics/object-upload-presigned-multipart/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td>—</td>
+          <td>Proxy file qua app làm mỗi upload giữ heap, thread và băng thông của service; presigned URL cho client tải thẳng lên object storage nên app chỉ cấp quyền. Multipart chia file lớn để tải lại từng phần, nhưng các upload bỏ dở vẫn chiếm dung lượng nếu không có lifecycle dọn dẹp.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: so sánh tài nguyên app khi proxy vs presigned ở một mức tải, kiểm tra phần multipart bỏ dở.</td>
+        </tr>
+        <tr id="blob-metadata-consistency" data-slug="blob-metadata-consistency" data-track="search-storage" data-prereq="object-upload-presigned-multipart,transactional-outbox" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Nhất quán giữa metadata (PostgreSQL) và object (MinIO)</strong><br><code>blob-metadata-consistency</code><br><a class="topic-link" href="topics/blob-metadata-consistency/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-search-storage">Tìm kiếm &amp; lưu trữ object</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#object-upload-presigned-multipart">Upload file: presigned URL &amp; multipart</a>, <a href="#transactional-outbox">Transactional outbox</a></td>
+          <td>Lưu metadata vào PostgreSQL và file vào MinIO là ghi đôi qua hai hệ thống không có transaction chung: crash giữa hai bước để lại object mồ côi hoặc bản ghi trỏ tới object không tồn tại. Cách xử lý giống outbox (ghi trạng thái trước, dọn dẹp bất đồng bộ), nên cần topic outbox và luồng upload trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tiêm crash giữa hai bước, đếm object mồ côi và tham chiếu hỏng.</td>
+        </tr>
+        <tr id="service-discovery-patterns" data-slug="service-discovery-patterns" data-track="platform" data-prereq="timeout-retry-backoff" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Service discovery: client-side, server-side &amp; DNS</strong><br><code>service-discovery-patterns</code><br><a class="topic-link" href="topics/service-discovery-patterns/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-platform">Service discovery &amp; cấu hình</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#timeout-retry-backoff">Timeout, retry &amp; backoff</a></td>
+          <td>Registry luôn trễ so với thực tế: một instance chết vẫn được trả về trong khoảng heartbeat + TTL cache của client, nên request đầu tiên sau đó lỗi và chỉ được cứu nếu có retry sang instance khác. Client-side load balancing, server-side (load balancer) và DNS khác nhau ở chỗ cache nằm đâu và trễ bao lâu.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: kill instance dưới tải, đo số lỗi và thời gian tới khi hết gửi vào instance chết theo từng cách.</td>
+        </tr>
+        <tr id="eureka-ap-registry" data-slug="eureka-ap-registry" data-track="platform" data-prereq="service-discovery-patterns" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Netflix Eureka: registry AP &amp; self-preservation</strong><br><code>eureka-ap-registry</code><br><a class="topic-link" href="topics/eureka-ap-registry/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-platform">Service discovery &amp; cấu hình</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a></td>
+          <td>Eureka chọn AP: các server sao chép lẫn nhau bất đồng bộ và client cache registry (mặc định làm mới 30 giây), nên thông tin có thể cũ tới vài chục giây. Khi số lần renew giảm mạnh (thường do partition), self-preservation giữ lại instance thay vì xoá, đổi lấy việc tiếp tục gửi request tới instance đã chết.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: tiêm partition và kill instance, đo thời gian stale và số request rơi vào instance chết.</td>
+        </tr>
+        <tr id="consul-raft-gossip" data-slug="consul-raft-gossip" data-track="platform" data-prereq="service-discovery-patterns" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>HashiCorp Consul: Raft catalog, gossip &amp; health check</strong><br><code>consul-raft-gossip</code><br><a class="topic-link" href="topics/consul-raft-gossip/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-platform">Service discovery &amp; cấu hình</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a></td>
+          <td>Catalog của Consul nhất quán bằng Raft (CP): mất quorum server thì không ghi được đăng ký mới; phát hiện node chết dùng gossip (SWIM/Serf) giữa các agent nên nhanh và không dồn tải lên server. Đọc có các chế độ default/consistent/stale đánh đổi độ tươi lấy khả năng đọc khi mất leader.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: mất leader / mất quorum dưới tải, đo khả năng đăng ký và đọc theo từng chế độ.</td>
+        </tr>
+        <tr id="eureka-vs-consul" data-slug="eureka-vs-consul" data-track="platform" data-prereq="eureka-ap-registry,consul-raft-gossip" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Eureka vs Consul (topic so sánh)</strong><br><code>eureka-vs-consul</code><br><a class="topic-link" href="topics/eureka-vs-consul/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-platform">Service discovery &amp; cấu hình</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#eureka-ap-registry">Netflix Eureka: registry AP &amp; self-preservation</a>, <a href="#consul-raft-gossip">HashiCorp Consul: Raft catalog, gossip &amp; health check</a></td>
+          <td>Cùng giải bài toán discovery nhưng ngược nhau về CAP: Eureka tiếp tục phục vụ dữ liệu cũ khi partition, Consul từ chối ghi khi mất quorum. Khác biệt này quyết định hệ thống hỏng kiểu nào lúc mạng chập chờn. Dựa trực tiếp vào hai topic trước.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): một kịch bản partition chung cho cả hai, đo hành vi của client.</td>
+        </tr>
+        <tr id="spring-cloud-config-server" data-slug="spring-cloud-config-server" data-track="platform" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Spring Cloud Config Server &amp; refresh cấu hình</strong><br><code>spring-cloud-config-server</code><br><a class="topic-link" href="topics/spring-cloud-config-server/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-platform">Service discovery &amp; cấu hình</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Config được đọc lúc khởi động từ Git qua Config Server; đổi config lúc chạy cần @RefreshScope tạo lại bean, và Spring Cloud Bus phát sự kiện refresh tới mọi instance. Trong lúc lan truyền, các instance chạy với config khác nhau; bean không thuộc refresh scope giữ giá trị cũ cho tới khi restart. Config Server chết lúc khởi động thì service không lên được nếu không có fail-fast/retry hợp lý.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo thời gian lan truyền refresh và khoảng thời gian các instance lệch config; tắt Config Server khi khởi động.</td>
+        </tr>
+        <tr id="spring-cloud-gateway-reactive" data-slug="spring-cloud-gateway-reactive" data-track="gateway" data-prereq="service-discovery-patterns,rate-limiting" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</strong><br><code>spring-cloud-gateway-reactive</code><br><a class="topic-link" href="topics/spring-cloud-gateway-reactive/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-gateway">API Gateway</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#service-discovery-patterns">Service discovery: client-side, server-side &amp; DNS</a>, <a href="#rate-limiting">Rate limiting (token bucket, sliding window trên Redis)</a></td>
+          <td>Gateway reactive chạy trên vài thread event loop của Netty: một filter gọi blocking (JDBC, HTTP đồng bộ) chặn mọi route đang dùng thread đó, nên latency toàn gateway tăng. Route lb:// dựa vào service discovery; RequestRateLimiter dùng token bucket bằng Lua trên Redis. Cần hiểu discovery và rate limiting trước.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo throughput/p99 khi có và không có filter blocking, kiểm tra rate limiter dưới tải.</td>
+        </tr>
+        <tr id="kong-gateway-plugins" data-slug="kong-gateway-plugins" data-track="gateway" data-prereq="rate-limiting" data-mode="full" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Kong Gateway: plugin phase, DB-less &amp; rate limiting</strong><br><code>kong-gateway-plugins</code><br><a class="topic-link" href="topics/kong-gateway-plugins/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-gateway">API Gateway</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#rate-limiting">Rate limiting (token bucket, sliding window trên Redis)</a></td>
+          <td>Kong chạy trên nginx/OpenResty: plugin thực thi theo phase và độ ưu tiên, mỗi plugin thêm latency cho mọi request. DB-less (khai báo) và chế độ có database khác nhau về cách lan truyền thay đổi cấu hình. Plugin rate limiting với policy local / cluster / redis đánh đổi độ chính xác của giới hạn lấy latency.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo overhead theo số plugin và độ chính xác rate limit theo từng policy khi chạy nhiều node.</td>
+        </tr>
+        <tr id="spring-cloud-gateway-vs-kong" data-slug="spring-cloud-gateway-vs-kong" data-track="gateway" data-prereq="spring-cloud-gateway-reactive,kong-gateway-plugins" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Spring Cloud Gateway vs Kong (topic so sánh)</strong><br><code>spring-cloud-gateway-vs-kong</code><br><a class="topic-link" href="topics/spring-cloud-gateway-vs-kong/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-gateway">API Gateway</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#spring-cloud-gateway-reactive">Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</a>, <a href="#kong-gateway-plugins">Kong Gateway: plugin phase, DB-less &amp; rate limiting</a></td>
+          <td>Một bên là thư viện Java nhúng trong ứng dụng Spring (mở rộng bằng code), một bên là sản phẩm trên nginx (mở rộng bằng plugin Lua, cấu hình khai báo). Khác biệt về mô hình thực thi và vận hành quyết định đội nào nên chọn bên nào. Dựa vào hai topic gateway trước.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite (so sánh): cùng route và cùng plugin rate limit, đo overhead và độ khó cấu hình.</td>
+        </tr>
+        <tr id="keycloak-oidc-token-flows" data-slug="keycloak-oidc-token-flows" data-track="security" data-prereq="" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Keycloak: OIDC flow, JWT &amp; thu hồi token</strong><br><code>keycloak-oidc-token-flows</code><br><a class="topic-link" href="topics/keycloak-oidc-token-flows/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-security">Bảo mật &amp; danh tính</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td>—</td>
+          <td>Resource server xác thực JWT tại chỗ bằng khoá công khai lấy từ JWKS (có cache), nên không gọi Keycloak mỗi request; đổi lại, token đã cấp vẫn hợp lệ tới khi hết hạn dù user bị khoá. Introspection kiểm tra tức thời nhưng thêm một vòng mạng mỗi request. Authorization code + PKCE cho người dùng, client credentials cho service-to-service.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo latency xác thực local JWT vs introspection và khoảng thời gian token bị thu hồi vẫn dùng được.</td>
+        </tr>
+        <tr id="opa-policy-decision" data-slug="opa-policy-decision" data-track="security" data-prereq="keycloak-oidc-token-flows" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Open Policy Agent: Rego, sidecar vs PDP tập trung</strong><br><code>opa-policy-decision</code><br><a class="topic-link" href="topics/opa-policy-decision/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-security">Bảo mật &amp; danh tính</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#keycloak-oidc-token-flows">Keycloak: OIDC flow, JWT &amp; thu hồi token</a></td>
+          <td>Mỗi request hỏi OPA một quyết định nên vị trí đặt OPA quyết định latency: sidecar cùng host chỉ tốn IPC, PDP tập trung thêm một vòng mạng và thành điểm lỗi chung. Policy và dữ liệu phân phối qua bundle định kỳ nên thay đổi quyền lan truyền có độ trễ. Input của policy thường là claim trong JWT từ Keycloak.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo latency quyết định theo vị trí đặt OPA và thời gian lan truyền khi đổi policy.</td>
+        </tr>
+        <tr id="vault-dynamic-secrets" data-slug="vault-dynamic-secrets" data-track="security" data-prereq="connection-pooling-hikari-pgbouncer" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>HashiCorp Vault: dynamic secret, lease &amp; xoay vòng credential DB</strong><br><code>vault-dynamic-secrets</code><br><a class="topic-link" href="topics/vault-dynamic-secrets/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-security">Bảo mật &amp; danh tính</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#connection-pooling-hikari-pgbouncer">Connection pooling: HikariCP &amp; PgBouncer</a></td>
+          <td>Vault cấp user/password DB riêng có thời hạn (lease); khi lease hết, Vault xoá user, nên connection trong pool HikariCP còn sống lâu hơn lease sẽ lỗi nếu maxLifetime không nhỏ hơn TTL. Vault bị seal sau restart, cần unseal mới cấp được secret. Hiểu vòng đời connection trong pool là điều kiện để xoay vòng không gây lỗi.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: chạy tải qua nhiều lần xoay vòng credential, đếm lỗi connection theo cấu hình maxLifetime.</td>
+        </tr>
+        <tr id="vault-transit-envelope-encryption" data-slug="vault-transit-envelope-encryption" data-track="security" data-prereq="vault-dynamic-secrets" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Vault Transit: encryption as a service &amp; envelope encryption</strong><br><code>vault-transit-envelope-encryption</code><br><a class="topic-link" href="topics/vault-transit-envelope-encryption/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-security">Bảo mật &amp; danh tính</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td><a href="#vault-dynamic-secrets">HashiCorp Vault: dynamic secret, lease &amp; xoay vòng credential DB</a></td>
+          <td>Gọi Vault để mã hoá từng bản ghi tốn một vòng mạng; envelope encryption chỉ gọi Vault để lấy/giải mã data key rồi mã hoá dữ liệu tại chỗ. Xoay vòng key tạo version mới; dữ liệu cũ cần rewrap nếu muốn bỏ version cũ.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: so sánh latency mã hoá trực tiếp qua Vault vs envelope ở một mức tải.</td>
+        </tr>
+        <tr id="jenkins-pipeline-testcontainers" data-slug="jenkins-pipeline-testcontainers" data-track="cicd" data-prereq="" data-mode="lite" data-priority="3" data-status="planned" data-created="false">
+          <td><strong>Jenkins pipeline: agent, cache &amp; Testcontainers trong CI</strong><br><code>jenkins-pipeline-testcontainers</code><br><a class="topic-link" href="topics/jenkins-pipeline-testcontainers/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-cicd">CI/CD &amp; triển khai</span><br><span class="prio prio-3">Ưu tiên 3</span></td>
+          <td>—</td>
+          <td>Integration test dùng Testcontainers cần Docker trong agent: mount Docker socket nhanh và giữ được image cache nhưng agent điều khiển được Docker của host, Docker-in-Docker cách ly hơn nhưng mỗi build kéo lại image. Cache .m2 và chạy stage song song quyết định phần lớn thời gian build.</td>
+          <td><span class="mode-chip mode-lite">lite</span> Lite: đo thời gian build theo chiến lược cache và cách chạy Docker trong agent.</td>
+        </tr>
+        <tr id="blue-green-canary-deploy" data-slug="blue-green-canary-deploy" data-track="cicd" data-prereq="jenkins-pipeline-testcontainers,spring-cloud-gateway-reactive" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Triển khai blue-green &amp; canary không downtime</strong><br><code>blue-green-canary-deploy</code><br><a class="topic-link" href="topics/blue-green-canary-deploy/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-cicd">CI/CD &amp; triển khai</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#jenkins-pipeline-testcontainers">Jenkins pipeline: agent, cache &amp; Testcontainers trong CI</a>, <a href="#spring-cloud-gateway-reactive">Spring Cloud Gateway: Netty event loop, filter &amp; rate limiter</a></td>
+          <td>Chuyển traffic giữa hai phiên bản qua trọng số ở gateway; request đang xử lý trên bản cũ chỉ không lỗi nếu có graceful shutdown và connection draining. Hai phiên bản chạy song song nên schema DB phải tương thích hai chiều (expand/contract). Cần pipeline để triển khai và gateway để điều phối traffic.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: đo số request lỗi trong lúc chuyển traffic, có và không có graceful shutdown.</td>
+        </tr>
+        <tr id="saga-orchestrator-durable-execution" data-slug="saga-orchestrator-durable-execution" data-track="distributed" data-prereq="saga-orchestration-vs-choreography" data-mode="full" data-priority="2" data-status="planned" data-created="false">
+          <td><strong>Saga orchestrator bền vững: state machine + outbox vs durable execution</strong><br><code>saga-orchestrator-durable-execution</code><br><a class="topic-link" href="topics/saga-orchestrator-durable-execution/README.html">README</a> <span class="not-created">chưa tạo</span><br><span class="status-chip status-planned">Dự kiến</span></td>
+          <td><span class="track-chip track-distributed">Phân tán &amp; nhất quán</span><br><span class="prio prio-2">Ưu tiên 2</span></td>
+          <td><a href="#saga-orchestration-vs-choreography">Saga: orchestration vs choreography</a></td>
+          <td>Orchestrator crash giữa saga phải tiếp tục đúng bước: cách tự viết lưu trạng thái từng bước và gửi lệnh qua outbox; durable execution (kiểu Temporal) ghi lịch sử sự kiện và replay code workflow, nên code workflow phải tất định. Timeout, retry và compensation đều phải idempotent vì mỗi bước có thể chạy lại.</td>
+          <td><span class="mode-chip mode-full">full</span> Full: kill orchestrator ở từng bước, kiểm tra saga hoàn tất đúng và không chạy trùng side effect.</td>
         </tr>
       </tbody>
     </table></div>

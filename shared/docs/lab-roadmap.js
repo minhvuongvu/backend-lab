@@ -21,6 +21,10 @@
     .map((f) => [f.dataset.roadmap, f.dataset.trackName || f.dataset.roadmap]));
 
   const id = (slug) => "t_" + slug.replace(/[^a-zA-Z0-9]/g, "_");
+  // Track keys may contain '-' (e.g. search-storage), which mermaid's parser treats as edge syntax;
+  // prefixing also keeps overview node ids distinct from track subgraph ids across diagrams on one page.
+  const gid = (track) => "g_" + track.replace(/[^a-zA-Z0-9]/g, "_");
+  const oid = (track) => "o_" + track.replace(/[^a-zA-Z0-9]/g, "_");
   const label = (text) => text.replace(/"/g, "'").replace(/[<>]/g, "");
   const CLASSDEFS = [
     "    classDef planned stroke-width:1px",
@@ -37,11 +41,11 @@
     const lines = ["flowchart LR", ...CLASSDEFS];
     const external = new Set();
     own.forEach((t) => t.prereq.forEach((p) => { if (!ownSlugs.has(p) && topics.has(p)) external.add(p); }));
-    lines.push(`    subgraph ${track}["${label(trackName.get(track) || track)}"]`);
+    lines.push(`    subgraph ${gid(track)}["${label(trackName.get(track) || track)}"]`);
     lines.push("      direction LR");
     own.forEach((t) => lines.push(`      ${id(t.slug)}["${label(t.name)}"]:::${statusClass(t)}`));
     lines.push("    end");
-    lines.push(`    style ${track} fill:transparent,stroke-dasharray:6 4`);
+    lines.push(`    style ${gid(track)} fill:transparent,stroke-dasharray:6 4`);
     external.forEach((p) => {
       const t = topics.get(p);
       lines.push(`    ${id(p)}["${label(t.name)} · ${label(trackName.get(t.track) || t.track)}"]:::ext`);
@@ -68,13 +72,23 @@
     const lines = ["flowchart LR"];
     trackName.forEach((name, track) => {
       if (!counts.has(track)) return;
-      lines.push(`    ${track}["${label(name)}<br/>${done.get(track) || 0}/${counts.get(track)} xong"]`);
+      lines.push(`    ${oid(track)}["${label(name)}<br/>${done.get(track) || 0}/${counts.get(track)} xong"]`);
     });
     edges.forEach((n, key) => {
       const [a, b] = key.split("|");
-      lines.push(`    ${a} -->|${n}| ${b}`);
+      lines.push(`    ${oid(a)} -->|${n}| ${oid(b)}`);
     });
     return lines.join("\n");
+  }
+
+  // Header counts are derived from the table too, so they never drift from the rows.
+  const total = document.querySelector("[data-roadmap-total]");
+  if (total) total.textContent = `${topics.size} topic đề xuất`;
+  const byTrack = document.querySelector("[data-roadmap-by-track]");
+  if (byTrack) {
+    const per = new Map();
+    topics.forEach((t) => per.set(t.track, (per.get(t.track) || 0) + 1));
+    byTrack.textContent = [...trackName].filter(([k]) => per.has(k)).map(([k, n]) => `${n}: ${per.get(k)}`).join(", ");
   }
 
   for (const fig of figures) {
