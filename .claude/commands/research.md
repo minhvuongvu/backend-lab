@@ -18,8 +18,8 @@ Tuân thủ mọi quy tắc trong `CLAUDE.md`: 14 mục tiêu học, before, tà
      - topic quá rộng (ví dụ "caching", "microservices", "kafka"): đề xuất 2–4 cách thu hẹp cụ thể (mỗi cách một dòng + slug gợi ý) và hỏi tôi. DỪNG.
      - ngược lại: chạy `make new-topic SLUG=<slug>`. Đây là cách DUY NHẤT để tạo topic; không tự tạo file/thư mục bằng cách khác. Nếu `make` không có, chạy `bash scripts/new-topic.sh <slug>` (chính là thứ Makefile gọi) và báo tôi.
 3. Đối chiếu `ROADMAP.html` (hàng `tr[data-slug]`):
-   - topic có trong roadmap: nếu `data-prereq` có topic chưa `done` (theo README của topic đó, hoặc chưa tạo), báo các tiền đề còn thiếu và vì sao chúng là tiền đề, hỏi tôi có tiếp tục không (chỉ là khuyến nghị, không chặn);
-   - topic chưa có trong roadmap: sau khi tạo topic, thêm một hàng vào roadmap (track, tiền đề có lý do, vì sao nên học, chế độ gợi ý) và báo tôi.
+   - topic có trong roadmap: nếu `data-prereq` có topic chưa `done` (theo README của topic đó, hoặc chưa tạo), báo các tiền đề còn thiếu, vì sao chúng là tiền đề, và rằng có thể học ngay — phase 1 sẽ viết "Tóm tắt tiền đề" cho phần thiếu. Thứ tự #n chỉ là gợi ý, không chặn; chỉ hỏi lại nếu thiếu từ 3 tiền đề trở lên;
+   - topic chưa có trong roadmap: sau khi tạo topic, thêm một hàng vào roadmap (track, tiền đề có lý do, vì sao nên học, chế độ gợi ý), chạy `python3 scripts/roadmap_order.py` để đánh số và xếp nhóm lại, rồi báo tôi.
 4. Nếu hội thoại hiện tại đã làm một topic KHÁC: nhắc tôi chạy `/clear` rồi gọi lại lệnh. DỪNG.
 5. Đọc `topics/<slug>/README.html` và mọi tài liệu phase đã có nội dung. Trạng thái lấy từ file, không lấy từ trí nhớ hội thoại.
 6. Xác định chế độ và phase:
@@ -50,6 +50,7 @@ Báo ngắn: topic, slug, chế độ, phase sẽ chạy, rồi bắt đầu.
 - Chủ động tìm chuyên đề đặc thù (CĐn cho solution, CĐ-An cho từng cách): đọc source/issue tracker/postmortem để tìm hiện tượng chỉ cách đó mới có; agent tìm nguồn "failure mode & issue tracker" báo cáo ứng viên chuyên đề. Liệt kê ở danh mục chuyên đề, mỗi chuyên đề có câu hỏi kiểm chứng ở §25.
 - Nếu thấy topic cần thêm mục lý thuyết ngoài template (ví dụ mô hình nhất quán hình thức, thuật toán đồng thuận, cấu trúc dữ liệu đặc thù), thêm mục đó và ghi lý do vào nhật ký quyết định.
 - Tài liệu dài: có thể chia viết song song theo phần (mỗi agent một phần A–E), agent chính hợp nhất và kiểm tra tính nhất quán.
+- **Tóm tắt tiền đề (§6.1):** với mỗi topic tiền đề trong roadmap chưa `done`, viết phần cốt lõi đủ để hiểu topic này (cơ chế liên quan, 1–3 đoạn + sơ đồ nếu cần, insight quan trọng nhất của tiền đề đó) kèm link tới hàng roadmap / topic đó. Mục tiêu: học được topic này mà không phải học trọn tiền đề trước. Tiền đề đã `done` thì chỉ link.
 - Điền mục "Phạm vi" và bảng "Implementations" trong README của topic.
 - Kiểm tra chất lượng (xem "Kiểm tra tài liệu" bên dưới) → **Gate**.
 

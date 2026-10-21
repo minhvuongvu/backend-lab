@@ -41,6 +41,7 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 | `make obs-down` | Tắt observability stack |
 | `make insights` | Dựng lại `INSIGHTS.html` từ mọi topic và kiểm tra cấu trúc insight |
 | `make hubs` | Dựng lại mọi trang tổng (LAB, INSIGHTS, PROBLEMS, GLOSSARY, BENCHMARKS) và mục Topic liên quan |
+| `make roadmap` | Đánh số thứ tự học, xếp nhóm theo giai đoạn và kiểm tra tiền đề / lộ trình trong `ROADMAP.html` |
 | `make hubs-check` | Kiểm tra markup insight / vấn đề / thuật ngữ / số liệu của mọi topic |
 
 Cổng đổi được khi bị trùng: `make obs-up PROM_PORT=19090 GRAFANA_PORT=13000 OTLP_GRPC_PORT=14317 OTLP_HTTP_PORT=14318 PYROSCOPE_PORT=14040`.
@@ -57,6 +58,7 @@ backend-lab/
 ├── scripts/new-topic.sh      # logic của make new-topic
 ├── scripts/prom_export.py    # xuất số liệu Prometheus ra CSV cho results/raw
 ├── scripts/stats.py          # thứ tự chạy, steady state, CI bootstrap, so sánh với before
+├── scripts/roadmap_order.py  # thứ tự học #n, nhóm theo giai đoạn, kiểm tra tiền đề và lộ trình
 ├── scripts/build_*.py        # build_insights / build_knowledge / build_dashboard: dựng trang tổng, --check markup
 ├── .claude/                  # /research, /lab-status, subagent lab-reviewer
 ├── templates/                # khung tài liệu cho mỗi topic
