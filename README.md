@@ -19,10 +19,11 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 ## Cách dùng
 
 - Mở Claude Code trong `backend-lab/`.
-- `/research transactional outbox`: chạy phase kế tiếp, dừng ở các điểm duyệt.
+- `/research 1`: bắt đầu topic số #1 trong [hub/roadmap.html](hub/roadmap.html) (số đứng trước tên mỗi topic); `/research 1 3` chạy riêng phase 3 của topic đó.
+- `/research transactional outbox`: gõ tên/slug thay cho số; chạy phase kế tiếp, dừng ở các điểm duyệt.
 - `/research transactional outbox 5`: chạy riêng một phase.
 - `/research idempotency key all`: chạy một mạch, các điểm cần duyệt ghi vào README của topic.
-- `/research cache stampede lite`: chế độ học nhanh (ít kịch bản, bỏ phase 7); nâng lên đầy đủ sau bằng `/research cache stampede full`.
+- Mọi topic mới mặc định chạy chế độ **lite** (học nhanh: ít kịch bản, bỏ phase 7); nâng lên đầy đủ sau bằng `/research cache stampede full` (hoặc `/research 12 full`).
 - `/lab-status`: xem tiến độ mọi topic và gợi ý topic nên học tiếp theo lộ trình.
 - `/research cdc debezium spike`: khám phá nhanh một hiện tượng; `/research redis lock vs postgres advisory lock`: topic so sánh hai công nghệ.
 - `/research case-payment-system`: case study tổng hợp — ghép nhiều topic đã học thành một hệ thống và kiểm chứng end-to-end (giai đoạn 8 trong lộ trình).

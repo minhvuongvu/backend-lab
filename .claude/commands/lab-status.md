@@ -4,7 +4,7 @@ description: Báo cáo tiến độ mọi topic, gợi ý lệnh /research tiế
 
 Chỉ đọc, không sửa file.
 
-1. Liệt kê mọi thư mục `topics/*/` có `README.html`. Nếu không có topic nào, báo "Chưa có topic" và gợi ý `/research <topic>`.
+1. Liệt kê mọi thư mục `topics/*/` có `README.html`. Nếu không có topic nào, báo "Chưa có topic" và gợi ý `/research <topic>` hoặc `/research <số #n trong roadmap>`.
 2. Với mỗi topic, đọc `README.html` và lấy từ thuộc tính `data-*` (không dựa vào chữ hiển thị):
    - **Phase đã xong:** các `ol.phase-list li[data-status="done"]` (lấy `data-phase`).
    - **Phase kế tiếp:** `li` đầu tiên có `data-status` khác `done`/`skipped` (hoặc "xong"); ghi chú nếu đang `in-progress`.
@@ -23,7 +23,7 @@ Chỉ đọc, không sửa file.
    - phase 5 → nhắc cần Docker đang chạy và có thể `make obs-up` trước.
 6. **Học gì tiếp theo** (từ `hub/roadmap.html`, các hàng `tr[data-slug]`):
    - topic "sẵn sàng" = chưa tạo hoặc `planned`, và mọi slug trong `data-prereq` đã `done`;
-   - gợi ý tối đa 3 topic sẵn sàng, ưu tiên `data-priority` thấp (1 = cao nhất) rồi theo thứ tự đường học đang đi; mỗi gợi ý một dòng: vì sao bây giờ (tiền đề nào vừa xong mở khoá nó) + lệnh `/research <slug>` (chế độ mặc định: full nếu `data-priority="1"` hoặc case study, còn lại lite; ghi rõ chế độ sẽ dùng);
+   - gợi ý tối đa 3 topic sẵn sàng, ưu tiên `data-priority` thấp (1 = cao nhất) rồi theo thứ tự đường học đang đi; mỗi gợi ý một dòng: vì sao bây giờ (tiền đề nào vừa xong mở khoá nó) + lệnh `/research <n>` theo số `data-order` của topic trong roadmap, kèm tên và slug (chế độ mặc định là lite; nếu `data-mode="full"` thì ghi thêm "đáng nâng full sau");
    - cảnh báo nếu roadmap và README của topic lệch trạng thái.
 7. **Ôn tập:** nếu có topic có `questions.html` / `suggested-questions.html`: nêu số câu hỏi `open`/`revisit` và số câu gợi ý chưa hỏi mỗi topic; chọn ngẫu nhiên 3 câu (ưu tiên câu đã trả lời từ hơn 2 tuần trước và câu gợi ý mức senior/expert chưa hỏi) để tôi tự trả lời lại, chỉ in câu hỏi + link, không in đáp án.
 8. Dòng cuối: số insight và chuyên đề trong `hub/insights.html` (nếu có), nhắc chạy `python3 scripts/build_insights.py` nếu file cũ hơn tài liệu topic mới nhất.

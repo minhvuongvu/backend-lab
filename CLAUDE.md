@@ -1,6 +1,6 @@
 # backend-lab — quy tắc cho mọi phiên
 
-Repo là "phòng thí nghiệm" để nghiên cứu sâu từng công nghệ, pattern, kỹ thuật, solution trong hệ thống phân tán theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật. Lệnh chính: `/research <topic> [phase]`, `/lab-status`.
+Repo là "phòng thí nghiệm" để nghiên cứu sâu từng công nghệ, pattern, kỹ thuật, solution trong hệ thống phân tán theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật. Lệnh chính: `/research <topic | số #n trong roadmap> [phase]` (ví dụ `/research 1`), `/lab-status`.
 
 File này chỉ giữ nguyên tắc cốt lõi. Quy tắc chi tiết nằm trong `.claude/rules/` (tự nạp khi làm việc với file khớp `paths`; `/research` đọc rõ ở phase cần):
 - `.claude/rules/html-docs.md`: viết tài liệu HTML, insight, "vì sao", bước 03, chuyên đề CĐ.
@@ -69,7 +69,7 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Không chia nhỏ việc ngắn hoặc phụ thuộc chặt vào nhau chỉ để có nhiều agent.
 
 ## Chế độ và loại topic
-- Chế độ mặc định khi tạo topic: `full` cho topic ưu tiên 1 trong roadmap và case study; `lite` cho mọi topic khác. Đối số `full`/`lite`/`spike` ghi đè; chế độ lưu trong README topic được giữ ở các phiên sau.
+- Chế độ mặc định khi tạo topic: `lite` cho mọi topic (kể cả ưu tiên 1 và case study). Cột "Chế độ gợi ý" trong roadmap chỉ cho biết topic nào đáng nâng lên `full` sau. Đối số `full`/`lite`/`spike` ghi đè; chế độ lưu trong README topic được giữ ở các phiên sau.
 - `lite` ghi kết luận là "khám phá (lite)", `spike` ghi "spike". Không chế độ nào nới quy tắc trung thực và test tính đúng đắn.
 - Loại topic: `standard`, `compare` (`/research X vs Y`), `capstone` (`/research case-…`). Chi tiết từng chế độ/loại trong `.claude/commands/research.md`.
 

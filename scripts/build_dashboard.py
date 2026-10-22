@@ -105,6 +105,7 @@ def read_roadmap(path=None):
             "track": tr.attrs.get("data-track", ""),
             "prereq": [p.strip() for p in (tr.attrs.get("data-prereq") or "").split(",") if p.strip()],
             "mode": tr.attrs.get("data-mode", "full"),
+            "order": int(num(tr.attrs.get("data-order")) or 0),
             "priority": int(num(tr.attrs.get("data-priority")) or 3),
             "status": tr.attrs.get("data-status", "planned"),
         })
@@ -450,9 +451,11 @@ def render_lab(topics, roadmap, tracks, insights, dives, benches):
         for r in ready[:10]:
             why = ("không có tiền đề" if not r["prereq"]
                    else "tiền đề đã xong: " + ", ".join(r["prereq"]))
-            cmd = f"/research {r['slug']}" + (" lite" if r["mode"] == "lite" else "")
+            # /research resolves a bare number to the roadmap row with that data-order; new topics start in lite.
+            cmd = f"/research {r['order'] or r['slug']}"
+            later = " (lite, đáng nâng full sau)" if r["mode"] == "full" else ""
             lis.append(f'<li><a href="ROADMAP.html#{e(r["slug"])}"><strong>{e(r["name"])}</strong></a> '
-                       f'<span class="prio prio-{r["priority"]}">Ưu tiên {r["priority"]}</span> — {e(why)} · <code>{e(cmd)}</code></li>')
+                       f'<span class="prio prio-{r["priority"]}">Ưu tiên {r["priority"]}</span> — {e(why)} · <code>{e(cmd)}</code>{e(later)}</li>')
         body = f'<ul class="lab-ready">{"".join(lis)}</ul>'
     else:
         body = '<p class="empty-note">Chưa có topic nào đủ tiền đề (hoặc chưa có ROADMAP.html).</p>'

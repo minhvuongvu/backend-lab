@@ -198,7 +198,7 @@ def main():
     stage_html = ['    <h2 id="stages">Giai đoạn học</h2>',
                   '    <p>Nhóm topic được xếp theo thứ tự nên học; số <span class="order-no">#n</span> ở mỗi topic là thứ tự gợi ý, '
                   'luôn đứng sau mọi tiền đề của nó. <strong>Thứ tự chỉ là gợi ý:</strong> có thể bắt đầu bất kỳ topic nào bằng '
-                  '<code>/research &lt;slug&gt;</code>; tiền đề chưa học sẽ được tóm tắt ngay trong tài liệu research của topic đó '
+                  '<code>/research &lt;số&gt;</code> (ví dụ <code>/research 12</code>) hoặc <code>/research &lt;slug&gt;</code>; tiền đề chưa học sẽ được tóm tắt ngay trong tài liệu research của topic đó '
                   '(mục "Tóm tắt tiền đề") để đủ hiểu mà không phải học trọn topic tiền đề trước.</p>',
                   '    <ol class="stage-list">']
     for n, title, intro, ts in STAGES:

@@ -26,7 +26,7 @@
     <h1>backend-lab — quy tắc cho mọi phiên</h1>
     <div class="meta"><span>Nguồn: <code>CLAUDE.md</code> (trang này tự sinh)</span></div>
   </header>
-<p>Repo là "phòng thí nghiệm" để nghiên cứu sâu từng công nghệ, pattern, kỹ thuật, solution trong hệ thống phân tán theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật. Lệnh chính: <code>/research &lt;topic&gt; [phase]</code>, <code>/lab-status</code>.</p>
+<p>Repo là "phòng thí nghiệm" để nghiên cứu sâu từng công nghệ, pattern, kỹ thuật, solution trong hệ thống phân tán theo quy trình 7 phase, kiểm chứng bằng thí nghiệm thật. Lệnh chính: <code>/research &lt;topic | số #n trong roadmap&gt; [phase]</code> (ví dụ <code>/research 1</code>), <code>/lab-status</code>.</p>
 <p>File này chỉ giữ nguyên tắc cốt lõi. Quy tắc chi tiết nằm trong <code>.claude/rules/</code> (tự nạp khi làm việc với file khớp <code>paths</code>; <code>/research</code> đọc rõ ở phase cần):</p>
 <ul><li><code>.claude/rules/html-docs.md</code>: viết tài liệu HTML, insight, "vì sao", bước 03, chuyên đề CĐ.</li><li><code>.claude/rules/experiments.md</code>: phương pháp luận thí nghiệm, đo, thống kê, dữ liệu thô, tái lập, observability.</li><li><code>.claude/rules/hub-and-topics.md</code>: trang tổng (<code>hub/</code>), roadmap, kho insight, trạng thái <code>data-*</code> trong README topic.</li><li>Quy trình từng phase, chế độ lite/spike, topic so sánh, case study: <code>.claude/commands/research.md</code>.</li></ul>
 <section>
@@ -89,7 +89,7 @@
 </section>
 <section>
 <h2 id="che-do-va-loai-topic">Chế độ và loại topic</h2>
-<ul><li>Chế độ mặc định khi tạo topic: <code>full</code> cho topic ưu tiên 1 trong roadmap và case study; <code>lite</code> cho mọi topic khác. Đối số <code>full</code>/<code>lite</code>/<code>spike</code> ghi đè; chế độ lưu trong README topic được giữ ở các phiên sau.</li><li><code>lite</code> ghi kết luận là "khám phá (lite)", <code>spike</code> ghi "spike". Không chế độ nào nới quy tắc trung thực và test tính đúng đắn.</li><li>Loại topic: <code>standard</code>, <code>compare</code> (<code>/research X vs Y</code>), <code>capstone</code> (<code>/research case-…</code>). Chi tiết từng chế độ/loại trong <code>.claude/commands/research.md</code>.</li></ul>
+<ul><li>Chế độ mặc định khi tạo topic: <code>lite</code> cho mọi topic (kể cả ưu tiên 1 và case study). Cột "Chế độ gợi ý" trong roadmap chỉ cho biết topic nào đáng nâng lên <code>full</code> sau. Đối số <code>full</code>/<code>lite</code>/<code>spike</code> ghi đè; chế độ lưu trong README topic được giữ ở các phiên sau.</li><li><code>lite</code> ghi kết luận là "khám phá (lite)", <code>spike</code> ghi "spike". Không chế độ nào nới quy tắc trung thực và test tính đúng đắn.</li><li>Loại topic: <code>standard</code>, <code>compare</code> (<code>/research X vs Y</code>), <code>capstone</code> (<code>/research case-…</code>). Chi tiết từng chế độ/loại trong <code>.claude/commands/research.md</code>.</li></ul>
 </section>
 <section>
 <h2 id="mot-chu-de-mot-phien">Một chủ đề, một phiên</h2>

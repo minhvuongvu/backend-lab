@@ -1,11 +1,11 @@
 ---
 description: Nghiên cứu một topic backend theo quy trình 7 phase (research → design → implement → plan → execute → conclusion → production)
-argument-hint: <topic | X vs Y | case …> [1-7 | next | all] [full | lite | spike]
+argument-hint: <topic | số #n trong roadmap | X vs Y | case …> [1-7 | next | all] [full | lite | spike]
 ---
 
 Đối số: `$ARGUMENTS`
 
-Tách đối số từ cuối lên: nếu từ cuối thuộc {`full`, `lite`, `spike`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} thì đó là **phase**; phần còn lại là **tên topic**. Nếu tên topic có dạng `X vs Y` (hoặc `X vs Y vs Z`) thì đây là **topic so sánh** (xem § Topic so sánh), slug `x-vs-y`. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic; topic mới thì theo **chế độ mặc định**: `full` nếu topic có `data-priority="1"` trong hub/roadmap.html hoặc là case study (track `capstone`), còn lại `lite` (kể cả topic chưa có trong roadmap). Báo chế độ đã chọn và cách đổi (`/research <topic> full`).
+Tách đối số từ cuối lên: nếu từ cuối thuộc {`full`, `lite`, `spike`} thì đó là **chế độ** (bỏ nó đi); sau đó nếu từ cuối thuộc {`1`..`7`, `next`, `all`} **và trước nó vẫn còn từ khác** thì đó là **phase**; phần còn lại là **tên topic**. Tên topic chỉ gồm một số (`12` hoặc `#12`) là **số thứ tự trong roadmap**: tìm `tr[data-order="12"]` trong `hub/roadmap.html` và lấy `data-slug` của hàng đó (không có hàng → báo số lớn nhất hiện có và DỪNG). Ví dụ: `/research 3` = topic #3, phase kế tiếp; `/research 3 5` = topic #3, phase 5; `/research 12 full` = topic #12, chế độ full. Số #n có thể dịch khi roadmap thêm topic, nên luôn báo `#n → <slug> (<tên topic>)` trước khi làm. Nếu tên topic có dạng `X vs Y` (hoặc `X vs Y vs Z`) thì đây là **topic so sánh** (xem § Topic so sánh), slug `x-vs-y`. Thiếu phase thì phase = `next`. Thiếu chế độ thì dùng `data-field="mode"` trong README của topic; topic mới thì dùng **chế độ mặc định `lite`** cho mọi topic (kể cả ưu tiên 1, case study và topic chưa có trong roadmap) và ghi vào `data-field="mode"` của README. Báo chế độ đã chọn và cách đổi (`/research <topic> full`); nếu cột "Chế độ gợi ý" của roadmap là `full` (`data-mode="full"`), nói thêm vì sao topic này đáng nâng full sau.
 
 Tuân thủ mọi quy tắc trong `CLAUDE.md` (14 mục tiêu học, before, trung thực, tối giản, so sánh công bằng, git) và các file quy tắc chi tiết. Đọc chúng ở đầu phase tương ứng, kể cả khi chưa được tự nạp:
 - `.claude/rules/html-docs.md`: mọi phase có tài liệu HTML (1–7).

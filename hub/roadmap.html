@@ -18,7 +18,7 @@
     data-slug      slug kebab-case, trùng thư mục topics/<slug>/ và id của <tr>
     data-track     correctness | postgres | kafka | distributed | caching | resilience | architecture | redis | search-storage | platform | gateway | security | cicd | mongodb | containers | kubernetes | rabbitmq | foundations | jvm | networking | api | sre | spring | realtime | business | analytics | ai | multiregion | linux | testing | storage-engines | cloud | capstone
     data-prereq    danh sách slug tiền đề, phân tách bằng dấu phẩy (rỗng nếu không có); đồ thị phải là DAG
-    data-mode      full | lite — chế độ gợi ý cho /research
+    data-mode      full | lite — chế độ nên đạt (full = đáng nâng lên full sau lần lite đầu); /research luôn bắt đầu bằng lite
     data-priority  1 (cao) – 3 (thấp)
     data-status    planned | in-progress | done | skipped
     data-created   true | false — đã có topics/<slug>/README.html chưa
@@ -50,7 +50,8 @@
       <li>Đây là kế hoạch học có chủ đích, sửa được: thêm, bỏ, đổi ưu tiên tuỳ nhu cầu công việc. Topic được xếp theo <strong>quan hệ tiền đề</strong>: topic sau dựa trên cơ chế của topic trước, học đúng thứ tự thì kiến thức nối vào nhau.</li>
       <li><code>/lab-status</code> đọc trang này để gợi ý topic kế tiếp (topic có mọi tiền đề đã <em>Xong</em>); <code>/research</code> đọc để cảnh báo khi tiền đề chưa học và gợi ý chế độ <code>full</code> / <code>lite</code>.</li>
       <li>Trạng thái của topic đã tạo lấy từ <code>topics/&lt;slug&gt;/README.html</code>; cột Trạng thái ở đây chỉ phản ánh lại.</li>
-      <li>Chế độ mặc định khi bắt đầu một topic: <strong>full</strong> cho topic <em>Ưu tiên 1</em> và case study, <strong>lite</strong> cho các topic còn lại; cột "Chế độ gợi ý" mô tả thí nghiệm nếu muốn làm đầy đủ. Đổi bằng <code>/research &lt;slug&gt; full|lite|spike</code>.</li>
+      <li>Bắt đầu một topic bằng số của nó: <code>/research 12</code> là topic <span class="order-no">#12</span> (vẫn gõ được slug). Số có thể dịch khi roadmap thêm topic; <code>/research</code> luôn báo số đã ứng với topic nào trước khi làm.</li>
+      <li>Chế độ mặc định khi bắt đầu mọi topic là <strong>lite</strong>; cột "Chế độ gợi ý" cho biết topic nào đáng nâng lên <strong>full</strong> sau và thí nghiệm đầy đủ sẽ đo gì. Đổi bằng <code>/research 12 full|lite|spike</code>.</li>
       <li>Tiền đề là gợi ý, không bắt buộc: học trước một topic khi chưa xong tiền đề vẫn được, nhưng phần cơ chế nền sẽ phải đọc nhanh trong topic đó.</li>
     </ul>
   </section>
@@ -58,7 +59,7 @@
   <section>
     <!-- stages:start -->
     <h2 id="stages">Giai đoạn học</h2>
-    <p>Nhóm topic được xếp theo thứ tự nên học; số <span class="order-no">#n</span> ở mỗi topic là thứ tự gợi ý, luôn đứng sau mọi tiền đề của nó. <strong>Thứ tự chỉ là gợi ý:</strong> có thể bắt đầu bất kỳ topic nào bằng <code>/research &lt;slug&gt;</code>; tiền đề chưa học sẽ được tóm tắt ngay trong tài liệu research của topic đó (mục "Tóm tắt tiền đề") để đủ hiểu mà không phải học trọn topic tiền đề trước.</p>
+    <p>Nhóm topic được xếp theo thứ tự nên học; số <span class="order-no">#n</span> ở mỗi topic là thứ tự gợi ý, luôn đứng sau mọi tiền đề của nó. <strong>Thứ tự chỉ là gợi ý:</strong> có thể bắt đầu bất kỳ topic nào bằng <code>/research &lt;số&gt;</code> (ví dụ <code>/research 12</code>) hoặc <code>/research &lt;slug&gt;</code>; tiền đề chưa học sẽ được tóm tắt ngay trong tài liệu research của topic đó (mục "Tóm tắt tiền đề") để đủ hiểu mà không phải học trọn topic tiền đề trước.</p>
     <ol class="stage-list">
       <li><strong>Giai đoạn 1 — Nền tảng một node</strong> <span class="group-count">70 topic</span><br>Dữ liệu đúng trong một database, hệ điều hành, container, JVM, Spring và mạng: mọi topic sau đều dựng trên đây.<br><a href="#group-correctness">Nền tảng tính đúng đắn</a>, <a href="#group-postgres">PostgreSQL</a>, <a href="#group-linux">Linux &amp; hệ điều hành</a>, <a href="#group-containers">Docker &amp; container</a>, <a href="#group-jvm">JVM &amp; hiệu năng</a>, <a href="#group-spring">Spring internals</a>, <a href="#group-networking">Mạng &amp; giao thức</a></li>
       <li><strong>Giai đoạn 2 — Chịu tải &amp; dữ liệu nóng</strong> <span class="group-count">40 topic</span><br>Giữ hệ thống sống khi tải tăng hoặc phụ thuộc chậm, tăng tốc đọc bằng cache, và phục vụ kết nối real-time.<br><a href="#group-resilience">Resilience</a>, <a href="#group-caching">Caching</a>, <a href="#group-redis">Redis</a>, <a href="#group-realtime">Real-time &amp; push</a></li>
