@@ -39,5 +39,30 @@ class DashboardTest(unittest.TestCase):
                 finally:
                     repo.cleanup()
 
+    def test_lab_page_counts_qa_and_suggested_questions(self):
+        readme = ('<!doctype html><html><body><h1>Alpha</h1><ul class="questions">'
+                  '<li data-status="open">a</li><li data-status="answered">b</li></ul></body></html>')
+        repo = repo_with_topics(**{
+            "alpha/questions.html": qa_page(qa("q-001"), qa("q-002", status="open", answer=None),
+                                            qa("q-003", status="revisit"),
+                                            guide='<div class="guide">' + qa("q-900", status="open") + "</div>"),
+            "alpha/suggested-questions.html": ask_page(ask("s-001"), ask("s-002", status="skipped")),
+            "beta/01-research.html": research_page(""),
+        })
+        try:
+            repo.write("topics/alpha/README.html", readme)
+            r = repo.py("build_dashboard.py", "--no-related")
+            self.assertEqual(r.returncode, 0, r.stdout + r.stderr)
+            lab = repo.path("hub/lab.html").read_text(encoding="utf-8")
+            alpha = lab[lab.index('data-topic="alpha"'):lab.index('data-topic="beta"')]
+            self.assertIn("1 câu hỏi mở (README)", alpha)
+            self.assertIn("2 hỏi đáp cần xem lại", alpha)
+            self.assertIn("1 câu hỏi gợi ý chưa hỏi", alpha)
+            beta = lab[lab.index('data-topic="beta"'):]
+            self.assertIn("0 hỏi đáp cần xem lại", beta)    # topic without questions.html
+        finally:
+            repo.cleanup()
+
+
 if __name__ == "__main__":
     unittest.main()

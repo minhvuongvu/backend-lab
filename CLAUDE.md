@@ -79,6 +79,11 @@ Topic mới chỉ được tạo bằng `make new-topic SLUG=<slug>` (copy `temp
 - Trạng thái nằm trong file, không nằm trong hội thoại. Khi bắt đầu, luôn đọc `topics/<slug>/README.html` và các file phase trước.
 - Trong cùng một topic, `/clear` giữa các phase vẫn an toàn.
 
+## Hỏi đáp và câu hỏi nên hỏi
+- Mỗi câu hỏi tôi đặt ra trong phiên của một topic (kể cả ngoài `/research`) được ghi vào `topics/<slug>/questions.html`: câu hỏi gần nguyên văn + câu trả lời đúng chuẩn "vì sao" + link tới mục liên quan. Không ghi câu hỏi thao tác thuần ("chạy lệnh nào", "sửa giúp file X"). Đáp án đổi sau khi đo thì thêm `div.a-update`, không xoá đáp án cũ.
+- `topics/<slug>/suggested-questions.html`: câu hỏi Claude đề xuất tôi nên hỏi (không kèm đáp án, để tôi tự nghĩ trước). Khi tôi hỏi một câu trong đó, đánh dấu `asked` và link tới đáp án ở `questions.html`.
+- Markup và quy tắc chi tiết: `.claude/rules/hub-and-topics.md` § Hỏi đáp; trang tổng `hub/questions.html`.
+
 ## Stack mặc định
 - Java 21, Spring Boot 4.x (bản ổn định còn hỗ trợ OSS; 3.5 hết hỗ trợ OSS từ 2026-06-30 — chỉ dùng 3.x khi topic cần giống môi trường cũ và ghi lý do), Maven wrapper (`./mvnw`), PostgreSQL, Redis, Kafka, Docker Compose.
 - Testcontainers cho integration test.

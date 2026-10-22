@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Câu hỏi nên hỏi</title>
+<link rel="stylesheet" href="../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Câu hỏi nên hỏi — câu hỏi Claude gợi ý người học NÊN tự đặt ra về topic này (tự nghĩ trước, KHÔNG ghi đáp án ở đây).
+  Thêm 3–7 câu ở cuối mỗi phase, trải đều các mức. Không có class draft: trang luôn "đang mở".
+  MARKUP (scripts/build_questions.py → hub/questions.html đọc trang này):
+    - Mỗi câu là một article.ask, con TRỰC TIẾP của section#ask-list (mục trong div.guide bị bỏ qua):
+      <article class="ask" id="s-001" data-status="suggested" data-phase="1" data-level="senior" data-kind="why" data-tags="a,b">
+        <h3 class="q">câu hỏi gợi ý</h3>                                                    bắt buộc
+        <p class="why-ask">vì sao đáng hỏi: lỗ hổng / hiểu lầm nó lộ ra, dựa vào cơ chế nào</p>  bắt buộc
+        <p class="hint">Gợi ý nơi tìm đáp án: <a href="01-research.html#...">01 §11</a></p>     tuỳ chọn
+        <p class="answered-by"><a href="questions.html#q-007">Đã hỏi → q-007</a></p>           chỉ khi data-status="asked"
+      </article>
+    - id: s-NNN (3 chữ số, tăng dần, duy nhất trong trang; không đánh số lại).
+    - data-status: suggested (chưa hỏi) | asked (đã hỏi, có p.answered-by) | skipped (bỏ qua: đã hiểu chắc hoặc không còn phù hợp).
+    - data-level: foundation (nền tảng, phải chắc trước khi đi tiếp) | senior (đánh đổi, failure mode, design review)
+      | expert (độ sâu phỏng vấn staff / người đã vận hành hệ thống thật mới nghĩ tới).
+    - data-phase: 0–7, phase lúc gợi ý. data-kind: concept | why | how | compare | tradeoff | debug | production.
+    - data-tags: 1–5 tag kebab-case chữ thường, phân tách bằng dấu phẩy; dùng lại tag insight đã có.
+    - Thứ tự hiển thị: trong mỗi phase, foundation → senior → expert.
+    - Câu hỏi tốt bắt phải suy luận về cơ chế, đánh đổi, failure mode, bậc độ lớn hay quyết định production; không phải câu tra định nghĩa.
+    - Khi người học hỏi câu này: ghi câu hỏi + đáp án vào questions.html (q-NNN), rồi đổi mục ở đây sang asked + p.answered-by.
+-->
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Câu hỏi nên hỏi</div>
+    <h1>{{TOPIC}} — Câu hỏi nên hỏi</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span></div>
+  </header>
+
+  <section>
+    <h2 id="usage"><span class="num">1</span>Cách dùng</h2>
+    <p><strong>Mục đích.</strong> Người mới học thường không biết mình chưa biết gì, nên không tự đặt ra được câu hỏi chạm tới cơ chế, đánh đổi hay failure mode.
+      Danh sách này là các câu hỏi mà người đã hiểu sâu topic sẽ hỏi; mỗi câu kèm lý do đáng hỏi, không kèm đáp án.</p>
+    <p><strong>Cách học.</strong> (1) Đọc câu hỏi và lý do. (2) Tự trả lời trước, viết ra: cơ chế từng bước, điều kiện, bậc độ lớn, khi nào không đúng.
+      (3) Hỏi Claude để đối chiếu. Câu hỏi và đáp án được ghi vào <a href="questions.html">Hỏi đáp</a>; mục ở đây chuyển sang <em>Đã hỏi</em> kèm link.
+      Nếu đã chắc chắn hiểu thì đánh dấu <em>Bỏ qua</em>.</p>
+    <p><strong>Mức độ.</strong> <em>Foundation</em>: nền tảng, phải chắc trước khi đi tiếp. <em>Senior</em>: đánh đổi, failure mode, câu hỏi design review.
+      <em>Expert</em>: độ sâu phỏng vấn staff, điều người đã vận hành hệ thống thật mới nghĩ tới. Câu hỏi được thêm ở cuối mỗi phase.</p>
+    <p><strong>Tự kiểm tra.</strong> Nút <em>Ẩn đáp án</em> ở đây ẩn lý do và gợi ý, chỉ còn câu hỏi; bấm vào câu hỏi để hiện lại.</p>
+  </section>
+
+  <section id="ask-list">
+    <h2 id="list"><span class="num">2</span>Danh sách câu hỏi</h2>
+    <div class="guide">Mỗi câu là một <code>article.ask</code> đặt trực tiếp trong mục này, theo markup ở comment đầu file; nhóm theo phase,
+      trong mỗi phase xếp foundation → senior → expert. Khi thêm câu hỏi thật đầu tiên, xoá khối hướng dẫn này (cả ví dụ bên dưới). Ví dụ:
+      <article class="ask" id="s-000" data-status="suggested" data-phase="1" data-level="senior" data-kind="tradeoff" data-tags="mvcc,vacuum">
+        <h3 class="q">Một transaction mở 2 giờ trên replica (hot_standby_feedback=on) làm gì với bảng ghi nhiều trên primary?</h3>
+        <p class="why-ask">Vì sao đáng hỏi: nhiều người nghĩ query chỉ đọc trên replica không ảnh hưởng primary. Câu hỏi buộc phải lần theo
+          xmin horizon → VACUUM không dọn được dead tuple → bloat và index phình, tức một cơ chế MVCC lan qua replication.</p>
+        <p class="hint">Gợi ý nơi tìm đáp án: <a href="01-research.html#failure-modes">01 §13</a></p>
+      </article>
+    </div>
+    <p class="empty-note">Chưa có câu hỏi gợi ý.</p>
+  </section>
+
+  <section>
+    <h2 id="sources"><span class="num">3</span>Nguồn</h2>
+    <p class="note">Nguồn giúp tự trả lời (<code>id="src-N"</code>). Nguồn đã có ở 01 §27 thì link sang đó thay vì chép lại.</p>
+    <ol class="sources">
+    </ol>
+    <p class="empty-note">Chưa có nguồn.</p>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

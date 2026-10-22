@@ -48,6 +48,20 @@ class NewTopicTest(unittest.TestCase):
         self.assertIn('"../../shared/docs/lab.css"', (t / "01-research.html").read_text(encoding="utf-8"))
         self.assertIn("<artifactId>demo-topic</artifactId>", (t / "system/pom.xml").read_text(encoding="utf-8"))
 
+    def test_02b_question_pages_rendered(self):
+        t = self.repo.path("topics/demo-topic")
+        for name, title in (("questions.html", "Hỏi đáp"), ("suggested-questions.html", "Câu hỏi nên hỏi")):
+            with self.subTest(name):
+                html = (t / name).read_text(encoding="utf-8")
+                self.assertIsNone(TOKENS.search(html))
+                self.assertIn(f"<title>Demo Topic — {title}</title>", html)
+                self.assertIn("<code>demo-topic</code>", html)
+                self.assertIn('"../../shared/docs/lab.css"', html)
+                self.assertIn('"../../shared/docs/lab.js"', html)
+                self.assertNotIn('"../shared/', html)
+        self.assertIn('<section id="qa-log">', (t / "questions.html").read_text(encoding="utf-8"))
+        self.assertIn('<section id="ask-list">', (t / "suggested-questions.html").read_text(encoding="utf-8"))
+
     def test_03_readme_row_added(self):
         readme = self.repo.path("README.md").read_text(encoding="utf-8")
         self.assertIn("| demo-topic | 0 — chưa bắt đầu | [README](topics/demo-topic/README.html) |", readme)

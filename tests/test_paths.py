@@ -8,7 +8,7 @@ paths = load_module("_paths")
 
 class HubPathTest(unittest.TestCase):
     def test_hub_pages_are_lowercase_files_in_hub(self):
-        for key in ("lab", "roadmap", "problems", "insights", "benchmarks", "glossary", "rules"):
+        for key in ("lab", "roadmap", "problems", "insights", "benchmarks", "glossary", "rules", "questions"):
             p = paths.hub_path(key)
             self.assertEqual(p.parent.name, "hub")
             self.assertEqual(p.name, p.name.lower())

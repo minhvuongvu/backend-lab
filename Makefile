@@ -22,7 +22,7 @@ LAB_NETWORK := backend-lab
 # OBS=full (metrics + logs + traces + profiles) or OBS=metrics (Prometheus + Grafana + docker-stats only)
 OBS ?= full
 
-.PHONY: help doctor analysis-image analysis lab-network obs-up obs-down obs-status new-topic roadmap pages insights hubs hubs-check test check hooks
+.PHONY: help doctor analysis-image analysis lab-network obs-up obs-down obs-status new-topic roadmap pages insights questions hubs hubs-check test check hooks
 
 help: ## Show available targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*## "}; {printf "  %-12s %s\n", $$1, $$2}'
@@ -70,14 +70,20 @@ insights: ## Rebuild hub/insights.html from every topic (and check insight struc
 	$(PYTHON) scripts/build_insights.py
 	$(PYTHON) scripts/build_insights.py --check
 
-hubs: pages ## Rebuild every hub page (lab, insights, problems, glossary, benchmarks, home, rules) + related topics
+questions: ## Rebuild hub/questions.html from every topic's Q&A log (and check Q&A / suggested-question markup)
+	$(PYTHON) scripts/build_questions.py
+	$(PYTHON) scripts/build_questions.py --check
+
+hubs: pages ## Rebuild every hub page (lab, insights, problems, glossary, benchmarks, questions, home, rules) + related topics
 	$(PYTHON) scripts/build_insights.py
 	$(PYTHON) scripts/build_knowledge.py
+	$(PYTHON) scripts/build_questions.py
 	$(PYTHON) scripts/build_dashboard.py
 
-hubs-check: ## Lint insight, problem/glossary and benchmark markup of every topic
+hubs-check: ## Lint insight, problem/glossary, Q&A and benchmark markup of every topic
 	$(PYTHON) scripts/build_insights.py --check
 	$(PYTHON) scripts/build_knowledge.py --check
+	$(PYTHON) scripts/build_questions.py --check
 	$(PYTHON) scripts/build_dashboard.py --check
 
 # ---- quality: unit tests, linters, render check, git hook ----
@@ -88,6 +94,7 @@ check: test ## All checks: unit tests, roadmap + hub linters, generated pages up
 	@out="$$($(PYTHON) scripts/roadmap_order.py --check)"; echo "$$out"; echo "$$out" | grep -q 'learning-path order problems: 0'
 	$(PYTHON) scripts/build_insights.py --check --no-page
 	$(PYTHON) scripts/build_knowledge.py --check --no-page
+	$(PYTHON) scripts/build_questions.py --check --no-page
 	$(PYTHON) scripts/build_dashboard.py --check
 	$(PYTHON) scripts/build_pages.py --check
 	$(PYTHON) -m py_compile scripts/*.py

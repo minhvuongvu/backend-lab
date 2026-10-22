@@ -33,6 +33,8 @@ function buildToc() {
       continue;
     }
     if (h.closest("details")) continue;
+    // Hub pages may aggregate hundreds of questions; keep their TOC to the section headings.
+    if (document.body.dataset.page === "hub" && h.closest("article.qa, article.ask")) continue;
     if (!h.id) h.id = slug(h.textContent) || `s-${tracked.length}`;
     li.className = h.tagName === "H2" ? "lvl-2" : "lvl-3";
     const a = document.createElement("a");
@@ -126,6 +128,8 @@ const DOCS = [
   ["05-results.html", "5 · Results"],
   ["06-conclusion.html", "6 · Conclusion"],
   ["07-production.html", "7 · Production"],
+  ["suggested-questions.html", "Nên hỏi"],
+  ["questions.html", "Hỏi đáp"],
 ];
 
 // Repo-level pages (<body data-page="hub">): the home page index.html at the repo root and the hub
@@ -136,6 +140,7 @@ const HUB = [
   ["hub/roadmap.html", "Lộ trình"],
   ["hub/problems.html", "Theo vấn đề"],
   ["hub/insights.html", "Kho insight"],
+  ["hub/questions.html", "Hỏi đáp"],
   ["hub/benchmarks.html", "Số liệu"],
   ["hub/glossary.html", "Thuật ngữ"],
   ["hub/rules.html", "Quy tắc"],
@@ -178,7 +183,51 @@ function buildDocNav() {
   header.appendChild(nav);
 }
 
+// Self-quiz on Q&A pages (questions.html, suggested-questions.html, hub/questions.html): a toolbar button hides
+// answers/hints (body.qa-quiz); clicking a question reveals that entry. The mode is remembered per browser.
+function setupQuiz() {
+  const entries = document.querySelectorAll("article.qa, article.ask");
+  if (!entries.length) return;
+  const KEY = "lab-qa-quiz";
+  const body = document.body;
+  const bar = document.createElement("div");
+  bar.className = "qa-toolbar";
+  const btn = document.createElement("button");
+  btn.type = "button";
+  const count = document.createElement("span");
+  const real = [...entries].filter((e) => !e.closest(".guide"));
+  const n = (sel) => real.filter((e) => e.matches(sel)).length;
+  const parts = [];
+  if (n("article.qa")) parts.push(`${n("article.qa")} câu hỏi · ${n("article.qa[data-status=open]")} chưa trả lời`);
+  if (n("article.ask")) parts.push(`${n("article.ask")} câu gợi ý · ${n("article.ask[data-status=suggested]")} chưa hỏi`);
+  count.textContent = parts.join(" — ");
+  bar.append(btn, count);
+  const label = () => { btn.textContent = body.classList.contains("qa-quiz") ? "Hiện đáp án" : "Ẩn đáp án (tự kiểm tra)"; };
+  const set = (on) => {
+    body.classList.toggle("qa-quiz", on);
+    entries.forEach((e) => e.classList.remove("revealed"));
+    try { localStorage.setItem(KEY, on ? "1" : "0"); } catch { /* storage unavailable */ }
+    label();
+  };
+  let stored = null;
+  try { stored = localStorage.getItem(KEY); } catch { /* storage unavailable */ }
+  body.classList.toggle("qa-quiz", stored === "1");
+  label();
+  btn.addEventListener("click", () => set(!body.classList.contains("qa-quiz")));
+  for (const e of entries) {
+    const q = e.querySelector("h3.q");
+    if (!q) continue;
+    q.tabIndex = 0;
+    const reveal = () => { if (body.classList.contains("qa-quiz")) e.classList.toggle("revealed"); };
+    q.addEventListener("click", reveal);
+    q.addEventListener("keydown", (ev) => { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); reveal(); } });
+  }
+  const header = document.querySelector("header.doc-header");
+  if (header) header.after(bar); else document.querySelector("main")?.prepend(bar);
+}
+
 buildDocNav();
+setupQuiz();
 scrollspy(buildToc());
 setupThemeToggle();
 syncHljsTheme();

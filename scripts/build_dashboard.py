@@ -9,6 +9,9 @@ Sources (read only, except the related-topics block):
   - topics/*/NN-*.html          insight tags (via scripts/build_insights.py), [data-problem] slugs
   - topics/*/05-results.html    [data-bench] rows (reference measurements, see the template comment)
   - topics/*/results/env.md     environment summary shown next to each benchmark
+  - topics/*/questions.html, topics/*/suggested-questions.html
+                                 open/revisit Q&A entries and suggested questions not asked yet
+                                 (via scripts/build_questions.py)
 
 Outputs:
   - LAB.html: counts, roadmap progress per track, every topic with phase chips, approvals waiting
@@ -43,6 +46,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import build_insights as bi  # noqa: E402  (shared minimal DOM + insight index)
+import build_questions as bq  # noqa: E402  (Q&A log counts)
 from _paths import hub_path, hubify  # noqa: E402
 
 ROOT = bi.ROOT
@@ -142,6 +146,7 @@ def read_topic(tdir):
             if len(cells) >= 3 and re.match(r"\d{4}-\d{2}-\d{2}", cells[0] or ""):
                 decisions.append({"date": cells[0], "phase": cells[1], "decision": cells[2],
                                   "reason": cells[3] if len(cells) > 3 else ""})
+    qa_pending, ask_pending = bq.pending_counts(tdir)
     statuses = [phases.get(i, "todo") for i in PHASES]
     if all(s in ("done", "skipped") for s in statuses):
         overall = "done"
@@ -159,6 +164,8 @@ def read_topic(tdir):
         "phases": phases,
         "approvals": approvals,
         "questions": questions,
+        "qa_pending": qa_pending,
+        "ask_pending": ask_pending,
         "decisions": decisions,
         "overall": overall,
     }
@@ -405,13 +412,17 @@ def render_lab(topics, roadmap, tracks, insights, dives, benches):
         for t in topics:
             mode = t["mode"] + (f" · {t['type']}" if t["type"] != "standard" else "")
             appr = f'<a href="topics/{e(t["slug"])}/README.html#approvals" class="appr-count">{len(t["approvals"])}</a>' if t["approvals"] else "0"
+            base = f'topics/{e(t["slug"])}/'
+            qs = (f'<span class="q-readme" title="ul.questions li[data-status=open] trong README">{t["questions"]} câu hỏi mở (README)</span>'
+                  f'<br><a class="q-qa" href="{base}questions.html">{t["qa_pending"]} hỏi đáp cần xem lại</a>'
+                  f'<br><a class="q-ask" href="{base}suggested-questions.html">{t["ask_pending"]} câu hỏi gợi ý chưa hỏi</a>')
             rows.append(
                 f'<tr data-topic="{e(t["slug"])}"><td><a href="topics/{e(t["slug"])}/README.html"><strong>{e(t["title"])}</strong></a>'
                 f'<br><code>{e(t["slug"])}</code></td><td><span class="mode-chip mode-{e(t["mode"])}">{e(mode)}</span></td>'
-                f'<td>{e(t["current_phase"])}<br>{phase_chips(t["phases"])}</td><td>{appr}</td><td>{e(t["updated"])}</td></tr>')
+                f'<td>{e(t["current_phase"])}<br>{phase_chips(t["phases"])}</td><td>{appr}</td><td>{qs}</td><td>{e(t["updated"])}</td></tr>')
         sections.append(
             '<section><h2 id="topics">Topic</h2><div class="table-wrap"><table class="lab-topics"><thead><tr>'
-            '<th>Topic</th><th>Chế độ</th><th>Phase</th><th>Chờ duyệt</th><th>Cập nhật</th></tr></thead>'
+            '<th>Topic</th><th>Chế độ</th><th>Phase</th><th>Chờ duyệt</th><th>Câu hỏi</th><th>Cập nhật</th></tr></thead>'
             f'<tbody>{"".join(rows)}</tbody></table></div></section>')
     else:
         sections.append('<section><h2 id="topics">Topic</h2><p class="empty-note">Chưa có topic. Chạy '

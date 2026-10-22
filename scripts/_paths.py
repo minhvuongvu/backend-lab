@@ -17,6 +17,7 @@ PAGES = {
     "benchmarks": "benchmarks.html",
     "glossary": "glossary.html",
     "rules": "rules.html",
+    "questions": "questions.html",
 }
 LEGACY = {"LAB.html": "lab.html", "ROADMAP.html": "roadmap.html", "PROBLEMS.html": "problems.html",
           "INSIGHTS.html": "insights.html", "BENCHMARKS.html": "benchmarks.html", "GLOSSARY.html": "glossary.html"}

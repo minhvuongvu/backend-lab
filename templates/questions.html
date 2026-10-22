@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{TOPIC}} — Hỏi đáp</title>
+<link rel="stylesheet" href="../shared/docs/lab.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@11.4.1/dist/mermaid.min.js" defer></script>
+<script src="../shared/docs/lab.js" defer></script>
+</head>
+<!--
+  Hỏi đáp — nhật ký MỌI câu hỏi người học hỏi trong lúc học topic này, kèm đáp án, để ôn lại và tự kiểm tra.
+  Không thuộc phase nào; ghi suốt vòng đời topic. Không có class draft: trang luôn "đang mở".
+  KHÁC VỚI README "Câu hỏi mở" (ul.questions): ở README chỉ là câu hỏi chặn tiến độ / cần quyết định.
+  MARKUP (scripts/build_questions.py → hub/questions.html đọc trang này):
+    - Mỗi câu hỏi là một article.qa, con TRỰC TIẾP của section#qa-log (mục trong div.guide bị bỏ qua):
+      <article class="qa" id="q-001" data-status="answered" data-phase="1" data-date="YYYY-MM-DD" data-kind="why" data-tags="a,b">
+        <h3 class="q">câu hỏi gần nguyên văn</h3>                        bắt buộc
+        <div class="a">đáp án</div>                                     bắt buộc, trừ khi data-status="open"
+        <p class="refs">Liên quan: <a href="01-research.html#...">01 §11</a></p>     tuỳ chọn
+        <p class="followup">Câu hỏi tiếp / việc cần làm: ...</p>                     tuỳ chọn
+        <div class="a-update" data-date="YYYY-MM-DD">đáp án sửa sau khi đo/đọc thêm</div>  tuỳ chọn, lặp được
+      </article>
+    - id: q-NNN (3 chữ số, tăng dần, duy nhất trong trang; không đánh số lại khi xoá/sửa).
+    - data-status: open (chưa trả lời được / cần thí nghiệm) | answered | revisit (đáp án đã đổi hoặc cần xem lại khi có số đo).
+    - data-phase: 0–7, phase lúc hỏi. data-date: ngày hỏi (YYYY-MM-DD).
+    - data-kind: concept | why | how | compare | tradeoff | debug | production.
+    - data-tags: 1–5 tag kebab-case chữ thường, phân tách bằng dấu phẩy; dùng lại tag insight đã có (hub/insights.html § Theo tag).
+    - Đáp án: kết luận trước, rồi cơ chế nhân quả theo chuẩn "vì sao" (.claude/rules/html-docs.md); nhãn
+      <span class="tag measured">, <a class="tag doc" href="#src-N">, <span class="tag inferred">.
+    - Không bao giờ xoá đáp án cũ: thêm div.a-update và đổi data-status thành revisit/answered.
+    - Câu hỏi đến từ suggested-questions.html: thêm vào đây, rồi chuyển mục bên đó sang data-status="asked" + link q-NNN.
+-->
+<body>
+<div class="layout">
+  <nav class="toc" aria-label="Mục lục">
+    <div class="toc-title">{{TOPIC}}</div>
+    <ol></ol>
+    <button class="theme-toggle" type="button">Theme</button>
+  </nav>
+  <main>
+  <article class="doc">
+
+  <header class="doc-header">
+    <div class="eyebrow">Hỏi đáp</div>
+    <h1>{{TOPIC}} — Hỏi đáp</h1>
+    <div class="meta"><span>Slug: <code>{{SLUG}}</code></span><span>Cập nhật: {{DATE}}</span></div>
+  </header>
+
+  <section>
+    <h2 id="usage"><span class="num">1</span>Cách dùng</h2>
+    <p><strong>Mục đích.</strong> Mọi câu hỏi nảy ra khi học topic này được ghi lại cùng đáp án, gần nguyên văn lúc hỏi. Câu hỏi của chính mình
+      là bản đồ chỗ hiểu chưa chắc; đọc lại sau vài tuần cho thấy cái gì đã thành hiểu biết thật và cái gì vẫn chỉ là nhớ câu chữ.</p>
+    <p><strong>Khi nào ghi.</strong> Ngay khi hỏi, ở bất kỳ phase nào, kể cả câu hỏi "ngây thơ". Câu hỏi chặn tiến độ hoặc cần quyết định thì
+      ghi thêm vào mục "Câu hỏi mở" của <a href="README.html#questions">README</a>; câu hỏi nên tự đặt ra trước khi hỏi nằm ở
+      <a href="suggested-questions.html">Câu hỏi nên hỏi</a>.</p>
+    <p><strong>Trạng thái.</strong> <em>Chưa trả lời</em>: chưa có đáp án hoặc cần thí nghiệm mới trả lời được.
+      <em>Đã trả lời</em>: có đáp án dựa trên cơ chế và nguồn. <em>Xem lại</em>: đáp án đã được sửa (khối "Cập nhật") hoặc cần đối chiếu lại khi có số đo ở phase 5–6.
+      Đáp án cũ không bị xoá, để thấy hiểu biết đã thay đổi thế nào.</p>
+    <p><strong>Tự kiểm tra.</strong> Bấm nút <em>Ẩn đáp án</em>: chỉ còn câu hỏi. Tự trả lời (nói hoặc viết ra: cơ chế, điều kiện, độ lớn, khi nào không đúng),
+      rồi bấm vào câu hỏi để mở đáp án và so. Chế độ được nhớ trong trình duyệt này.</p>
+  </section>
+
+  <section id="qa-log">
+    <h2 id="log"><span class="num">2</span>Nhật ký hỏi đáp</h2>
+    <div class="guide">Mỗi câu hỏi là một <code>article.qa</code> đặt trực tiếp trong mục này, mới nhất ở cuối, theo markup ở comment đầu file.
+      Khi thêm câu hỏi thật đầu tiên, xoá khối hướng dẫn này (cả ví dụ bên dưới). Ví dụ đầy đủ:
+      <article class="qa" id="q-000" data-status="answered" data-phase="1" data-date="{{DATE}}" data-kind="why" data-tags="mvcc,isolation-levels">
+        <h3 class="q">Vì sao REPEATABLE READ của PostgreSQL không bị phantom read mà chuẩn SQL lại cho phép?</h3>
+        <div class="a">
+          <p><strong>Kết luận:</strong> vì PostgreSQL cài REPEATABLE READ bằng snapshot isolation: mọi câu lệnh trong transaction đọc cùng một snapshot,
+            nên hàng mới chèn bởi transaction khác không thể "hiện ra" giữa hai lần đọc <a class="tag doc" href="#src-1">docs</a>.</p>
+          <p><strong>Cơ chế:</strong> (1) Lệnh đầu tiên lấy snapshot = <code>xmin</code>, <code>xmax</code> và danh sách xid đang chạy.
+            (2) Mỗi tuple mang <code>t_xmin</code>/<code>t_xmax</code>; hàm visibility chỉ cho thấy tuple có <code>t_xmin</code> đã commit trước snapshot.
+            (3) Hàng chèn sau có <code>t_xmin</code> ≥ <code>xmax</code> của snapshot → bị ẩn ở mọi lần đọc sau, kể cả range scan, nên không có phantom.
+            Chuẩn SQL định nghĩa mức cô lập bằng hiện tượng bị cấm, không bắt buộc cách cài, nên một cài đặt chặt hơn chuẩn vẫn hợp lệ.</p>
+          <p><strong>Khi nào không đúng:</strong> snapshot không ngăn write skew (hai transaction đọc rồi ghi hai hàng khác nhau);
+            cần SERIALIZABLE (SSI) hoặc khoá tường minh <span class="tag inferred">suy luận</span>.</p>
+        </div>
+        <p class="refs">Liên quan: <a href="01-research.html#how-it-works">01 §8</a></p>
+        <p class="followup">Câu hỏi tiếp / việc cần làm: đo tỉ lệ serialization failure của SERIALIZABLE dưới tải ghi tranh chấp (đưa vào 04).</p>
+        <div class="a-update" data-date="{{DATE}}">Ví dụ cập nhật: sau khi đọc thêm source <code>heapam_visibility.c</code>, bổ sung rằng hint bit làm lần đọc thứ hai rẻ hơn lần đầu.</div>
+      </article>
+    </div>
+    <p class="empty-note">Chưa có câu hỏi.</p>
+  </section>
+
+  <section>
+    <h2 id="sources"><span class="num">3</span>Nguồn</h2>
+    <p class="note">Nguồn được trích trong đáp án (<code>id="src-N"</code> để nhãn <code>a.tag.doc</code> trỏ tới). Nguồn đã có ở 01 §27 thì link sang đó thay vì chép lại.</p>
+    <ol class="sources">
+    </ol>
+    <p class="empty-note">Chưa có nguồn.</p>
+  </section>
+
+  </article>
+  </main>
+</div>
+</body>
+</html>

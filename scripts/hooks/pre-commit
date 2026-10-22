@@ -66,9 +66,10 @@ step "roadmap: prerequisites, cycles, learning paths"
 out="$("$PY" scripts/roadmap_order.py --check)" || { echo "$out"; exit 1; }
 grep -q 'learning-path order problems: 0' <<<"$out" || { echo "$out"; exit 1; }
 
-step "hub linters (insights, problems/glossary, benchmarks)"
+step "hub linters (insights, problems/glossary, Q&A, benchmarks)"
 "$PY" scripts/build_insights.py --check --no-page
 "$PY" scripts/build_knowledge.py --check --no-page
+"$PY" scripts/build_questions.py --check --no-page
 "$PY" scripts/build_dashboard.py --check
 
 step "generated pages up to date (index.html, hub/rules.html)"

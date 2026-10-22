@@ -54,6 +54,10 @@ render "$ROOT/templates/topic-README.html" "$TOPIC_DIR/README.html"
 for tpl in "$ROOT"/templates/0[1-7]-*.html; do
   render "$tpl" "$TOPIC_DIR/$(basename "$tpl")"
 done
+# Learner Q&A log and Claude's suggested questions (not tied to a phase; aggregated in hub/questions.html).
+for doc in questions.html suggested-questions.html; do
+  render "$ROOT/templates/$doc" "$TOPIC_DIR/$doc"
+done
 
 cat > "$TOPIC_DIR/results/env.md" <<EOF
 # Môi trường chạy thí nghiệm — $TOPIC

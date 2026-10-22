@@ -11,6 +11,7 @@ class EmptyRepoTest(unittest.TestCase):
         try:
             for script, pages in [("build_insights.py", ["hub/insights.html"]),
                                   ("build_knowledge.py", ["hub/problems.html", "hub/glossary.html"]),
+                                  ("build_questions.py", ["hub/questions.html"]),
                                   ("build_dashboard.py", ["hub/lab.html", "hub/benchmarks.html"])]:
                 r = repo.py(script)
                 self.assertEqual(r.returncode, 0, f"{script}: {r.stdout}{r.stderr}")

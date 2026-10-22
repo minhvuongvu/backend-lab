@@ -24,8 +24,9 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEFAULT_PAGES = ["index.html", "hub/lab.html", "hub/roadmap.html", "hub/problems.html", "hub/insights.html", "hub/benchmarks.html",
-                 "hub/glossary.html", "hub/rules.html",
-                 "templates/topic-README.html", *sorted(str(p.relative_to(ROOT)) for p in (ROOT / "templates").glob("0[1-7]-*.html"))]
+                 "hub/glossary.html", "hub/rules.html", "hub/questions.html",
+                 "templates/topic-README.html", *sorted(str(p.relative_to(ROOT)) for p in (ROOT / "templates").glob("0[1-7]-*.html")),
+                 "templates/suggested-questions.html", "templates/questions.html"]
 BROWSERS = [
     r"C:\Program Files\Google\Chrome\Application\chrome.exe",
     r"C:\Program Files (x86)\Google\Chrome\Application\chrome.exe",

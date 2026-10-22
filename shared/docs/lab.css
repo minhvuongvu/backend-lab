@@ -388,3 +388,47 @@ dl.dd-meta { display: grid; grid-template-columns: 150px 1fr; gap: 6px 16px; mar
 dl.dd-meta dt { font-size: 12.5px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--insight); padding-top: 3px; }
 dl.dd-meta dd { margin: 0; }
 @media (max-width: 900px) { dl.dd-meta { grid-template-columns: 1fr; } .deep-dive { padding: 6px 14px 14px; } }
+
+/* ---------- Q&A log (questions.html) and suggested questions (suggested-questions.html) ---------- */
+article.qa, article.ask {
+  --qa-c: var(--border); background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--qa-c);
+  border-radius: 0 var(--radius) var(--radius) 0; padding: 10px 20px 14px; margin: 14px 0; max-width: calc(var(--measure) + 44px);
+}
+article.qa::before, article.ask::before { display: block; font: 600 12px/1.6 var(--mono); color: var(--muted); }
+article.qa::before { content: attr(id) " · " attr(data-kind) " · phase " attr(data-phase) " · " attr(data-date) " · " attr(data-tags); }
+article.ask::before { content: attr(id) " · " attr(data-kind) " · phase " attr(data-phase) " · " attr(data-tags); }
+/* hub/questions.html: ids are prefixed with the topic slug; show slug + original id instead */
+article.qa[data-qid]::before { content: attr(data-topic) " · " attr(data-qid) " · " attr(data-kind) " · phase " attr(data-phase) " · " attr(data-date) " · " attr(data-tags); }
+article.ask[data-qid]::before { content: attr(data-topic) " · " attr(data-qid) " · " attr(data-kind) " · phase " attr(data-phase) " · " attr(data-tags); }
+article.qa h3.q, article.ask h3.q { margin: 4px 0 8px; font-size: 18px; }
+:is(article.qa, article.ask) h3.q::after { content: var(--qa-label); font-size: 11.5px; font-weight: 700; padding: 1px 9px; margin-left: 8px; border-radius: 999px; vertical-align: 2px; color: var(--qa-c); border: 1px solid currentColor; white-space: nowrap; }
+article.qa[data-status="answered"] { --qa-c: var(--ok); --qa-label: "Đã trả lời"; }
+article.qa[data-status="open"] { --qa-c: var(--warn); --qa-label: "Chưa trả lời"; }
+article.qa[data-status="revisit"] { --qa-c: var(--insight); --qa-label: "Xem lại"; }
+article.ask[data-level="foundation"] { --qa-c: var(--ok); --qa-label: "Foundation"; }
+article.ask[data-level="senior"] { --qa-c: var(--accent); --qa-label: "Senior"; }
+article.ask[data-level="expert"] { --qa-c: var(--insight); --qa-label: "Expert"; }
+article.ask[data-status="asked"], article.ask[data-status="skipped"] { opacity: .6; }
+article.ask[data-status="asked"] h3.q::before { content: "✓ "; color: var(--ok); }
+article.ask[data-status="skipped"] h3.q { text-decoration: line-through; }
+article.qa .a > :last-child { margin-bottom: 0; }
+article.qa .a-update { margin: 12px 0 0; padding: 8px 14px; border-radius: 8px; background: var(--insight-bg); font-size: 15px; }
+article.qa .a-update::before { content: "Cập nhật " attr(data-date); display: block; font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--insight); }
+article.qa :is(.refs, .followup), article.ask :is(.why-ask, .hint, .answered-by) { font-size: 14.5px; color: var(--text-soft); margin: 10px 0 0; }
+article.qa .followup { color: var(--warn); }
+/* Guide + example stay visible (no body.draft here) until the first real entry is added */
+:is(#qa-log:not(:has(> article.qa)), #ask-list:not(:has(> article.ask))) > .guide {
+  display: block; border: 1px dashed var(--warn); color: var(--warn); background: var(--warn-bg);
+  border-radius: 8px; padding: 10px 14px; font-size: 14px; line-height: 1.65; margin: 10px 0 14px;
+}
+:is(#qa-log, #ask-list) > .guide::before { content: "Hướng dẫn: "; font-weight: 700; }
+:is(#qa-log, #ask-list) > .guide article { color: var(--text); font-size: 15.5px; }
+#qa-log:has(> article.qa) > .empty-note, #ask-list:has(> article.ask) > .empty-note, ol.sources:has(li) + .empty-note { display: none; }
+/* Self-quiz mode (lab.js toggles body.qa-quiz; clicking a question adds .revealed) */
+.qa-toolbar { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 18px 0 0; font-size: 14px; color: var(--muted); }
+.qa-toolbar button { font: inherit; font-weight: 600; cursor: pointer; padding: 5px 14px; border-radius: 999px; border: 1px solid var(--accent); background: var(--surface); color: var(--accent); }
+body.qa-quiz .qa-toolbar button { background: var(--accent); color: var(--bg); }
+body.qa-quiz :is(article.qa, article.ask):not(.revealed) :is(.a, .a-update, .refs, .followup, .why-ask, .hint) { display: none; }
+body.qa-quiz :is(article.qa, article.ask) h3.q { cursor: pointer; }
+body.qa-quiz :is(article.qa:has(.a), article.ask):not(.revealed) h3.q::before { content: "▸ "; color: var(--accent); }
+@media print { article.qa, article.ask { break-inside: avoid; } body.qa-quiz :is(.a, .a-update, .refs, .followup, .why-ask, .hint) { display: block !important; } }

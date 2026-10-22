@@ -26,7 +26,7 @@ Quy tắc chung cho mọi phiên Claude Code nằm trong [CLAUDE.md](CLAUDE.md).
 - `/lab-status`: xem tiến độ mọi topic và gợi ý topic nên học tiếp theo lộ trình.
 - `/research cdc debezium spike`: khám phá nhanh một hiện tượng; `/research redis lock vs postgres advisory lock`: topic so sánh hai công nghệ.
 - `/research case-payment-system`: case study tổng hợp — ghép nhiều topic đã học thành một hệ thống và kiểm chứng end-to-end (giai đoạn 8 trong lộ trình).
-- Trang tổng (mở bằng trình duyệt): [hub/lab.html](hub/lab.html) tổng quan · [hub/roadmap.html](hub/roadmap.html) lộ trình · [hub/problems.html](hub/problems.html) tra theo vấn đề · [hub/insights.html](hub/insights.html) kho insight · [hub/benchmarks.html](hub/benchmarks.html) số liệu tham chiếu · [hub/glossary.html](hub/glossary.html) thuật ngữ.
+- Trang tổng (mở bằng trình duyệt): [hub/lab.html](hub/lab.html) tổng quan · [hub/roadmap.html](hub/roadmap.html) lộ trình · [hub/problems.html](hub/problems.html) tra theo vấn đề · [hub/insights.html](hub/insights.html) kho insight · [hub/benchmarks.html](hub/benchmarks.html) số liệu tham chiếu · [hub/glossary.html](hub/glossary.html) thuật ngữ · [hub/questions.html](hub/questions.html) hỏi đáp + câu hỏi nên hỏi (tự ôn: ẩn đáp án).
 - Một chủ đề, một phiên. Dùng `/clear` khi chuyển chủ đề để context không bị lẫn.
 - `make obs-up` trước phase 5 nếu muốn xem metric trên Grafana.
 - Yêu cầu: Docker, JDK 21, k6, Python 3 (và GNU make + bash; trên Windows dùng Git Bash/WSL).
@@ -68,8 +68,9 @@ backend-lab/
 │   ├── insights.html         #   kho insight + chuyên đề của mọi topic
 │   ├── benchmarks.html       #   số liệu tham chiếu đã đo
 │   ├── glossary.html         #   thuật ngữ chung
+│   ├── questions.html        #   hỏi đáp + câu hỏi nên hỏi của mọi topic
 │   └── rules.html            #   bản HTML của CLAUDE.md + .claude/rules/
-├── topics/<slug>/            # mỗi topic: README.html + 01…07 + system/ + experiments/ + results/ + deploy/
+├── topics/<slug>/            # mỗi topic: README.html + 01…07 + questions.html + suggested-questions.html + system/ + experiments/ + results/ + deploy/
 ├── templates/                # khung tài liệu cho mỗi topic
 ├── shared/docs/              # CSS/JS dùng chung cho mọi trang HTML
 ├── shared/scaffold/          # bộ khung Spring Boot + experiment kit, copy vào mỗi topic khi tạo
